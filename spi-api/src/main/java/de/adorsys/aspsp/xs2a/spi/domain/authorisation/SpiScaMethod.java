@@ -16,9 +16,18 @@
 
 package de.adorsys.aspsp.xs2a.spi.domain.authorisation;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 public enum SpiScaMethod {
     SMS_OTP,
     CHIP_OTP,
     PHOTO_OTP,
-    PUSH_OTP
+    PUSH_OTP;
+
+    public static Optional<SpiScaMethod> getByName(String name) {
+        return Arrays.stream(SpiScaMethod.values())
+                   .filter(v -> v.name().equals(name))
+                   .findFirst();
+    }
 }

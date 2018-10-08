@@ -117,8 +117,8 @@ public class Xs2aPisConsentMapper {
                        pisPayment.setRequestedExecutionTime(pmt.getRequestedExecutionTime());
                        pisPayment.setUltimateCreditor(pmt.getUltimateCreditor());
                        pisPayment.setPurposeCode(Optional.ofNullable(pmt.getPurposeCode())
-                           .map(Xs2aPurposeCode::getCode)
-                           .orElse(""));
+                                                     .map(Xs2aPurposeCode::getCode)
+                                                     .orElse(""));
 
                        return pisPayment;
 
@@ -216,9 +216,8 @@ public class Xs2aPisConsentMapper {
                    .orElseGet(CmsRemittance::new);
     }
 
-    public Optional<Xs2aUpdatePisConsentPsuDataResponse> mapToXs2aUpdatePisConsentPsuDataResponse(UpdatePisConsentPsuDataResponse response) {
-        return Optional.ofNullable(response)
-                   .map(r -> new Xs2aUpdatePisConsentPsuDataResponse(getScaStatus(response), response.getAvailableScaMethods()));
+    public Xs2aUpdatePisConsentPsuDataResponse mapToXs2aUpdatePisConsentPsuDataResponse(UpdatePisConsentPsuDataResponse response) {
+        return new Xs2aUpdatePisConsentPsuDataResponse(getScaStatus(response), response.getAvailableScaMethods());
     }
 
     private String getScaStatus(UpdatePisConsentPsuDataResponse response) {

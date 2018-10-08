@@ -16,11 +16,13 @@
 
 package de.adorsys.aspsp.xs2a.service.authorization.pis;
 
+import de.adorsys.aspsp.xs2a.domain.ResponseObject;
 import de.adorsys.aspsp.xs2a.domain.consent.Xs2aUpdatePisConsentPsuDataResponse;
 import de.adorsys.aspsp.xs2a.domain.consent.Xsa2CreatePisConsentAuthorisationResponse;
 import de.adorsys.aspsp.xs2a.domain.pis.PaymentType;
 import de.adorsys.aspsp.xs2a.service.mapper.consent.Xs2aPisConsentMapper;
 import de.adorsys.psd2.consent.api.pis.authorisation.UpdatePisConsentPsuDataRequest;
+import de.adorsys.psd2.consent.api.pis.authorisation.UpdatePisConsentPsuDataResponse;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
@@ -49,7 +51,12 @@ public class EmbeddedPisScaAuthorisationService implements PisScaAuthorisationSe
      * @return update consent authorization response, which contains payment id, authorization id, sca status, psu message and links
      */
     @Override
-    public Optional<Xs2aUpdatePisConsentPsuDataResponse> updateConsentPsuData(UpdatePisConsentPsuDataRequest request) {
-        return pisConsentMapper.mapToXs2aUpdatePisConsentPsuDataResponse(authorisationService.updatePisConsentAuthorisation(request));
+    public ResponseObject<Xs2aUpdatePisConsentPsuDataResponse> updateConsentPsuData(UpdatePisConsentPsuDataRequest request) {
+        ResponseObject<UpdatePisConsentPsuDataResponse> updatePisConsentPsuData = authorisationService.updatePisConsentAuthorisation(request);
+        return updatePisConsentPsuData.hasError()
+                   ? ResponseObject.<Xs2aUpdatePisConsentPsuDataResponse>builder().fail(updatePisConsentPsuData.getError()).build()
+                   : ResponseObject.<Xs2aUpdatePisConsentPsuDataResponse>builder()
+                         .body(pisConsentMapper.mapToXs2aUpdatePisConsentPsuDataResponse(updatePisConsentPsuData.getBody()))
+                         .build();
     }
 }
