@@ -29,7 +29,7 @@ import java.util.UUID;
 
 @Aspect
 @Component
-public class ConsentResponseHeadersAspect extends HeaderController {
+public class ConsentResponseHeadersAspect extends HeaderHandler {
 
     public ConsentResponseHeadersAspect(AspspProfileServiceWrapper aspspProfileServiceWrapper) {
         super(aspspProfileServiceWrapper);

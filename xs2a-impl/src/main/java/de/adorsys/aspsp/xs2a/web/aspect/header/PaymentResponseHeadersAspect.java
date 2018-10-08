@@ -29,22 +29,39 @@ import java.util.UUID;
 
 @Aspect
 @Component
-public class PaymentResponseHeadersAspect extends HeaderController {
+public class PaymentResponseHeadersAspect extends HeaderHandler {
 
     public PaymentResponseHeadersAspect(AspspProfileServiceWrapper aspspProfileServiceWrapper) {
         super(aspspProfileServiceWrapper);
     }
 
-    @AfterReturning(pointcut = "execution(* de.adorsys.aspsp.xs2a.web.PaymentController.initiatePayment(..)) && args(body, paymentService, paymentProduct, xRequestID, ..)", returning = "result", argNames = "result,body,paymentService,paymentProduct,xRequestID")
+    @AfterReturning(pointcut = "execution(* de.adorsys.psd2.api.PaymentApi._initiatePayment(..)) && args(body, paymentService, paymentProduct, xRequestID, ..)", returning = "result", argNames = "result,body,paymentService,paymentProduct,xRequestID")
     public ResponseEntity<?> paymentInitiationAspect(ResponseEntity<?> result, Object body, String paymentService, String paymentProduct, UUID xRequestID) {
         addXRequestIdHeader(xRequestID.toString());
-        addLocationHeader(result);
-        return new ResponseEntity<>(
-            result.getBody(),
-            addAspspScaApproachHeader(),
-        result.getStatusCode()
-        );
-    }
+//       // addLocationHeader(result);
+//
+//
+//
+//
+//        ResponseEntity<?> newResponse = new ResponseEntity<>(
+//            result.getBody(),
+//            addAspspScaApproachHeader(),
+//            result.getStatusCode()
+//        );
+//
+//        return newResponse;
+        HttpHeaders responseHeaders = result.getHeaders();
+
+        HttpHeaders newresponseHeaders = new HttpHeaders();
+        newresponseHeaders.set("new-Example-Header",
+            "new-ResponseEntityBuilderWithHttpHeaders");
+
+
+        return ResponseEntity.ok()
+                   .headers(responseHeaders)
+                   .body("Response with header using ResponseEntity");
+
+}
 
     @AfterReturning(pointcut = "execution(* de.adorsys.aspsp.xs2a.web.PaymentController.getPaymentInitiationStatus(..)) && args(paymentService, paymentId, xRequestID, ..)", returning = "result", argNames = "result,paymentService,paymentId,xRequestID")
     public ResponseEntity<?> getPaymentInitiationStatusAspect(ResponseEntity<?> result, String paymentService, String paymentId, UUID xRequestID) {

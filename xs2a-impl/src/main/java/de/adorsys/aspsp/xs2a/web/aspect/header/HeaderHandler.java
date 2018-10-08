@@ -22,13 +22,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 
 @RequiredArgsConstructor
-public abstract class HeaderController {
+public abstract class HeaderHandler {
     private final AspspProfileServiceWrapper aspspProfileServiceWrapper;
     private final HttpHeaders headers = new HttpHeaders();
 
-    protected HttpHeaders addHeader(String name, String value) {
-        headers.add(name, value);
-        return headers;
+    protected HttpHeaders addStartAuthorizarionHeaders(String xRequestId) {
+        addXRequestIdHeader(xRequestId);
+        return addAspspScaApproachHeader();
     }
 
     protected HttpHeaders addXRequestIdHeader(String xRequestId) {
@@ -43,10 +43,9 @@ public abstract class HeaderController {
         return addHeader("aspsp-sca-approach", fixedApproach.name());
     }
 
-    protected HttpHeaders addStartAuthorizarionHeaders(String xRequestId) {
-        addXRequestIdHeader(xRequestId);
-        return addAspspScaApproachHeader();
-
+    protected HttpHeaders addHeader(String name, String value) {
+        headers.add(name, value);
+        return headers;
     }
 
 }

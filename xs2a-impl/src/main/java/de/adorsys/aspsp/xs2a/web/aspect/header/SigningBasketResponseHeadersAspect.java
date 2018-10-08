@@ -29,7 +29,7 @@ import java.util.UUID;
 
 @Aspect
 @Component
-public class SigningBasketResponseHeadersAspect extends HeaderController {
+public class SigningBasketResponseHeadersAspect extends HeaderHandler {
 
     public SigningBasketResponseHeadersAspect(AspspProfileServiceWrapper aspspProfileServiceWrapper) {
         super(aspspProfileServiceWrapper);

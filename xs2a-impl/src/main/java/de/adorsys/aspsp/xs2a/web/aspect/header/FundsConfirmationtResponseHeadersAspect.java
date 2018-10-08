@@ -27,7 +27,7 @@ import java.util.UUID;
 
 @Aspect
 @Component
-public class FundsConfirmationtResponseHeadersAspect extends HeaderController {
+public class FundsConfirmationtResponseHeadersAspect extends HeaderHandler {
 
     public FundsConfirmationtResponseHeadersAspect(AspspProfileServiceWrapper aspspProfileServiceWrapper) {
         super(aspspProfileServiceWrapper);
