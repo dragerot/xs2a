@@ -20,9 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.adorsys.aspsp.xs2a.component.JsonConverter;
 import de.adorsys.aspsp.xs2a.domain.*;
-import de.adorsys.aspsp.xs2a.domain.account.Xs2aAccountDetails;
-import de.adorsys.aspsp.xs2a.domain.account.Xs2aAccountReference;
-import de.adorsys.aspsp.xs2a.domain.account.Xs2aAccountReport;
+import de.adorsys.aspsp.xs2a.domain.account.*;
 import de.adorsys.aspsp.xs2a.domain.code.BankTransactionCode;
 import de.adorsys.aspsp.xs2a.domain.code.Xs2aPurposeCode;
 import de.adorsys.aspsp.xs2a.service.AccountService;
@@ -79,8 +77,7 @@ public class AccountControllerTest {
     @Before
     public void setUp() throws Exception {
         when(accountService.getAccountDetailsList(anyString(), anyBoolean())).thenReturn(getXs2aAccountDetailsList());
-        ResponseObject<List<Xs2aBalance>> balances = getXs2aBalances();
-        when(accountService.getBalances(anyString(), anyString())).thenReturn(balances);
+        when(accountService.getBalancesReport(anyString(), anyString())).thenReturn(getBalanceReport());
         when(accountService.getAccountReport(any(String.class), any(String.class), any(LocalDate.class),
             any(LocalDate.class), any(String.class), anyBoolean(), any(), anyBoolean(), anyBoolean()))
             .thenReturn(getXs2aAccountReport());
@@ -165,7 +162,7 @@ public class AccountControllerTest {
         List<Xs2aAccountDetails> accountDetails = Collections.singletonList(
             new Xs2aAccountDetails("33333-999999999", "DE371234599997", null, null, null,
                 null, Currency.getInstance("EUR"), "Schmidt", null,
-                CashAccountType.CURRENT_ACCOUNT, "GENODEF1N02", "", "", null));
+                CashAccountType.CACC, AccountStatus.ENABLED, "GENODEF1N02", "", Xs2aUsageType.PRIV, "", null));
         Map<String, List<Xs2aAccountDetails>> result = new HashMap<>();
         result.put("accountList", accountDetails);
         return ResponseObject.<Map<String, List<Xs2aAccountDetails>>>builder()
@@ -243,5 +240,11 @@ public class AccountControllerTest {
         balance.setLastCommittedTransaction("abc");
         List<Xs2aBalance> balances = Collections.singletonList(balance);
         return ResponseObject.<List<Xs2aBalance>>builder().body(balances).build();
+    }
+
+    private ResponseObject<Xs2aBalancesReport> getBalanceReport() {
+        Xs2aBalancesReport balancesReport = new Xs2aBalancesReport();
+        balancesReport.setBalances(getXs2aBalances().getBody());
+        return ResponseObject.<Xs2aBalancesReport>builder().body(balancesReport).build();
     }
 }
