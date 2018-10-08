@@ -25,4 +25,5 @@
 - Get list of consents by psu-id in Consent Management System.
 - PIIS Consent. Post, Get, Put. Read aspspConsentData. 
 - Migration to package and Maven GroupId "de.adorsys.psd2": aspsp-mockserver
+- Fix nullpointerexception while invoking /v1/accounts/
 
