@@ -85,7 +85,7 @@ xs2a:
   replicas: 1
 
   image:
-    name: aspspProfile-xs2a
+    name: docker.io/adorsys/xs2a-service
     tag: latest
     stream: true
 
