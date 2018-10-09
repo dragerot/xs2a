@@ -22,6 +22,9 @@
     <changeSet author="ssh@adorsys.com.ua" id="2018-10-06-1">
         <comment>Rename pis_tpp_info to tpp_info, change its structure and add tpp_info_role table</comment>
 
+        <dropSequence sequenceName="pis_tpp_info_id_seq"/>
+        <createSequence sequenceName="tpp_info_id_seq"/>
+
         <renameTable newTableName="tpp_info"
                      oldTableName="pis_tpp_info"/>
 

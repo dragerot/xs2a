@@ -31,8 +31,8 @@ import java.util.List;
 public class TppInfo {
     @Id
     @Column(name = "tpp_info_id")
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pis_tpp_info_generator")
-    @SequenceGenerator(name = "pis_tpp_info_generator", sequenceName = "pis_tpp_info_id_seq")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tpp_info_generator")
+    @SequenceGenerator(name = "tpp_info_generator", sequenceName = "tpp_info_id_seq")
     private Long id;
 
     @Column(name = "authorisation_number", nullable = false)
