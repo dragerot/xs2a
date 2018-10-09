@@ -254,7 +254,7 @@ public class PisConsentMapper {
                    .map(roles -> roles.stream()
                                      .map(role -> CmsTppRole.valueOf(role.name()))
                                      .collect(Collectors.toList()))
-                   .orElse(null);
+                   .orElseGet(Collections::emptyList);
     }
 
     private PisAccountReference mapToPisAccountReference(CmsAccountReference cmsAccountReference) {

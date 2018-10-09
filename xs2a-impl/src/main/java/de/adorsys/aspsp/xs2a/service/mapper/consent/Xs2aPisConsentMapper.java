@@ -188,7 +188,7 @@ public class Xs2aPisConsentMapper {
                    .map(roles -> roles.stream()
                                      .map(role -> CmsTppRole.valueOf(role.name()))
                                      .collect(Collectors.toList()))
-                   .orElse(null);
+                   .orElseGet(Collections::emptyList);
     }
 
     private CmsAccountReference mapToPisAccountReference(Xs2aAccountReference xs2aAccountReference) {
