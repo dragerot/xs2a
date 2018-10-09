@@ -26,6 +26,7 @@ import de.adorsys.psd2.consent.api.pis.proto.PisConsentRequest;
 import de.adorsys.psd2.consent.api.pis.proto.PisConsentResponse;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -112,7 +113,7 @@ public class PisConsentMapper {
                    .map(roles -> roles.stream()
                                      .map(role -> PisTppRole.valueOf(role.name()))
                                      .collect(Collectors.toList()))
-                   .orElse(null);
+                   .orElseGet(Collections::emptyList);
     }
 
     public GetPisConsentAuthorisationResponse mapToGetPisConsentAuthorizationResponse(PisConsentAuthorization pis) {
