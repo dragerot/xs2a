@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.adorsys.psd2.consent.server.domain.payment;
+package de.adorsys.psd2.consent.server.domain;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -25,10 +25,10 @@ import javax.persistence.*;
 import java.util.List;
 
 @Data
-@Entity(name = "pis_tpp_info")
-@ApiModel(description = "Tpp info", value = "PisTppInfo")
+@Entity(name = "tpp_info")
+@ApiModel(description = "Tpp info", value = "TppInfo")
 @NoArgsConstructor
-public class PisTppInfo {
+public class TppInfo {
     @Id
     @Column(name = "tpp_info_id")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pis_tpp_info_generator")
@@ -44,11 +44,11 @@ public class PisTppInfo {
     private String tppName;
 
     @ElementCollection
-    @CollectionTable(name = "pis_tpp_info_role", joinColumns = @JoinColumn(name = "tpp_info_id"))
+    @CollectionTable(name = "tpp_info_role", joinColumns = @JoinColumn(name = "tpp_info_id"))
     @Column(name = "tpp_role")
     @Enumerated(value = EnumType.STRING)
     @ApiModelProperty(value = "Tpp role", required = true)
-    private List<PisTppRole> tppRoles;
+    private List<TppRole> tppRoles;
 
     @Column(name = "authority_id", nullable = false)
     @ApiModelProperty(value = "National competent authority id", required = true, example = "authority id")

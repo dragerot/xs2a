@@ -20,24 +20,27 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet author="ssh@adorsys.com.ua" id="2018-10-06-1">
-        <comment>Change structure of pis_tpp_info and add pis_tpp_info_role table</comment>
+        <comment>Rename pis_tpp_info to tpp_info, change its structure and add tpp_info_role table</comment>
+
+        <renameTable newTableName="tpp_info"
+                     oldTableName="pis_tpp_info"/>
 
         <renameColumn columnDataType="VARCHAR(50)"
                       newColumnName="authorisation_number"
                       oldColumnName="registration_number"
-                      tableName="pis_tpp_info"/>
+                      tableName="tpp_info"/>
 
         <dropColumn columnName="tpp_role"
-                    tableName="pis_tpp_info"/>
+                    tableName="tpp_info"/>
         <dropColumn columnName="national_competent_authority"
-                    tableName="pis_tpp_info"/>
+                    tableName="tpp_info"/>
 
         <dropNotNullConstraint columnName="redirect_uri"
-                               tableName="pis_tpp_info"/>
+                               tableName="tpp_info"/>
         <dropNotNullConstraint columnName="nok_redirect_uri"
-                               tableName="pis_tpp_info"/>
+                               tableName="tpp_info"/>
 
-        <addColumn tableName="pis_tpp_info">
+        <addColumn tableName="tpp_info">
             <column name="authority_id" type="VARCHAR">
                 <constraints nullable="false"/>
             </column>
@@ -61,7 +64,7 @@
             </column>
         </addColumn>
 
-        <createTable tableName="pis_tpp_info_role">
+        <createTable tableName="tpp_info_role">
             <column name="tpp_info_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>

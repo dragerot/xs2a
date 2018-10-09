@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package de.adorsys.aspsp.xs2a.domain.pis;
+package de.adorsys.psd2.consent.server.domain;
 
-public enum PisTppRole {
+public enum TppRole {
     PISP,
     AISP,
     PIISP,
