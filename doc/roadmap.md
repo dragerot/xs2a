@@ -20,7 +20,7 @@
 ## version 1.10 (Planned date: 26.10.2018) 
 - version 2.0 of SPI-API
 - SCA methods, make extandable list of authorisation methods
-- Embadable CMS
+- Embadable Consent Management System
 - Remove delayd payments,  use single payments
 - Fix nullpointerexception while invoking /v1/accounts/ #
 - Get account details of the list of accessible accounts. Embedded approach.
