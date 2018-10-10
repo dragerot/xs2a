@@ -18,7 +18,7 @@ package de.adorsys.aspsp.xs2a.web.aspect;
 
 import de.adorsys.aspsp.xs2a.domain.Links;
 import de.adorsys.aspsp.xs2a.domain.ResponseObject;
-import de.adorsys.aspsp.xs2a.domain.consent.Xsa2CreatePisConsentAuthorisationResponse;
+import de.adorsys.aspsp.xs2a.domain.consent.Xs2aCreatePisConsentCancellationAuthorisationResponse;
 import de.adorsys.aspsp.xs2a.domain.pis.PaymentType;
 import de.adorsys.aspsp.xs2a.service.message.MessageService;
 import de.adorsys.aspsp.xs2a.service.profile.AspspProfileServiceWrapper;
@@ -31,15 +31,15 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Aspect
 @Component
-public class CreatePisAuthorizationAspect extends AbstractLinkAspect<PaymentController> {
-    public CreatePisAuthorizationAspect(AspspProfileServiceWrapper aspspProfileService, MessageService messageService) {
+public class CreatePisAuthorisationCancellationAspect extends AbstractLinkAspect<PaymentController> {
+    public CreatePisAuthorisationCancellationAspect(AspspProfileServiceWrapper aspspProfileService, MessageService messageService) {
         super(aspspProfileService, messageService);
     }
 
-    @AfterReturning(pointcut = "execution(* de.adorsys.aspsp.xs2a.service.ConsentService.createPisConsentAuthorization(..)) && args(paymentId, paymentType)", returning = "result", argNames = "result,paymentId,paymentType")
-    public ResponseObject<Xsa2CreatePisConsentAuthorisationResponse> createPisConsentAuthorizationAspect(ResponseObject<Xsa2CreatePisConsentAuthorisationResponse> result, String paymentId, PaymentType paymentType) {
+    @AfterReturning(pointcut = "execution(* de.adorsys.aspsp.xs2a.service.ConsentService.createPisConsentCancellationAuthorization(..)) && args(paymentId, paymentType)", returning = "result", argNames = "result,paymentId,paymentType")
+    public ResponseObject<Xs2aCreatePisConsentCancellationAuthorisationResponse> createPisConsentAuthorizationAspect(ResponseObject<Xs2aCreatePisConsentCancellationAuthorisationResponse> result, String paymentId, PaymentType paymentType) {
         if (!result.hasError()) {
-            Xsa2CreatePisConsentAuthorisationResponse body = result.getBody();
+            Xs2aCreatePisConsentCancellationAuthorisationResponse body = result.getBody();
             body.setLinks(buildLink(paymentType.getValue(), paymentId, body.getAuthorizationId()));
             return result;
         }
@@ -48,7 +48,7 @@ public class CreatePisAuthorizationAspect extends AbstractLinkAspect<PaymentCont
 
     private Links buildLink(String paymentService, String paymentId, String authorizationId) {
         Links links = new Links();
-        links.setStartAuthorisationWithPsuAuthentication(buildPath("/v1/{paymentService}/{paymentId}/authorisations/{authorizationId}", paymentService, paymentId, authorizationId));
+        links.setStartAuthorisationWithPsuAuthentication(buildPath("/v1/{paymentService}/{paymentId}/cancellation-authorisations/{authorizationId}", paymentService, paymentId, authorizationId));
         return links;
     }
 }
