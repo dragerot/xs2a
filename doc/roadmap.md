@@ -14,16 +14,20 @@
     - Account information service. Dedicated accounts.
 - Get list of reachable accounts. Embedded approach.
 - Get balances for a given account. Embedded approach.
-- Migration to package and Maven GroupId "de.adorsys.psd2": XS2A and Consent Management
+- Migration to package and Maven GroupId "de.adorsys.psd2": Consent Management
 - Extend cms-client to work with AspspConsentData endpoints
 
-## version 1.10 (Planned date: 26.10.2018)
+## version 1.10 (Planned date: 26.10.2018) 
+- version 2.0 of SPI-API
+- SCA methods, make extandable list of authorisation methods
+- Embadable CMS
+- Remove delayd payments,  use single payments
+- Fix nullpointerexception while invoking /v1/accounts/ #
 - Get account details of the list of accessible accounts. Embedded approach.
-- Get a confirmation on the availability of funds. Embedded approach.
 - Support encryption of aspspConsentData.
-- PIS Support a matrix payment-product/payment-type in aspsp-profile and corresponding services.
 - Get list of consents by psu-id in Consent Management System.
 - PIIS Consent. Post, Get, Put. Read aspspConsentData. 
-- Migration to package and Maven GroupId "de.adorsys.psd2": aspsp-mockserver
-- Fix nullpointerexception while invoking /v1/accounts/
+- Migration to package and Maven GroupId "de.adorsys.psd2": XS2A
+- PIS Support a matrix payment-product/payment-type in aspsp-profile and corresponding services.
+
 
