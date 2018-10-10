@@ -152,39 +152,28 @@ public class PaymentService {
     /**
      * Cancels payment
      *
-     * @param paymentId Payment identifier
+     * @param paymentId                  Payment identifier
+     * @param startAuthorisationRequired boolean indicator whether authorisation of payment cancellation is required
      * @return SpiCancelPayment containing information about the requirement of aspsp for start authorisation
      */
-    public Optional<SpiCancelPayment> cancelPayment(String paymentId) {
-        return Optional.ofNullable(paymentId)
-                   .map(paymentRepository::findOne)
-                   .map(p -> {
-                       SpiTransactionStatus status = SpiTransactionStatus.CANC;
-                       p.setPaymentStatus(status);
-                       paymentRepository.save(p);
-                       return new SpiCancelPayment(status, false);
-                   });
-    }
+    public Optional<SpiCancelPayment> cancelPayment(String paymentId, boolean startAuthorisationRequired) {
+        SpiTransactionStatus transactionStatus = startAuthorisationRequired
+                                                     ? SpiTransactionStatus.ACTC
+                                                     : SpiTransactionStatus.CANC;
 
-    /**
-     * Initiates payment cancellation process
-     *
-     * @param paymentId Payment identifier
-     * @return SpiCancelPayment containing information about the requirement of aspsp for start authorisation
-     */
-    public Optional<SpiCancelPayment> initiatePaymentCancellation(String paymentId) {
         return Optional.ofNullable(paymentId)
                    .map(paymentRepository::findOne)
-                   .map(p -> {
-                       SpiTransactionStatus status = SpiTransactionStatus.ACTC;
-                       p.setPaymentStatus(status);
-                       paymentRepository.save(p);
-                       return new SpiCancelPayment(status, true);
-                   });
+                   .map(p -> updateAspsPaymentStatus(p, transactionStatus))
+                   .map(p -> new SpiCancelPayment(p.getPaymentStatus(), startAuthorisationRequired));
     }
 
     public List<AspspPayment> getAllPayments() {
         return paymentRepository.findAll();
+    }
+
+    private AspspPayment updateAspsPaymentStatus(AspspPayment payment, SpiTransactionStatus transactionStatus) {
+        payment.setPaymentStatus(transactionStatus);
+        return paymentRepository.save(payment);
     }
 
     private boolean areFundsSufficient(SpiAccountReference reference, BigDecimal amount) {

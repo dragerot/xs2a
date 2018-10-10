@@ -60,8 +60,6 @@ public class PaymentServiceTest {
 
     @Before
     public void setUp() {
-        when(paymentRepository.save(any(AspspPayment.class)))
-            .thenReturn(getAspspPayment());
         when(paymentRepository.exists(PAYMENT_ID))
             .thenReturn(true);
         when(paymentRepository.exists(WRONG_PAYMENT_ID))
@@ -133,24 +131,28 @@ public class PaymentServiceTest {
     }
 
     @Test
-    public void cancelPayment_Success() {
+    public void cancelPayment_WithoutAuthorisation_Success() {
+        when(paymentRepository.save(any(AspspPayment.class))).thenReturn(getAspspPayment(SpiTransactionStatus.CANC));
+
         //Given
         Optional<SpiCancelPayment> given = buildSpiCancelPayment(SpiTransactionStatus.CANC, false);
 
         //When
-        Optional<SpiCancelPayment> actual = paymentService.cancelPayment(PAYMENT_ID);
+        Optional<SpiCancelPayment> actual = paymentService.cancelPayment(PAYMENT_ID, false);
 
         //Then
         assertThat(given).isEqualTo(actual);
     }
 
     @Test
-    public void initiatePaymentCancellation_Success() {
+    public void cancelPayment_WithAuthorisation_Success() {
+        when(paymentRepository.save(any(AspspPayment.class))).thenReturn(getAspspPayment(SpiTransactionStatus.ACTC));
+
         //Given
         Optional<SpiCancelPayment> given = buildSpiCancelPayment(SpiTransactionStatus.ACTC, true);
 
         //When
-        Optional<SpiCancelPayment> actual = paymentService.initiatePaymentCancellation(PAYMENT_ID);
+        Optional<SpiCancelPayment> actual = paymentService.cancelPayment(PAYMENT_ID, true);
 
         //Then
         assertThat(given).isEqualTo(actual);
@@ -174,7 +176,7 @@ public class PaymentServiceTest {
         return payment;
     }
 
-    private AspspPayment getAspspPayment() {
+    private AspspPayment getAspspPayment(SpiTransactionStatus transactionStatus) {
         AspspPayment payment = new AspspPayment();
         SpiAmount amount = new SpiAmount(Currency.getInstance("EUR"), new BigDecimal((long) 50));
         payment.setInstructedAmount(amount);
@@ -184,7 +186,12 @@ public class PaymentServiceTest {
         payment.setCreditorAgent("sdasd");
         payment.setCreditorAccount(getReference());
         payment.setRemittanceInformationUnstructured("Ref Number Merchant");
+        payment.setPaymentStatus(transactionStatus);
         return payment;
+    }
+
+    private AspspPayment getAspspPayment() {
+        return getAspspPayment(null);
     }
 
     private List<SpiAccountDetails> getAccountDetails() {

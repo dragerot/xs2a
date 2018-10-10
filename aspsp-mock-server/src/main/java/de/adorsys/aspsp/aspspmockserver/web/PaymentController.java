@@ -112,7 +112,7 @@ public class PaymentController {
         @ApiResponse(code = 204, message = "Payment Not Found")})
     @DeleteMapping("/{payment-id}")
     public ResponseEntity<SpiCancelPayment> cancelPayment(@PathVariable("payment-id") String paymentId) {
-        return paymentService.cancelPayment(paymentId)
+        return paymentService.cancelPayment(paymentId, false)
                    .map(p -> new ResponseEntity<>(p, ACCEPTED))
                    .orElseGet(ResponseEntity.badRequest()::build);
     }
@@ -123,7 +123,7 @@ public class PaymentController {
         @ApiResponse(code = 204, message = "Payment Not Found")})
     @PostMapping("/{payment-id}/cancel")
     public ResponseEntity<SpiCancelPayment> initiatePaymentCancellation(@PathVariable("payment-id") String paymentId) {
-        return paymentService.initiatePaymentCancellation(paymentId)
+        return paymentService.cancelPayment(paymentId, true)
                    .map(p -> new ResponseEntity<>(p, ACCEPTED))
                    .orElseGet(ResponseEntity.badRequest()::build);
     }
