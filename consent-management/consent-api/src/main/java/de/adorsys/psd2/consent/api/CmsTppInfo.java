@@ -29,7 +29,7 @@ public class CmsTppInfo {
     @ApiModelProperty(value = "Tpp name", required = true, example = "Tpp company")
     private String tppName;
 
-    @ApiModelProperty(value = "Tpp roles", required = true)
+    @ApiModelProperty(value = "Tpp roles", required = true, dataType = "array")
     private List<CmsTppRole> tppRoles;
 
     @ApiModelProperty(value = "National competent authority id", required = true, example = "authority id")

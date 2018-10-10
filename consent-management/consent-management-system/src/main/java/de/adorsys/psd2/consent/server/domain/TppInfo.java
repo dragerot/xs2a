@@ -47,7 +47,7 @@ public class TppInfo {
     @CollectionTable(name = "tpp_info_role", joinColumns = @JoinColumn(name = "tpp_info_id"))
     @Column(name = "tpp_role")
     @Enumerated(value = EnumType.STRING)
-    @ApiModelProperty(value = "Tpp role", required = true)
+    @ApiModelProperty(value = "Tpp roles", required = true, dataType = "array")
     private List<TppRole> tppRoles;
 
     @Column(name = "authority_id", nullable = false)
