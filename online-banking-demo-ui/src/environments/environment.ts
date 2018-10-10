@@ -15,7 +15,7 @@ export function saveServerUrls(urls) {
 
 // Add here your keycloak setup infos
 const keycloakConfig: KeycloakConfig = {
-  url: 'http://localhost:8081/auth/',
+  url: '/keycloak/auth/',
   realm: 'xs2a',
   clientId: 'aspsp-mock'
 };
