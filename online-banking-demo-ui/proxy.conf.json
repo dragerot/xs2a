@@ -5,12 +5,6 @@
     "pathRewrite": {"^/xs2a" : ""},
     "changeOrigin": true
   },
-  "/keycloak/*": {
-    "target": "http://localhost:8081",
-    "secure": false,
-    "pathRewrite": {"^/keycloak" : ""},
-    "changeOrigin": true
-  },
   "/mockserver/*": {
     "target": "http://localhost:28080",
     "secure": false,
