@@ -23,7 +23,6 @@
 - Embadable Consent Management System
 - Remove delayd payments,  use single payments
 - Fix nullpointerexception while invoking /v1/accounts/ ( https://github.com/adorsys/xs2a/issues/16 )
-- Get account details of the list of accessible accounts. Embedded approach.
 - Support encryption of aspspConsentData.
 - Get list of consents by psu-id in Consent Management System.
 - PIIS Consent. Post, Get, Put. Read aspspConsentData. 
