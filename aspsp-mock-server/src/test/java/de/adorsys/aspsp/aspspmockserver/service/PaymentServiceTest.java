@@ -21,6 +21,7 @@ import de.adorsys.aspsp.aspspmockserver.domain.spi.account.SpiAccountDetails;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.account.SpiAccountReference;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.account.SpiBalanceType;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiAmount;
+import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiTransactionStatus;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.AspspPayment;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiCancelPayment;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiSinglePayment;
@@ -134,7 +135,7 @@ public class PaymentServiceTest {
     @Test
     public void cancelPayment_Success() {
         //Given
-        Optional<SpiCancelPayment> given = buildSpiCancelPayment(false);
+        Optional<SpiCancelPayment> given = buildSpiCancelPayment(SpiTransactionStatus.CANC, false);
 
         //When
         Optional<SpiCancelPayment> actual = paymentService.cancelPayment(PAYMENT_ID);
@@ -146,7 +147,7 @@ public class PaymentServiceTest {
     @Test
     public void initiatePaymentCancellation_Success() {
         //Given
-        Optional<SpiCancelPayment> given = buildSpiCancelPayment(true);
+        Optional<SpiCancelPayment> given = buildSpiCancelPayment(SpiTransactionStatus.ACTC, true);
 
         //When
         Optional<SpiCancelPayment> actual = paymentService.initiatePaymentCancellation(PAYMENT_ID);
@@ -155,8 +156,8 @@ public class PaymentServiceTest {
         assertThat(given).isEqualTo(actual);
     }
 
-    private Optional<SpiCancelPayment> buildSpiCancelPayment(boolean startAuthorisationRequired) {
-        return Optional.of(new SpiCancelPayment(startAuthorisationRequired));
+    private Optional<SpiCancelPayment> buildSpiCancelPayment(SpiTransactionStatus transactionStatus, boolean startAuthorisationRequired) {
+        return Optional.of(new SpiCancelPayment(transactionStatus, startAuthorisationRequired));
     }
 
     private SpiSinglePayment getSpiSinglePayment(long amountToTransfer) {

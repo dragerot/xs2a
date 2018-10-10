@@ -16,9 +16,11 @@
 
 package de.adorsys.aspsp.xs2a.spi.domain.payment;
 
+import de.adorsys.aspsp.xs2a.spi.domain.common.SpiTransactionStatus;
 import lombok.Value;
 
 @Value
 public class SpiCancelPayment {
+    private SpiTransactionStatus transactionStatus;
     private boolean startAuthorisationRequired;
 }

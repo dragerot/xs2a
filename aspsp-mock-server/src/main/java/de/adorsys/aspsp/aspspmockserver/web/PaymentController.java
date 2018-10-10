@@ -125,6 +125,6 @@ public class PaymentController {
     public ResponseEntity<SpiCancelPayment> initiatePaymentCancellation(@PathVariable("payment-id") String paymentId) {
         return paymentService.initiatePaymentCancellation(paymentId)
                    .map(p -> new ResponseEntity<>(p, ACCEPTED))
-                   .orElse(ResponseEntity.badRequest().build());
+                   .orElseGet(ResponseEntity.badRequest()::build);
     }
 }

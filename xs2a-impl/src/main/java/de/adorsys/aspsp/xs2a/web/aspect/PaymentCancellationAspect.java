@@ -16,7 +16,6 @@
 
 package de.adorsys.aspsp.xs2a.web.aspect;
 
-import de.adorsys.aspsp.xs2a.component.JsonConverter;
 import de.adorsys.aspsp.xs2a.domain.Links;
 import de.adorsys.aspsp.xs2a.domain.ResponseObject;
 import de.adorsys.aspsp.xs2a.domain.pis.CancelPaymentResponse;
@@ -31,8 +30,8 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 public class PaymentCancellationAspect extends AbstractLinkAspect<PaymentController> {
-    public PaymentCancellationAspect(int maxNumberOfCharInTransactionJson, AspspProfileServiceWrapper aspspProfileService, JsonConverter jsonConverter, MessageService messageService) {
-        super(maxNumberOfCharInTransactionJson, aspspProfileService, jsonConverter, messageService);
+    public PaymentCancellationAspect(AspspProfileServiceWrapper aspspProfileService, MessageService messageService) {
+        super(aspspProfileService, messageService);
     }
 
     @AfterReturning(pointcut = "execution(* de.adorsys.aspsp.xs2a.service.PaymentService.cancelPayment(..)) && args(paymentType,paymentId)", returning = "result", argNames = "result,paymentType,paymentId")

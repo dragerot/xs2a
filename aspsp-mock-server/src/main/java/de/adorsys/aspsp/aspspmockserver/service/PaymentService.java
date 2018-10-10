@@ -159,9 +159,10 @@ public class PaymentService {
         return Optional.ofNullable(paymentId)
                    .map(paymentRepository::findOne)
                    .map(p -> {
-                       p.setPaymentStatus(SpiTransactionStatus.CANC);
+                       SpiTransactionStatus status = SpiTransactionStatus.CANC;
+                       p.setPaymentStatus(status);
                        paymentRepository.save(p);
-                       return new SpiCancelPayment(false);
+                       return new SpiCancelPayment(status, false);
                    });
     }
 
@@ -175,9 +176,10 @@ public class PaymentService {
         return Optional.ofNullable(paymentId)
                    .map(paymentRepository::findOne)
                    .map(p -> {
-                       p.setPaymentStatus(SpiTransactionStatus.ACTC);
+                       SpiTransactionStatus status = SpiTransactionStatus.ACTC;
+                       p.setPaymentStatus(status);
                        paymentRepository.save(p);
-                       return new SpiCancelPayment(true);
+                       return new SpiCancelPayment(status, true);
                    });
     }
 

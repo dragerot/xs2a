@@ -280,7 +280,7 @@ public class PaymentServiceTest {
 
     @Test
     public void cancelPayment_Success() {
-        when(paymentSpi.cancelPayment(eq(PAYMENT_ID), any())).thenReturn(getSpiCancelPaymentResponse(false));
+        when(paymentSpi.cancelPayment(eq(PAYMENT_ID), any())).thenReturn(getSpiCancelPaymentResponse(SpiTransactionStatus.CANC, false));
         when(paymentMapper.mapToCancelPaymentResponse(any())).thenReturn(getCancelPaymentResponse(false));
 
         //When
@@ -397,9 +397,9 @@ public class PaymentServiceTest {
         return requestParameters;
     }
 
-    private SpiResponse<SpiCancelPayment> getSpiCancelPaymentResponse(boolean authorisationRequired) {
+    private SpiResponse<SpiCancelPayment> getSpiCancelPaymentResponse(SpiTransactionStatus transactionStatus, boolean authorisationRequired) {
         return SpiResponse.<SpiCancelPayment>builder()
-                   .payload(new SpiCancelPayment(authorisationRequired))
+                   .payload(new SpiCancelPayment(transactionStatus, authorisationRequired))
                    .success();
     }
 

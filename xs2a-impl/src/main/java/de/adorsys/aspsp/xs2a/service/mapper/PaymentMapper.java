@@ -248,10 +248,7 @@ public class PaymentMapper { // NOPMD TODO fix large amount of methods in Paymen
                    .map(cancelPayment -> {
                        CancelPaymentResponse response = new CancelPaymentResponse();
                        response.setStartAuthorisationRequired(cancelPayment.isStartAuthorisationRequired());
-                       Xs2aTransactionStatus transactionStatus = cancelPayment.isStartAuthorisationRequired()
-                                                                     ? Xs2aTransactionStatus.ACTC
-                                                                     : Xs2aTransactionStatus.CANC;
-                       response.setTransactionStatus(transactionStatus);
+                       response.setTransactionStatus(mapToTransactionStatus(spiCancelPayment.getTransactionStatus()));
                        return response;
                    }).orElse(null);
     }

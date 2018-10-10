@@ -16,9 +16,11 @@
 
 package de.adorsys.aspsp.aspspmockserver.domain.spi.payment;
 
+import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiTransactionStatus;
 import lombok.Value;
 
 @Value
 public class SpiCancelPayment {
+    private SpiTransactionStatus transactionStatus;
     private boolean startAuthorisationRequired;
 }
