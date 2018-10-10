@@ -194,9 +194,8 @@ public class PaymentService {
                    .map(p -> ResponseObject.<CancelPaymentResponse>builder()
                                  .body(p)
                                  .build())
-                   .orElseGet(() -> ResponseObject.<CancelPaymentResponse>builder()
-                                        .fail(new MessageError(RESOURCE_UNKNOWN_403))
-                                        .build());
+                   .orElseGet(ResponseObject.<CancelPaymentResponse>builder()
+                                  .fail(new MessageError(RESOURCE_UNKNOWN_403))::build);
     }
 
     private ResponseObject<List<PaymentInitialisationResponse>> processValidPayments(TppInfo tppInfo, String paymentProduct, List<PaymentInitialisationResponse> invalidPayments, BulkPayment bulkPayment) {

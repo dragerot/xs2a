@@ -111,8 +111,8 @@ public class PaymentController implements PaymentApi {
     public ResponseEntity cancelPayment(String paymentService, String paymentId, UUID xRequestID, String digest, String signature, byte[] tpPSignatureCertificate, String psUIPAddress, Object psUIPPort, String psUAccept, String psUAcceptCharset, String psUAcceptEncoding, String psUAcceptLanguage, String psUUserAgent, String psUHttpMethod, UUID psUDeviceID, String psUGeoLocation) {
         ResponseObject<CancelPaymentResponse> serviceResponse = PaymentType.getByValue(paymentService)
                                                                     .map(type -> xs2aPaymentService.cancelPayment(type, paymentId))
-                                                                    .orElseGet(() -> ResponseObject.<CancelPaymentResponse>builder()
-                                                                                         .fail(new MessageError(FORMAT_ERROR)).build());
+                                                                    .orElseGet(ResponseObject.<CancelPaymentResponse>builder()
+                                                                                   .fail(new MessageError(FORMAT_ERROR))::build);
 
         if (serviceResponse.hasError()) {
             return responseMapper.ok(serviceResponse);
