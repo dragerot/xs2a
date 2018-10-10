@@ -10,7 +10,8 @@ RUN chgrp -R root /var/cache/nginx && \
     find /var/cache/nginx -type d -exec chmod 775 {} \; && \
     find /var/cache/nginx -type f -exec chmod 664 {} \; && \
     chmod 775 /var/run && \
-    chmod 775 /opt/entry.sh
+    chmod 775 /opt/entry.sh && \
+    chmod -R 775 /etc/nginx/conf.d
 
 EXPOSE 4200
 
