@@ -243,6 +243,19 @@ public class PaymentMapper { // NOPMD TODO fix large amount of methods in Paymen
         return null;
     }
 
+    public CancelPaymentResponse mapToCancelPaymentResponse(SpiCancelPayment spiCancelPayment) {
+        return Optional.ofNullable(spiCancelPayment)
+                   .map(cancelPayment -> {
+                       CancelPaymentResponse response = new CancelPaymentResponse();
+                       response.setStartAuthorisationRequired(cancelPayment.isStartAuthorisationRequired());
+                       Xs2aTransactionStatus transactionStatus = cancelPayment.isStartAuthorisationRequired()
+                                                                     ? Xs2aTransactionStatus.ACTC
+                                                                     : Xs2aTransactionStatus.CANC;
+                       response.setTransactionStatus(transactionStatus);
+                       return response;
+                   }).orElse(null);
+    }
+
     private Xs2aAccountReference getDebtorAccountForBulkPayment(List<SpiSinglePayment> spiSinglePayments) {
         return spiXs2aAccountMapper.mapToXs2aAccountReference(spiSinglePayments.get(0).getDebtorAccount());
     }

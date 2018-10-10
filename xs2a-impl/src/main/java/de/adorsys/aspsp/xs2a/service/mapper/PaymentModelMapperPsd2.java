@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.adorsys.aspsp.xs2a.domain.Xs2aChallengeData;
 import de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus;
 import de.adorsys.aspsp.xs2a.domain.consent.Xs2aAuthenticationObject;
+import de.adorsys.aspsp.xs2a.domain.consent.Xs2aChosenScaMethod;
+import de.adorsys.aspsp.xs2a.domain.consent.Xs2aChosenScaMethod.ExtendedChosenScaMethod;
 import de.adorsys.aspsp.xs2a.domain.pis.*;
 import de.adorsys.psd2.model.*;
 import lombok.RequiredArgsConstructor;
@@ -151,6 +153,16 @@ public class PaymentModelMapperPsd2 {
         return parameters;
     }
 
+    public PaymentInitiationCancelResponse200202 mapToPaymentInitiationCancelResponse(CancelPaymentResponse cancelPaymentResponse) {
+        PaymentInitiationCancelResponse200202 response = new PaymentInitiationCancelResponse200202();
+        response.setTransactionStatus(mapToTransactionStatus12(cancelPaymentResponse.getTransactionStatus()));
+        response.setScaMethods(mapToScaMethods(cancelPaymentResponse.getScaMethods()));
+        response.setChosenScaMethod(mapToChosenScaMethod(cancelPaymentResponse.getChosenScaMethod()));
+        response.setChallengeData(mapToChallengeData(cancelPaymentResponse.getChallengeData()));
+        response._links(mapper.convertValue(cancelPaymentResponse.getLinks(), Map.class));
+        return response;
+    }
+
     private ScaMethods mapToScaMethods(Xs2aAuthenticationObject... authenticationObjects) {
         return Optional.ofNullable(authenticationObjects)
                    .map(objects -> {
@@ -174,6 +186,17 @@ public class PaymentModelMapperPsd2 {
                        psd2Authentication.setName(a.getName());
                        psd2Authentication.setExplanation(a.getExplanation());
                        return psd2Authentication;
+                   })
+                   .orElse(null);
+    }
+
+    private ChosenScaMethod mapToChosenScaMethod(Xs2aChosenScaMethod xs2aChosenScaMethod) {
+        return Optional.ofNullable(xs2aChosenScaMethod)
+                   .map(method -> {
+                       ExtendedChosenScaMethod scaMethod = method.new ExtendedChosenScaMethod();
+                       scaMethod.setAuthenticationMethodId(method.getAuthenticationMethodId());
+                       scaMethod.setAuthenticationType(method.getAuthenticationType());
+                       return scaMethod;
                    })
                    .orElse(null);
     }

@@ -19,14 +19,15 @@ package de.adorsys.aspsp.xs2a.spi.impl;
 import de.adorsys.aspsp.xs2a.component.JsonConverter;
 import de.adorsys.aspsp.xs2a.domain.security.AspspAuthorisationData;
 import de.adorsys.aspsp.xs2a.service.mapper.consent.SpiCmsPisMapper;
+import de.adorsys.aspsp.xs2a.service.profile.AspspProfileServiceWrapper;
 import de.adorsys.aspsp.xs2a.spi.config.rest.AspspRemoteUrls;
 import de.adorsys.aspsp.xs2a.spi.domain.SpiResponse;
 import de.adorsys.aspsp.xs2a.spi.domain.authorisation.SpiAuthorisationStatus;
 import de.adorsys.aspsp.xs2a.spi.domain.authorisation.SpiScaConfirmation;
+import de.adorsys.aspsp.xs2a.spi.domain.authorisation.SpiScaMethod;
 import de.adorsys.aspsp.xs2a.spi.domain.common.SpiTransactionStatus;
 import de.adorsys.aspsp.xs2a.spi.domain.consent.AspspConsentData;
 import de.adorsys.aspsp.xs2a.spi.domain.payment.*;
-import de.adorsys.aspsp.xs2a.spi.domain.authorisation.SpiScaMethod;
 import de.adorsys.aspsp.xs2a.spi.impl.service.KeycloakInvokerService;
 import de.adorsys.aspsp.xs2a.spi.mapper.SpiPaymentMapper;
 import de.adorsys.aspsp.xs2a.spi.service.PaymentSpi;
@@ -60,6 +61,7 @@ public class PaymentSpiImpl implements PaymentSpi {
     private final JsonConverter jsonConverter;
     private final SpiPaymentMapper spiPaymentMapper;
     private final SpiCmsPisMapper spiCmsPisMapper;
+    private final AspspProfileServiceWrapper aspspProfileServiceWrapper;
 
     /**
      * For detailed description see {@link PaymentSpi#createPaymentInitiation(SpiSinglePayment, AspspConsentData)}
@@ -261,7 +263,13 @@ public class PaymentSpiImpl implements PaymentSpi {
 
     @Override
     public SpiResponse<SpiCancelPayment> cancelPayment(String paymentId, AspspConsentData aspspConsentData) {
-        ResponseEntity<SpiCancelPayment> responseEntity = aspspRestTemplate.exchange(aspspRemoteUrls.cancelPayment(), HttpMethod.DELETE, null, SpiCancelPayment.class, paymentId);
+        ResponseEntity<SpiCancelPayment> responseEntity;
+        if (aspspProfileServiceWrapper.isPaymentCancellationAuthorizationMandated()) {
+            responseEntity = aspspRestTemplate.exchange(aspspRemoteUrls.initiatePaymentCancellation(), HttpMethod.POST, null, SpiCancelPayment.class, paymentId);
+        } else {
+            responseEntity = aspspRestTemplate.exchange(aspspRemoteUrls.cancelPayment(), HttpMethod.DELETE, null, SpiCancelPayment.class, paymentId);
+        }
+
         return new SpiResponse<>(responseEntity.getBody(), aspspConsentData);
     }
 

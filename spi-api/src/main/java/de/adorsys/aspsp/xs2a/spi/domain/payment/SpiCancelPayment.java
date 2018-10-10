@@ -20,5 +20,5 @@ import lombok.Value;
 
 @Value
 public class SpiCancelPayment {
-    private boolean startAuthorisationRequired = true;
+    private boolean startAuthorisationRequired;
 }

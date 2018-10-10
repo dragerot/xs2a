@@ -31,6 +31,7 @@ import de.adorsys.aspsp.xs2a.service.payment.ScaPaymentService;
 import de.adorsys.aspsp.xs2a.spi.domain.SpiResponse;
 import de.adorsys.aspsp.xs2a.spi.domain.common.SpiTransactionStatus;
 import de.adorsys.aspsp.xs2a.spi.domain.consent.AspspConsentData;
+import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiCancelPayment;
 import de.adorsys.aspsp.xs2a.spi.service.PaymentSpi;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -174,6 +175,26 @@ public class PaymentService {
                                     .body(p)
                                     .build())
                    .orElseGet(() -> ResponseObject.builder()
+                                        .fail(new MessageError(RESOURCE_UNKNOWN_403))
+                                        .build());
+    }
+
+    /**
+     * Cancels payment by its ASPSP identifier and payment type
+     *
+     * @param paymentType type of payment (payments, bulk-payments, periodic-payments)
+     * @param paymentId   ASPSP identifier of the payment
+     * @return Response containing information about cancelled payment or corresponding error
+     */
+    public ResponseObject<CancelPaymentResponse> cancelPayment(PaymentType paymentType, String paymentId) {
+        SpiResponse<SpiCancelPayment> spiResponse = paymentSpi.cancelPayment(paymentId, pisConsentDataService.getAspspConsentDataByPaymentId(paymentId));
+        CancelPaymentResponse cancelPaymentResponse = paymentMapper.mapToCancelPaymentResponse(spiResponse.getPayload());
+
+        return Optional.ofNullable(cancelPaymentResponse)
+                   .map(p -> ResponseObject.<CancelPaymentResponse>builder()
+                                 .body(p)
+                                 .build())
+                   .orElseGet(() -> ResponseObject.<CancelPaymentResponse>builder()
                                         .fail(new MessageError(RESOURCE_UNKNOWN_403))
                                         .build());
     }

@@ -150,14 +150,35 @@ public class PaymentService {
     }
 
     /**
-     * Cancel payment
+     * Cancels payment
      *
      * @param paymentId Payment identifier
      * @return SpiCancelPayment containing information about the requirement of aspsp for start authorisation
      */
     public Optional<SpiCancelPayment> cancelPayment(String paymentId) {
-        return Optional.ofNullable(paymentRepository.findOne(paymentId))
-                   .map(p -> new SpiCancelPayment());
+        return Optional.ofNullable(paymentId)
+                   .map(paymentRepository::findOne)
+                   .map(p -> {
+                       p.setPaymentStatus(SpiTransactionStatus.CANC);
+                       paymentRepository.save(p);
+                       return new SpiCancelPayment(false);
+                   });
+    }
+
+    /**
+     * Initiates payment cancellation process
+     *
+     * @param paymentId Payment identifier
+     * @return SpiCancelPayment containing information about the requirement of aspsp for start authorisation
+     */
+    public Optional<SpiCancelPayment> initiatePaymentCancellation(String paymentId) {
+        return Optional.ofNullable(paymentId)
+                   .map(paymentRepository::findOne)
+                   .map(p -> {
+                       p.setPaymentStatus(SpiTransactionStatus.ACTC);
+                       paymentRepository.save(p);
+                       return new SpiCancelPayment(true);
+                   });
     }
 
     public List<AspspPayment> getAllPayments() {

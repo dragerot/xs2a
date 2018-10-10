@@ -28,6 +28,7 @@ import de.adorsys.aspsp.xs2a.spi.domain.SpiResponse;
 import de.adorsys.aspsp.xs2a.spi.domain.account.SpiAccountReference;
 import de.adorsys.aspsp.xs2a.spi.domain.common.SpiTransactionStatus;
 import de.adorsys.aspsp.xs2a.spi.domain.consent.AspspConsentData;
+import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiCancelPayment;
 import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPaymentType;
 import de.adorsys.aspsp.xs2a.spi.service.PaymentSpi;
 import org.junit.Before;
@@ -50,8 +51,7 @@ import static de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus.RCVD;
 import static de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus.RJCT;
 import static de.adorsys.aspsp.xs2a.domain.pis.PaymentType.SINGLE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -278,6 +278,34 @@ public class PaymentServiceTest {
         assertThat(response.getError().getTppMessage().getMessageErrorCode()).isEqualTo(RESOURCE_UNKNOWN_403);
     }
 
+    @Test
+    public void cancelPayment_Success() {
+        when(paymentSpi.cancelPayment(eq(PAYMENT_ID), any())).thenReturn(getSpiCancelPaymentResponse(false));
+        when(paymentMapper.mapToCancelPaymentResponse(any())).thenReturn(getCancelPaymentResponse(false));
+
+        //When
+        ResponseObject<CancelPaymentResponse> response = paymentService.cancelPayment(SINGLE, PAYMENT_ID);
+
+        //Than
+        assertThat(response.hasError()).isFalse();
+        assertThat(response.getError()).isNull();
+        assertThat(response.getBody()).isNotNull();
+    }
+
+    @Test
+    public void cancelPayment_Failure_wrong_id() {
+        when(paymentSpi.cancelPayment(eq(WRONG_PAYMENT_ID), any())).thenReturn(SpiResponse.<SpiCancelPayment>builder().fail());
+        when(paymentMapper.mapToCancelPaymentResponse(any())).thenReturn(getCancelPaymentResponse(false));
+
+        //When
+        ResponseObject<CancelPaymentResponse> response = paymentService.cancelPayment(SINGLE, WRONG_PAYMENT_ID);
+
+        //Than
+        assertThat(response.hasError()).isFalse();
+        assertThat(response.getError()).isNull();
+        assertThat(response.getBody()).isNotNull();
+    }
+
     //Test additional methods
     private PaymentInitialisationResponse getPaymentResponse(Xs2aTransactionStatus status, MessageErrorCode errorCode) {
         PaymentInitialisationResponse paymentInitialisationResponse = new PaymentInitialisationResponse();
@@ -367,5 +395,17 @@ public class PaymentServiceTest {
         PaymentRequestParameters requestParameters = new PaymentRequestParameters();
 
         return requestParameters;
+    }
+
+    private SpiResponse<SpiCancelPayment> getSpiCancelPaymentResponse(boolean authorisationRequired) {
+        return SpiResponse.<SpiCancelPayment>builder()
+                   .payload(new SpiCancelPayment(authorisationRequired))
+                   .success();
+    }
+
+    private CancelPaymentResponse getCancelPaymentResponse(boolean authorisationRequired) {
+        CancelPaymentResponse cancelPaymentResponse = new CancelPaymentResponse();
+        cancelPaymentResponse.setStartAuthorisationRequired(authorisationRequired);
+        return cancelPaymentResponse;
     }
 }

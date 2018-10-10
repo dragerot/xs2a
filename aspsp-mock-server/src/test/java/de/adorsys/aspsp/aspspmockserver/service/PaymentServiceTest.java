@@ -69,7 +69,7 @@ public class PaymentServiceTest {
         when(accountService.getAccountsByIban(WRONG_IBAN)).thenReturn(null);
         when(paymentMapper.mapToAspspPayment(any(), any())).thenReturn(new AspspPayment());
         when(paymentMapper.mapToSpiSinglePayment(any(AspspPayment.class))).thenReturn(getSpiSinglePayment(50));
-        when(paymentService.cancelPayment(PAYMENT_ID)).thenReturn(buildSpiCancelPayment());
+        when(paymentRepository.findOne(any(String.class))).thenReturn(getAspspPayment());
         when(paymentRepository.findOne(PAYMENT_ID)).thenReturn(new AspspPayment());
     }
 
@@ -132,9 +132,9 @@ public class PaymentServiceTest {
     }
 
     @Test
-    public void cancelPaymentSuccess() {
+    public void cancelPayment_Success() {
         //Given
-        Optional<SpiCancelPayment> given = buildSpiCancelPayment();
+        Optional<SpiCancelPayment> given = buildSpiCancelPayment(false);
 
         //When
         Optional<SpiCancelPayment> actual = paymentService.cancelPayment(PAYMENT_ID);
@@ -143,8 +143,20 @@ public class PaymentServiceTest {
         assertThat(given).isEqualTo(actual);
     }
 
-    private Optional<SpiCancelPayment> buildSpiCancelPayment() {
-        return Optional.of(new SpiCancelPayment());
+    @Test
+    public void initiatePaymentCancellation_Success() {
+        //Given
+        Optional<SpiCancelPayment> given = buildSpiCancelPayment(true);
+
+        //When
+        Optional<SpiCancelPayment> actual = paymentService.initiatePaymentCancellation(PAYMENT_ID);
+
+        //Then
+        assertThat(given).isEqualTo(actual);
+    }
+
+    private Optional<SpiCancelPayment> buildSpiCancelPayment(boolean startAuthorisationRequired) {
+        return Optional.of(new SpiCancelPayment(startAuthorisationRequired));
     }
 
     private SpiSinglePayment getSpiSinglePayment(long amountToTransfer) {

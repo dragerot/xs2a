@@ -18,6 +18,7 @@ package de.adorsys.aspsp.xs2a.web;
 
 import de.adorsys.aspsp.xs2a.domain.ResponseObject;
 import de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus;
+import de.adorsys.aspsp.xs2a.domain.pis.CancelPaymentResponse;
 import de.adorsys.aspsp.xs2a.domain.pis.PaymentProduct;
 import de.adorsys.aspsp.xs2a.domain.pis.PaymentRequestParameters;
 import de.adorsys.aspsp.xs2a.domain.pis.PaymentType;
@@ -29,6 +30,7 @@ import de.adorsys.aspsp.xs2a.service.mapper.PaymentModelMapperPsd2;
 import de.adorsys.aspsp.xs2a.service.mapper.PaymentModelMapperXs2a;
 import de.adorsys.aspsp.xs2a.service.mapper.ResponseMapper;
 import de.adorsys.psd2.api.PaymentApi;
+import de.adorsys.psd2.model.PaymentInitiationCancelResponse200202;
 import io.swagger.annotations.Api;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.BooleanUtils;
@@ -60,9 +62,9 @@ public class PaymentController implements PaymentApi {
                                                      String psUHttpMethod, UUID psUDeviceID, String psUGeoLocation) {
 
         ResponseObject<Xs2aTransactionStatus> response = PaymentType.getByValue(paymentService)
-            .map(pt -> xs2aPaymentService.getPaymentStatusById(paymentId, pt))
-            .orElseGet(() -> ResponseObject.<Xs2aTransactionStatus>builder()
-                .fail(new MessageError(FORMAT_ERROR)).build());
+                                                             .map(pt -> xs2aPaymentService.getPaymentStatusById(paymentId, pt))
+                                                             .orElseGet(() -> ResponseObject.<Xs2aTransactionStatus>builder()
+                                                                                  .fail(new MessageError(FORMAT_ERROR)).build());
 
         return responseMapper.ok(response, PaymentModelMapperPsd2::mapToStatusResponse12);
     }
@@ -74,14 +76,14 @@ public class PaymentController implements PaymentApi {
                                                 String psUAcceptLanguage, String psUUserAgent, String psUHttpMethod,
                                                 UUID psUDeviceID, String psUGeoLocation) {
         ResponseObject response = PaymentType.getByValue(paymentService)
-            .map(pt -> xs2aPaymentService.getPaymentById(pt, paymentId))
-            .orElseGet(() -> ResponseObject.builder()
-                .fail(new MessageError(FORMAT_ERROR)).build());
+                                      .map(pt -> xs2aPaymentService.getPaymentById(pt, paymentId))
+                                      .orElseGet(() -> ResponseObject.builder()
+                                                           .fail(new MessageError(FORMAT_ERROR)).build());
 
         //TODO check for Optional.get() without check for value presence https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/380
         return response.hasError()
-            ? responseMapper.ok(response)
-            : responseMapper.ok(ResponseObject.builder().body(paymentModelMapperPsd2.mapToGetPaymentResponse12(response.getBody(), PaymentType.getByValue(paymentService).get(), PaymentProduct.SCT)).build());
+                   ? responseMapper.ok(response)
+                   : responseMapper.ok(ResponseObject.builder().body(paymentModelMapperPsd2.mapToGetPaymentResponse12(response.getBody(), PaymentType.getByValue(paymentService).get(), PaymentProduct.SCT)).build());
     }
 
     @Override
@@ -98,16 +100,30 @@ public class PaymentController implements PaymentApi {
             xs2aPaymentService.createPayment(paymentModelMapperXs2a.mapToXs2aPayment(body, requestParams), requestParams);
 
         return serviceResponse.hasError()
-            ? responseMapper.created(serviceResponse)
-            : responseMapper.created(ResponseObject
-            .builder()
-            .body(paymentModelMapperPsd2.mapToPaymentInitiationResponse12(serviceResponse.getBody(), requestParams))
-            .build());
+                   ? responseMapper.created(serviceResponse)
+                   : responseMapper.created(ResponseObject
+                                                .builder()
+                                                .body(paymentModelMapperPsd2.mapToPaymentInitiationResponse12(serviceResponse.getBody(), requestParams))
+                                                .build());
     }
 
     @Override
     public ResponseEntity cancelPayment(String paymentService, String paymentId, UUID xRequestID, String digest, String signature, byte[] tpPSignatureCertificate, String psUIPAddress, Object psUIPPort, String psUAccept, String psUAcceptCharset, String psUAcceptEncoding, String psUAcceptLanguage, String psUUserAgent, String psUHttpMethod, UUID psUDeviceID, String psUGeoLocation) {
-        return null; //TODO implement
+        ResponseObject<CancelPaymentResponse> serviceResponse = PaymentType.getByValue(paymentService)
+                                                                    .map(type -> xs2aPaymentService.cancelPayment(type, paymentId))
+                                                                    .orElseGet(() -> ResponseObject.<CancelPaymentResponse>builder()
+                                                                                         .fail(new MessageError(FORMAT_ERROR)).build());
+
+        if (serviceResponse.hasError()) {
+            return responseMapper.ok(serviceResponse);
+        }
+
+        CancelPaymentResponse cancelPayment = serviceResponse.getBody();
+        PaymentInitiationCancelResponse200202 response = paymentModelMapperPsd2.mapToPaymentInitiationCancelResponse(cancelPayment);
+
+        return cancelPayment.isStartAuthorisationRequired()
+                   ? responseMapper.accepted(ResponseObject.builder().body(response).build())
+                   : responseMapper.ok(ResponseObject.builder().body(response).build());
     }
 
     @Override

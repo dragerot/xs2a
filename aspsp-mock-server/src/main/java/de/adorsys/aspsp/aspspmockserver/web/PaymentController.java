@@ -116,4 +116,15 @@ public class PaymentController {
                    .map(p -> new ResponseEntity<>(p, ACCEPTED))
                    .orElse(ResponseEntity.badRequest().build());
     }
+
+    @ApiOperation(value = "Initiate cancellation of payment by it`s ASPSP identifier", authorizations = {@Authorization(value = "oauth2", scopes = {@AuthorizationScope(scope = "read", description = "Access read API")})})
+    @ApiResponses(value = {
+        @ApiResponse(code = 202, message = "ACCEPTED", response = SpiCancelPayment.class),
+        @ApiResponse(code = 204, message = "Payment Not Found")})
+    @PostMapping("/{payment-id}/cancel")
+    public ResponseEntity<SpiCancelPayment> initiatePaymentCancellation(@PathVariable("payment-id") String paymentId) {
+        return paymentService.initiatePaymentCancellation(paymentId)
+                   .map(p -> new ResponseEntity<>(p, ACCEPTED))
+                   .orElse(ResponseEntity.badRequest().build());
+    }
 }

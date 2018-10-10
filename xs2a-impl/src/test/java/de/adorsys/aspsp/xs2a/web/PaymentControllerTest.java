@@ -31,10 +31,7 @@ import de.adorsys.aspsp.xs2a.service.mapper.PaymentModelMapperPsd2;
 import de.adorsys.aspsp.xs2a.service.mapper.PaymentModelMapperXs2a;
 import de.adorsys.aspsp.xs2a.service.mapper.ResponseMapper;
 import de.adorsys.aspsp.xs2a.service.profile.AspspProfileServiceWrapper;
-import de.adorsys.psd2.model.PaymentInitationRequestResponse201;
-import de.adorsys.psd2.model.PaymentInitiationStatusResponse200Json;
-import de.adorsys.psd2.model.PaymentInitiationTarget2WithStatusResponse;
-import de.adorsys.psd2.model.TransactionStatus;
+import de.adorsys.psd2.model.*;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -135,9 +132,9 @@ public class PaymentControllerTest {
 
         //When
         ResponseEntity response = paymentController.getPaymentInformation(SINGLE.getValue(), CORRECT_PAYMENT_ID,
-            null, null, null, null, null, null,
-            null, null, null, null, null,
-            null, null, null);
+                                                                          null, null, null, null, null, null,
+                                                                          null, null, null, null, null,
+                                                                          null, null, null);
 
         //Then
         assertThat(response.getStatusCode()).isEqualTo(OK);
@@ -152,9 +149,9 @@ public class PaymentControllerTest {
 
         //When
         ResponseEntity response = paymentController.getPaymentInformation(SINGLE.getValue(), WRONG_PAYMENT_ID,
-            null, null, null, null, null, null,
-            null, null, null, null, null,
-            null, null, null);
+                                                                          null, null, null, null, null, null,
+                                                                          null, null, null, null, null,
+                                                                          null, null, null);
 
         //Then
         assertThat(response.getStatusCode()).isEqualTo(FORBIDDEN);
@@ -212,10 +209,10 @@ public class PaymentControllerTest {
         //When:
         ResponseEntity<PaymentInitiationStatusResponse200Json> actualResponse =
             (ResponseEntity<PaymentInitiationStatusResponse200Json>) paymentController.getPaymentInitiationStatus(
-            PaymentType.SINGLE.getValue(), WRONG_PAYMENT_ID, null, null, null,
-            null, null, null, null, null,
-            null, null, null, null, null,
-            null );
+                PaymentType.SINGLE.getValue(), WRONG_PAYMENT_ID, null, null, null,
+                null, null, null, null, null,
+                null, null, null, null, null,
+                null);
 
         //Then:
         assertThat(actualResponse.getStatusCode()).isEqualTo(expectedHttpStatus);
@@ -237,11 +234,11 @@ public class PaymentControllerTest {
         //When:
         ResponseEntity<PaymentInitialisationResponse> actualResult =
             (ResponseEntity<PaymentInitialisationResponse>) paymentController.initiatePayment(payment,
-            paymentType.getValue(), paymentProduct.getCode(), null, null, null,
-                null, null, null, null, null,
-                null, null, null, null, null,
-            null, null, null, null, null,
-            null ,null, null, null, null);
+                                                                                              paymentType.getValue(), paymentProduct.getCode(), null, null, null,
+                                                                                              null, null, null, null, null,
+                                                                                              null, null, null, null, null,
+                                                                                              null, null, null, null, null,
+                                                                                              null, null, null, null, null);
 
         //Then:
         assertThat(actualResult.getStatusCode()).isEqualTo(expectedResult.getStatusCode());
@@ -263,7 +260,7 @@ public class PaymentControllerTest {
 
     private SinglePayment readSinglePayment() throws IOException {
         return jsonConverter.toObject(IOUtils.resourceToString(CREATE_PAYMENT_INITIATION_REQUEST_JSON_PATH, UTF_8),
-            SinglePayment.class).get();
+                                      SinglePayment.class).get();
     }
 
     @Test
@@ -281,12 +278,12 @@ public class PaymentControllerTest {
         //When:
         ResponseEntity<PaymentInitialisationResponse> result =
             (ResponseEntity<PaymentInitialisationResponse>) paymentController.initiatePayment(periodicPayment,
-            PERIODIC.getValue(), paymentProduct.getCode(), null,null, null, null,
-            null, null, null, null, null,
-                null ,null, null, null,
-                null, null, null, null,
-                null, null, null, null, null,
-                null);
+                                                                                              PERIODIC.getValue(), paymentProduct.getCode(), null, null, null, null,
+                                                                                              null, null, null, null, null,
+                                                                                              null, null, null, null,
+                                                                                              null, null, null, null,
+                                                                                              null, null, null, null, null,
+                                                                                              null);
 
         //Then:
         assertThat(result.getStatusCode()).isEqualTo(expectedResult.getStatusCode());
@@ -295,7 +292,7 @@ public class PaymentControllerTest {
 
     private PeriodicPayment readPeriodicPayment() throws IOException {
         return jsonConverter.toObject(IOUtils.resourceToString(PERIODIC_PAYMENT_DATA, UTF_8),
-            PeriodicPayment.class).get();
+                                      PeriodicPayment.class).get();
     }
 
     private PaymentInitialisationResponse getPaymentInitializationResponse() {
@@ -319,15 +316,71 @@ public class PaymentControllerTest {
         //When:
         ResponseEntity<List<PaymentInitationRequestResponse201>> actualResult =
             (ResponseEntity<List<PaymentInitationRequestResponse201>>) paymentController.initiatePayment(payments,
-                PaymentType.BULK.getValue(), PaymentProduct.SCT.getCode(), null,null, null,
-                null, null, null, null, null,
-                null, null ,null, null, null,
-            null, null, null, null, null,
-            null, null, null, null, null);
+                                                                                                         PaymentType.BULK.getValue(), PaymentProduct.SCT.getCode(), null, null, null,
+                                                                                                         null, null, null, null, null,
+                                                                                                         null, null, null, null, null,
+                                                                                                         null, null, null, null, null,
+                                                                                                         null, null, null, null, null);
 
         //Then:
         assertThat(actualResult.getStatusCode()).isEqualTo(expectedResult.getStatusCode());
         assertThat(actualResult.getBody()).isEqualTo(expectedResult.getBody());
+    }
+
+    @Test
+    public void cancelPayment_WithoutAuthorisation_Success() {
+        when(responseMapper.ok(any()))
+            .thenReturn(new ResponseEntity<>(getPaymentInitiationCancelResponse200202(TransactionStatus.CANC), HttpStatus.OK));
+        when(paymentService.cancelPayment(any(), any())).thenReturn(getCancelPaymentResponseObject(false));
+
+        // Given
+        PaymentType paymentType = PaymentType.SINGLE;
+        ResponseEntity<PaymentInitiationCancelResponse200202> expectedResult = new ResponseEntity<>(getPaymentInitiationCancelResponse200202(TransactionStatus.CANC), HttpStatus.OK);
+
+        // When
+        ResponseEntity<PaymentInitiationCancelResponse200202> actualResult = (ResponseEntity<PaymentInitiationCancelResponse200202>) paymentController.cancelPayment(paymentType.getValue(),
+                                                                                                                                                                     CORRECT_PAYMENT_ID, null, null, null,
+                                                                                                                                                                     null, null, null, null, null,
+                                                                                                                                                                     null, null,
+                                                                                                                                                                     null, null, null, null);
+
+        // Then:
+        assertThat(actualResult.getStatusCode()).isEqualTo(expectedResult.getStatusCode());
+        assertThat(actualResult.getBody()).isEqualTo(expectedResult.getBody());
+    }
+
+    @Test
+    public void cancelPayment_WithAuthorisation_Success() {
+        when(responseMapper.accepted(any()))
+            .thenReturn(new ResponseEntity<>(getPaymentInitiationCancelResponse200202(TransactionStatus.ACTC), HttpStatus.ACCEPTED));
+        when(paymentService.cancelPayment(any(), any())).thenReturn(getCancelPaymentResponseObject(true));
+
+        // Given
+        PaymentType paymentType = PaymentType.SINGLE;
+        ResponseEntity<PaymentInitiationCancelResponse200202> expectedResult = new ResponseEntity<>(getPaymentInitiationCancelResponse200202(TransactionStatus.ACTC), HttpStatus.ACCEPTED);
+
+        // When
+        ResponseEntity<PaymentInitiationCancelResponse200202> actualResult = (ResponseEntity<PaymentInitiationCancelResponse200202>) paymentController.cancelPayment(paymentType.getValue(),
+                                                                                                                                                                     CORRECT_PAYMENT_ID, null, null, null,
+                                                                                                                                                                     null, null, null, null, null,
+                                                                                                                                                                     null, null,
+                                                                                                                                                                     null, null, null, null);
+
+        // Then:
+        assertThat(actualResult.getStatusCode()).isEqualTo(expectedResult.getStatusCode());
+        assertThat(actualResult.getBody()).isEqualTo(expectedResult.getBody());
+    }
+
+    private ResponseObject<CancelPaymentResponse> getCancelPaymentResponseObject(boolean startAuthorisationRequired) {
+        CancelPaymentResponse response = new CancelPaymentResponse();
+        response.setStartAuthorisationRequired(startAuthorisationRequired);
+        return ResponseObject.<CancelPaymentResponse>builder().body(response).build();
+    }
+
+    private PaymentInitiationCancelResponse200202 getPaymentInitiationCancelResponse200202(TransactionStatus transactionStatus) {
+        PaymentInitiationCancelResponse200202 response = new PaymentInitiationCancelResponse200202();
+        response.setTransactionStatus(transactionStatus);
+        return response;
     }
 
     private ResponseObject<List<PaymentInitialisationResponse>> readListOfXs2aPaymentInitialisationResponses() throws IOException {
@@ -355,7 +408,7 @@ public class PaymentControllerTest {
 
     private List<SinglePayment> readBulkPayments() throws IOException {
         SinglePayment[] payments = jsonConverter.toObject(IOUtils.resourceToString(BULK_PAYMENT_DATA, UTF_8),
-            SinglePayment[].class).get();
+                                                          SinglePayment[].class).get();
         return Arrays.asList(payments);
     }
 }
