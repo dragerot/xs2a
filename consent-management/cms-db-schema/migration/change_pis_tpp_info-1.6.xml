@@ -44,7 +44,7 @@
                                tableName="tpp_info"/>
 
         <addColumn tableName="tpp_info">
-            <column defaultValue="12345987" name="authority id" type="VARCHAR">
+            <column defaultValue="12345987" name="authority_id" type="VARCHAR">
                 <constraints nullable="false"/>
             </column>
             <column defaultValue="authority name" name="authority_name" type="VARCHAR">
