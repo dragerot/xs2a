@@ -26,6 +26,7 @@ import de.adorsys.aspsp.xs2a.spi.domain.SpiResponse;
 import de.adorsys.aspsp.xs2a.spi.domain.SpiResponse.VoidResponse;
 import de.adorsys.aspsp.xs2a.spi.domain.account.SpiAccountConsent;
 import de.adorsys.aspsp.xs2a.spi.domain.authorisation.SpiAuthorisationStatus;
+import de.adorsys.aspsp.xs2a.spi.domain.authorisation.SpiAuthorizationCodeResult;
 import de.adorsys.aspsp.xs2a.spi.domain.authorisation.SpiScaMethod;
 import de.adorsys.aspsp.xs2a.spi.domain.consent.AspspConsentData;
 import de.adorsys.aspsp.xs2a.spi.domain.consent.SpiConsentStatus;
@@ -97,7 +98,7 @@ public class EmbeddedAisAuthorizationService implements AisAuthorizationService 
         if (isScaMethodSelectionStage(request, consentAuthorization)) {
             String authenticationMethodId = request.getAuthenticationMethodId();
 
-            SpiResponse<VoidResponse> spiResponse = aisConsentSpi.requestAuthorisationCode(request.getPsuId(), SpiScaMethod.valueOf(authenticationMethodId), accountConsent, aspspConsentData);
+            SpiResponse<SpiAuthorizationCodeResult> spiResponse = aisConsentSpi.requestAuthorisationCode(request.getPsuId(), SpiScaMethod.valueOf(authenticationMethodId), accountConsent, aspspConsentData);
 
             if (spiResponse.hasError()) {
                 response.setErrorCode(messageErrorCodeMapper.mapToMessageErrorCode(spiResponse.getResponseStatus()));
@@ -135,7 +136,7 @@ public class EmbeddedAisAuthorizationService implements AisAuthorizationService 
                 response.setScaStatus(Xs2aScaStatus.PSUAUTHENTICATED);
                 response.setResponseLinkType(START_AUTHORISATION_WITH_AUTHENTICATION_METHOD_SELECTION);
             } else {
-                SpiResponse<VoidResponse> spiResponse = aisConsentSpi.requestAuthorisationCode(response.getPsuId(), availableMethods.get(0), accountConsent, aisConsentDataService.getAspspConsentDataByConsentId(consentId));
+                SpiResponse<SpiAuthorizationCodeResult> spiResponse = aisConsentSpi.requestAuthorisationCode(response.getPsuId(), availableMethods.get(0), accountConsent, aisConsentDataService.getAspspConsentDataByConsentId(consentId));
 
                 if (spiResponse.hasError()) {
                     response.setErrorCode(messageErrorCodeMapper.mapToMessageErrorCode(spiResponse.getResponseStatus()));
