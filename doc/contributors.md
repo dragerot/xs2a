@@ -12,8 +12,8 @@ Here is a list of contributors to this project:
 * [Guy Moyo](https://github.com/guymoyo) ([adorsys GmbH & Co KG](http://www.adorsys.de))
 * [Petro Rudenko](https://github.com/jfractalus), LLC Golden Dimension
 * [Mariia Polikarpova](https://github.com/maypolikarpova), LLC Golden Dimension
-* [Dmytro Mishchuk](mailto:dmi@adorsys.com.ua), LLC Golden Dimension
-* [Ivan Iuminov](mailto:iiu@adorsys.com.ua), LLC Golden Dimension
-* [Mykola Shumyn](mailto:msh@adorsys.com.ua), LLC Golden Dimension
+* [Dmytro Mishchuk](https://github.com/DmitryMishchuk), LLC Golden Dimension
+* [Ivan Iuminov](https://github.com/ivaniuminov), LLC Golden Dimension
+* [Mykola Shumyn](https://github.com/KSWest), LLC Golden Dimension
 * [Ihor Kuchevskyi](mailto:iku@adorsys.com.ua), LLC Golden Dimension
-* [Serhii Shymkov](mailto:ssh@adorsys.com.ua), LLC Golden Dimension
+* [Serhii Shymkov](https://github.com/Seregy), LLC Golden Dimension
