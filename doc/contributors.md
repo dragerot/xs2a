@@ -15,5 +15,5 @@ Here is a list of contributors to this project:
 * [Dmytro Mishchuk](https://github.com/DmitryMishchuk), LLC Golden Dimension
 * [Ivan Iuminov](https://github.com/ivaniuminov), LLC Golden Dimension
 * [Mykola Shumyn](https://github.com/KSWest), LLC Golden Dimension
-* [Ihor Kuchevskyi](mailto:iku@adorsys.com.ua), LLC Golden Dimension
+* [Ihor Kuchevskyi](https://github.com/jldfin), LLC Golden Dimension
 * [Serhii Shymkov](https://github.com/Seregy), LLC Golden Dimension
