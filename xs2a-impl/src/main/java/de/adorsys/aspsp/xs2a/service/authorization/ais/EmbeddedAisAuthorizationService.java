@@ -64,6 +64,7 @@ public class EmbeddedAisAuthorizationService implements AisAuthorizationService 
     public UpdateConsentPsuDataResponse updateConsentPsuData(UpdateConsentPsuDataReq request, AccountConsentAuthorization consentAuthorization) {
         UpdateConsentPsuDataResponse response = new UpdateConsentPsuDataResponse();
 
+        // TODO refactor this the PIS way https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/426
         if (isPsuAuthenticationStage(consentAuthorization)) {
             response = proceedPsuAuthenticationStage(request);
         } else if (isScaMethodSelectionStage(consentAuthorization)) {
