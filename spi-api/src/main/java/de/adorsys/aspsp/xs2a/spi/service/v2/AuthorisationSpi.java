@@ -14,17 +14,24 @@
  * limitations under the License.
  */
 
-package de.adorsys.aspsp.xs2a.spi.service;
+package de.adorsys.aspsp.xs2a.spi.service.v2;
 
 import de.adorsys.aspsp.xs2a.spi.domain.SpiResponse;
 import de.adorsys.aspsp.xs2a.spi.domain.authorisation.SpiAuthorisationStatus;
-import de.adorsys.aspsp.xs2a.spi.domain.consent.AspspConsentData;
+import de.adorsys.aspsp.xs2a.spi.domain.authorisation.SpiAuthorizationCodeResult;
 import de.adorsys.aspsp.xs2a.spi.domain.authorisation.SpiScaConfirmation;
 import de.adorsys.aspsp.xs2a.spi.domain.authorisation.SpiScaMethod;
+import de.adorsys.aspsp.xs2a.spi.domain.consent.AspspConsentData;
 
 import java.util.List;
 
-public interface AuthorisationSpi<T> {
+/**
+ * Interface, that contains the method for the authorisation flow.
+ * To be used in SPI interfaces, that need authorisation functionality.
+ *
+ * @param <T> business object to be provided during the implementation
+ */
+interface AuthorisationSpi<T> {
 
     /**
      * Authorises psu and returns current autorisation status. Used only with embedded SCA Approach.
@@ -59,7 +66,7 @@ public interface AuthorisationSpi<T> {
      *                         May be null if consent does not contain such data, or request isn't done from a workflow with a consent
      * @return Return a positive or negative response as part of SpiResponse
      */
-    SpiResponse requestAuthorisationCode(String psuId, SpiScaMethod scaMethod, T businessObject, AspspConsentData aspspConsentData);
+    SpiResponse<SpiAuthorizationCodeResult> requestAuthorisationCode(String psuId, SpiScaMethod scaMethod, T businessObject, AspspConsentData aspspConsentData);
 
     /**
      * Sends authorisation confirmation information (secure code or such) to ASPSP and if case of successful validation executes payment at ASPSP. Used only with embedded SCA Approach.

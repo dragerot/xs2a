@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
-package de.adorsys.aspsp.xs2a.spi.service;
+package de.adorsys.aspsp.xs2a.service.validator;
 
-import de.adorsys.aspsp.xs2a.spi.domain.SpiResponse;
-import de.adorsys.aspsp.xs2a.spi.domain.account.SpiAccountConsent;
-import de.adorsys.aspsp.xs2a.spi.domain.consent.AspspConsentData;
+import de.adorsys.aspsp.xs2a.exception.MessageError;
+import lombok.Value;
+import org.jetbrains.annotations.Nullable;
 
-public interface AisConsentSpi extends AuthorisationSpi<SpiAccountConsent> {
+@Value
+public class ValidationResult {
+    private boolean valid;
 
-    SpiResponse<Void> initiateAisConsent(SpiAccountConsent accountConsent);
+    /**
+     * Could be null for valid request (valid == true case)
+     */
+    @Nullable
+    private MessageError messageError;
 
-    SpiResponse<Void> revokeAisConsent(SpiAccountConsent accountConsent, AspspConsentData aspspConsentData);
+    public boolean isNotValid() {
+        return !valid;
+    }
 }
