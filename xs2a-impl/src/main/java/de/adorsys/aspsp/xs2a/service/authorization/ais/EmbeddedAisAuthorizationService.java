@@ -64,11 +64,11 @@ public class EmbeddedAisAuthorizationService implements AisAuthorizationService 
     public UpdateConsentPsuDataResponse updateConsentPsuData(UpdateConsentPsuDataReq request, AccountConsentAuthorization consentAuthorization) {
         UpdateConsentPsuDataResponse response = new UpdateConsentPsuDataResponse();
 
-        if (isPsuAuthenticationStage(request, consentAuthorization)) {
+        if (isPsuAuthenticationStage(consentAuthorization)) {
             response = proceedPsuAuthenticationStage(request);
-        } else if (isScaMethodSelectionStage(request, consentAuthorization)) {
+        } else if (isScaMethodSelectionStage(consentAuthorization)) {
             response = proceedScaMethodSelectionStage(request);
-        } else if (isAuthorizationStage(request)) {
+        } else if (isAuthorizationStage(consentAuthorization)) {
             response = proceedAuthorizationStage(request);
         }
 
@@ -79,16 +79,16 @@ public class EmbeddedAisAuthorizationService implements AisAuthorizationService 
         return response;
     }
 
-    private boolean isPsuAuthenticationStage(UpdateConsentPsuDataReq updatePsuData, AccountConsentAuthorization spiAuthorization) {
-        return spiAuthorization.getPassword() == null && updatePsuData.getPassword() != null;
+    private boolean isPsuAuthenticationStage(AccountConsentAuthorization consentAuthorization) {
+        return consentAuthorization.getScaStatus() == ScaStatus.STARTED;
     }
 
-    private boolean isScaMethodSelectionStage(UpdateConsentPsuDataReq updatePsuData, AccountConsentAuthorization spiAuthorization) {
-        return spiAuthorization.getAuthenticationMethodId() == null && updatePsuData.getAuthenticationMethodId() != null;
+    private boolean isScaMethodSelectionStage(AccountConsentAuthorization consentAuthorization) {
+        return consentAuthorization.getScaStatus() == ScaStatus.PSUAUTHENTICATED;
     }
 
-    private boolean isAuthorizationStage(UpdateConsentPsuDataReq updatePsuData) {
-        return updatePsuData.getScaAuthenticationData() != null;
+    private boolean isAuthorizationStage(AccountConsentAuthorization consentAuthorization) {
+        return consentAuthorization.getScaStatus() == ScaStatus.SCAMETHODSELECTED;
     }
 
     private boolean isMultipleScaMethods(List<SpiScaMethod> availableMethods) {
