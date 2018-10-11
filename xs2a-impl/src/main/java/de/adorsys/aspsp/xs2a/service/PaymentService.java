@@ -90,20 +90,6 @@ public class PaymentService {
         return response;
     }
 
-    private boolean paymentHasNoTppMessages(ResponseObject responseObject, PaymentType paymentType) {
-        if (EnumSet.of(PERIODIC, SINGLE).contains(paymentType)) {
-            PaymentInitialisationResponse paymentInitialisationResponse = (PaymentInitialisationResponse) responseObject.getBody();
-            return paymentInitialisationResponse.getTppMessages() == null;
-        } else {
-            List<PaymentInitialisationResponse> bulkPaymentResponse = (List<PaymentInitialisationResponse>) responseObject.getBody();
-            List<PaymentInitialisationResponse> responsesWithoutErrors = bulkPaymentResponse.stream()
-                                                                             .filter(r -> r.getTppMessages() == null)
-                                                                             .collect(Collectors.toList());
-
-            return CollectionUtils.isNotEmpty(responsesWithoutErrors);
-        }
-    }
-
     /**
      * Retrieves payment status from ASPSP
      *
@@ -224,5 +210,19 @@ public class PaymentService {
         }
 
         return Optional.empty();
+    }
+
+    private boolean paymentHasNoTppMessages(ResponseObject responseObject, PaymentType paymentType) {
+        if (EnumSet.of(PERIODIC, SINGLE).contains(paymentType)) {
+            PaymentInitialisationResponse paymentInitialisationResponse = (PaymentInitialisationResponse) responseObject.getBody();
+            return paymentInitialisationResponse.getTppMessages() == null;
+        } else {
+            List<PaymentInitialisationResponse> bulkPaymentResponse = (List<PaymentInitialisationResponse>) responseObject.getBody();
+            List<PaymentInitialisationResponse> responsesWithoutErrors = bulkPaymentResponse.stream()
+                                                                             .filter(r -> r.getTppMessages() == null)
+                                                                             .collect(Collectors.toList());
+
+            return CollectionUtils.isNotEmpty(responsesWithoutErrors);
+        }
     }
 }
