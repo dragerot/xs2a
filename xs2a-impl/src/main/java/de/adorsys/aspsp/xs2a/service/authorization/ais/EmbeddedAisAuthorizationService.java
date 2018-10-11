@@ -99,6 +99,7 @@ public class EmbeddedAisAuthorizationService implements AisAuthorizationService 
             String authenticationMethodId = request.getAuthenticationMethodId();
 
             SpiResponse<SpiAuthorizationCodeResult> spiResponse = aisConsentSpi.requestAuthorisationCode(request.getPsuId(), SpiScaMethod.valueOf(authenticationMethodId), accountConsent, aspspConsentData);
+            aisConsentDataService.updateAspspConsentData(spiResponse.getAspspConsentData());
 
             if (spiResponse.hasError()) {
                 response.setErrorCode(messageErrorCodeMapper.mapToMessageErrorCode(spiResponse.getResponseStatus()));
@@ -113,6 +114,7 @@ public class EmbeddedAisAuthorizationService implements AisAuthorizationService 
 
         if (isAuthorizationStage(request)) {
             SpiResponse<VoidResponse> spiResponse = aisConsentSpi.verifyAuthorisationCodeAndExecuteRequest(aisConsentMapper.mapToSpiScaConfirmation(request), accountConsent, aspspConsentData);
+            aisConsentDataService.updateAspspConsentData(spiResponse.getAspspConsentData());
 
             if (spiResponse.hasError()) {
                 response.setErrorCode(messageErrorCodeMapper.mapToMessageErrorCode(spiResponse.getResponseStatus()));
@@ -137,6 +139,7 @@ public class EmbeddedAisAuthorizationService implements AisAuthorizationService 
                 response.setResponseLinkType(START_AUTHORISATION_WITH_AUTHENTICATION_METHOD_SELECTION);
             } else {
                 SpiResponse<SpiAuthorizationCodeResult> spiResponse = aisConsentSpi.requestAuthorisationCode(response.getPsuId(), availableMethods.get(0), accountConsent, aisConsentDataService.getAspspConsentDataByConsentId(consentId));
+                aisConsentDataService.updateAspspConsentData(spiResponse.getAspspConsentData());
 
                 if (spiResponse.hasError()) {
                     response.setErrorCode(messageErrorCodeMapper.mapToMessageErrorCode(spiResponse.getResponseStatus()));
