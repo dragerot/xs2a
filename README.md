@@ -139,7 +139,7 @@ $ scripts/release-scripts/release.sh 1.0 1.1
 ### Testing API with Postman json collections
  
  For testing API of xs2a it is used Postman https://www.getpostman.com/
- Environment jsons with global parameter’s sets and Collections of jsons for imitation of processes flows are stored in /tests folder.
+ Environment jsons with global parameter’s sets and Collections of jsons for imitation of processes flows are stored in /scripts/tests/postman folder.
  To import Postman collections and environments follow next steps:
  1.     Download Postman jsons with collections and environments to your local machine.
  2.     Open Postman, press button “Import”.
