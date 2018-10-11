@@ -193,15 +193,11 @@ public class Xs2aAisConsentMapper {
     }
 
     public SpiScaConfirmation mapToSpiScaConfirmation(UpdateConsentPsuDataReq request) {
-        return Optional.ofNullable(request)
-                   .map(r -> {
-                       SpiScaConfirmation accountConfirmation = new SpiScaConfirmation();
-                       accountConfirmation.setConsentId(r.getConsentId());
-                       accountConfirmation.setPsuId(r.getPsuId());
-                       accountConfirmation.setTanNumber(r.getScaAuthenticationData());
-                       return accountConfirmation;
-                   })
-                   .orElse(null);
+        SpiScaConfirmation accountConfirmation = new SpiScaConfirmation();
+        accountConfirmation.setConsentId(request.getConsentId());
+        accountConfirmation.setPsuId(request.getPsuId());
+        accountConfirmation.setTanNumber(request.getScaAuthenticationData());
+        return accountConfirmation;
     }
 
     private CmsScaMethod mapToCmsScaMethod(SpiScaMethod spiScaMethod) {
