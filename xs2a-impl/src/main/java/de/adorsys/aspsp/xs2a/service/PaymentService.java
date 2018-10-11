@@ -111,7 +111,7 @@ public class PaymentService {
     public ResponseObject<PaymentInitialisationResponse> initiatePeriodicPayment(PeriodicPayment periodicPayment, TppInfo tppInfo, String paymentProduct) {
         return validatePayment(periodicPayment, periodicPayment.areValidExecutionAndPeriodDates())
                    .map(e -> ResponseObject.<PaymentInitialisationResponse>builder()
-                                 .body(paymentMapper.mapToPaymentInitResponseFailedPayment(periodicPayment, e))
+                                 .fail(new MessageError(e))
                                  .build())
                    .orElseGet(ResponseObject.<PaymentInitialisationResponse>builder()
                                   .body(scaPaymentService.createPeriodicPayment(periodicPayment, tppInfo, paymentProduct))
@@ -153,7 +153,7 @@ public class PaymentService {
     public ResponseObject<PaymentInitialisationResponse> createPaymentInitiation(SinglePayment singlePayment, TppInfo tppInfo, String paymentProduct) {
         return validatePayment(singlePayment, singlePayment.isValidExecutionDateAndTime())
                    .map(e -> ResponseObject.<PaymentInitialisationResponse>builder()
-                                 .body(paymentMapper.mapToPaymentInitResponseFailedPayment(singlePayment, e))
+                                 .fail(new MessageError(e))
                                  .build())
                    .orElseGet(ResponseObject.<PaymentInitialisationResponse>builder()
                                   .body(scaPaymentService.createSinglePayment(singlePayment, tppInfo, paymentProduct))
