@@ -30,6 +30,12 @@ import de.adorsys.aspsp.xs2a.spi.domain.authorisation.SpiAuthorizationCodeResult
 import de.adorsys.aspsp.xs2a.spi.domain.authorisation.SpiScaMethod;
 import de.adorsys.aspsp.xs2a.spi.domain.consent.SpiConsentStatus;
 import de.adorsys.aspsp.xs2a.spi.service.v2.AisConsentSpi;
+import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
+import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiAuthorisationStatus;
+import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
+import de.adorsys.psd2.xs2a.spi.domain.consent.SpiConsentStatus;
+import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaMethod;
+import de.adorsys.aspsp.xs2a.spi.service.AccountSpi;
 import de.adorsys.psd2.model.ScaStatus;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
