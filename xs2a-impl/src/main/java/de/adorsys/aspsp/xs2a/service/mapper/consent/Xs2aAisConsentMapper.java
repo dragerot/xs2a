@@ -22,6 +22,7 @@ import de.adorsys.aspsp.xs2a.domain.consent.*;
 import de.adorsys.aspsp.xs2a.service.mapper.spi_xs2a_mappers.SpiXs2aAccountMapper;
 import de.adorsys.aspsp.xs2a.spi.domain.account.SpiAccountConfirmation;
 import de.adorsys.aspsp.xs2a.spi.domain.account.SpiAccountConsent;
+import de.adorsys.aspsp.xs2a.spi.domain.authorisation.SpiScaConfirmation;
 import de.adorsys.aspsp.xs2a.spi.domain.authorisation.SpiScaMethod;
 import de.adorsys.aspsp.xs2a.spi.domain.consent.SpiAccountAccess;
 import de.adorsys.aspsp.xs2a.spi.domain.consent.SpiAccountAccessType;
@@ -174,10 +175,27 @@ public class Xs2aAisConsentMapper {
                    .collect(Collectors.toList());
     }
 
+    /**
+     * @deprecated since 1.8. Will be removed in 1.10
+     * {@link #mapToSpiScaConfirmation(UpdateConsentPsuDataReq)} should be used instead
+     */
+    @Deprecated
     public SpiAccountConfirmation mapToSpiAccountConfirmation(UpdateConsentPsuDataReq request) {
         return Optional.ofNullable(request)
                    .map(r -> {
                        SpiAccountConfirmation accountConfirmation = new SpiAccountConfirmation();
+                       accountConfirmation.setConsentId(r.getConsentId());
+                       accountConfirmation.setPsuId(r.getPsuId());
+                       accountConfirmation.setTanNumber(r.getScaAuthenticationData());
+                       return accountConfirmation;
+                   })
+                   .orElse(null);
+    }
+
+    public SpiScaConfirmation mapToSpiScaConfirmation(UpdateConsentPsuDataReq request) {
+        return Optional.ofNullable(request)
+                   .map(r -> {
+                       SpiScaConfirmation accountConfirmation = new SpiScaConfirmation();
                        accountConfirmation.setConsentId(r.getConsentId());
                        accountConfirmation.setPsuId(r.getPsuId());
                        accountConfirmation.setTanNumber(r.getScaAuthenticationData());
