@@ -212,17 +212,21 @@ public class PaymentService {
         return Optional.empty();
     }
 
-    private boolean paymentHasNoTppMessages(ResponseObject responseObject, PaymentType paymentType) {
-        if (EnumSet.of(PERIODIC, SINGLE).contains(paymentType)) {
-            PaymentInitialisationResponse paymentInitialisationResponse = (PaymentInitialisationResponse) responseObject.getBody();
-            return paymentInitialisationResponse.getTppMessages() == null;
-        } else {
-            List<PaymentInitialisationResponse> bulkPaymentResponse = (List<PaymentInitialisationResponse>) responseObject.getBody();
-            List<PaymentInitialisationResponse> responsesWithoutErrors = bulkPaymentResponse.stream()
-                                                                             .filter(r -> r.getTppMessages() == null)
-                                                                             .collect(Collectors.toList());
-
-            return CollectionUtils.isNotEmpty(responsesWithoutErrors);
+    //TODO remove response object casting https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/428
+    private  <T> boolean paymentHasNoTppMessages(ResponseObject<T> responseObject, PaymentType paymentType) {
+        switch (paymentType) {
+            case SINGLE:
+            case PERIODIC:
+                PaymentInitialisationResponse paymentInitialisationResponse = (PaymentInitialisationResponse) responseObject.getBody();
+                return paymentInitialisationResponse.getTppMessages() == null;
+            case BULK:
+                List<PaymentInitialisationResponse> bulkPaymentResponse = (List<PaymentInitialisationResponse>) responseObject.getBody();
+                List<PaymentInitialisationResponse> responsesWithoutErrors = bulkPaymentResponse.stream()
+                                                                                 .filter(r -> r.getTppMessages() == null)
+                                                                                 .collect(Collectors.toList());
+                return CollectionUtils.isNotEmpty(responsesWithoutErrors);
+            default:
+                return false;
         }
     }
 }
