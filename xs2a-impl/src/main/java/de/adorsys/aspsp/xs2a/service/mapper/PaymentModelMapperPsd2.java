@@ -193,7 +193,7 @@ public class PaymentModelMapperPsd2 {
     private ChosenScaMethod mapToChosenScaMethod(Xs2aChosenScaMethod xs2aChosenScaMethod) {
         return Optional.ofNullable(xs2aChosenScaMethod)
                    .map(method -> {
-                       ExtendedChosenScaMethod scaMethod = new Xs2aChosenScaMethod().new ExtendedChosenScaMethod();
+                       ExtendedChosenScaMethod scaMethod = new Xs2aChosenScaMethod.ExtendedChosenScaMethod();
                        scaMethod.setAuthenticationMethodId(method.getAuthenticationMethodId());
                        scaMethod.setAuthenticationType(method.getAuthenticationType());
                        return scaMethod;

@@ -84,8 +84,8 @@ public class ConsentModelMapper {
 
     public StartScaprocessResponse mapToStartScaProcessResponse(Xs2aCreatePisConsentCancellationAuthorisationResponse response) {
         return new StartScaprocessResponse()
-                        .scaStatus(ScaStatus.valueOf(response.getScaStatus()))
-                        ._links(objectMapper.convertValue(response.getLinks(), Map.class));
+                   .scaStatus(ScaStatus.valueOf(response.getScaStatus()))
+                   ._links(objectMapper.convertValue(response.getLinks(), Map.class));
     }
 
     public UpdatePsuAuthenticationResponse mapToUpdatePsuAuthenticationResponse(UpdateConsentPsuDataResponse response) {
@@ -164,27 +164,27 @@ public class ConsentModelMapper {
     private AccountAccess mapToAccountAccessDomain(Xs2aAccountAccess accountAccess) {
         return Optional.ofNullable(accountAccess)
                    .map(access -> {
-                           AccountAccess mappedAccountAccess = new AccountAccess();
-                           mappedAccountAccess.setAccounts(new ArrayList<>(access.getAccounts()));
-                           mappedAccountAccess.setBalances(new ArrayList<>(access.getBalances()));
-                           mappedAccountAccess.setTransactions(new ArrayList<>(access.getTransactions()));
-                           mappedAccountAccess.setAvailableAccounts(
-                               AccountAccess.AvailableAccountsEnum.fromValue(
-                                   Optional.ofNullable(access.getAvailableAccounts())
-                                       .map(Xs2aAccountAccessType::getDescription)
-                                       .orElse(null)
-                               )
-                           );
-                           mappedAccountAccess.setAllPsd2(
-                               AccountAccess.AllPsd2Enum.fromValue(
-                                   Optional.ofNullable(access.getAllPsd2())
-                                       .map(Xs2aAccountAccessType::getDescription)
-                                       .orElse(null)
-                               )
-                           );
+                            AccountAccess mappedAccountAccess = new AccountAccess();
+                            mappedAccountAccess.setAccounts(new ArrayList<>(access.getAccounts()));
+                            mappedAccountAccess.setBalances(new ArrayList<>(access.getBalances()));
+                            mappedAccountAccess.setTransactions(new ArrayList<>(access.getTransactions()));
+                            mappedAccountAccess.setAvailableAccounts(
+                                AccountAccess.AvailableAccountsEnum.fromValue(
+                                    Optional.ofNullable(access.getAvailableAccounts())
+                                        .map(Xs2aAccountAccessType::getDescription)
+                                        .orElse(null)
+                                )
+                            );
+                            mappedAccountAccess.setAllPsd2(
+                                AccountAccess.AllPsd2Enum.fromValue(
+                                    Optional.ofNullable(access.getAllPsd2())
+                                        .map(Xs2aAccountAccessType::getDescription)
+                                        .orElse(null)
+                                )
+                            );
 
-                           return mappedAccountAccess;
-                       }
+                            return mappedAccountAccess;
+                        }
                    )
                    .orElse(null);
     }
@@ -283,7 +283,7 @@ public class ConsentModelMapper {
     private ChosenScaMethod mapToChosenScaMethod(Xs2aChosenScaMethod xs2aChosenScaMethod) {
         return Optional.ofNullable(xs2aChosenScaMethod)
                    .map(ch -> {
-                       Xs2aChosenScaMethod.ExtendedChosenScaMethod method = ch.new ExtendedChosenScaMethod();
+                       Xs2aChosenScaMethod.ExtendedChosenScaMethod method = new Xs2aChosenScaMethod.ExtendedChosenScaMethod();
 
                        method.setAuthenticationMethodId(ch.getAuthenticationMethodId());
                        method.setAuthenticationType(ch.getAuthenticationType());

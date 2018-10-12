@@ -30,7 +30,7 @@ public class Xs2aChosenScaMethod {
      Because ChosenScaMethod doesn't have any fields
     */
     @Data
-    public class ExtendedChosenScaMethod extends ChosenScaMethod {
+    public static class ExtendedChosenScaMethod extends ChosenScaMethod {
         private String authenticationType;
         private String authenticationMethodId;
     }
