@@ -16,9 +16,9 @@
 
 package de.adorsys.aspsp.xs2a.spi.impl;
 
-import de.adorsys.aspsp.xs2a.component.JsonConverter;
 import de.adorsys.aspsp.xs2a.domain.security.AspspAuthorisationData;
 import de.adorsys.aspsp.xs2a.exception.RestException;
+import de.adorsys.aspsp.xs2a.spi.component.SpiMockJsonConverter;
 import de.adorsys.aspsp.xs2a.spi.config.rest.AspspRemoteUrls;
 import de.adorsys.aspsp.xs2a.spi.impl.service.KeycloakInvokerService;
 import de.adorsys.psd2.xs2a.spi.domain.account.SpiAccountConsent;
@@ -57,7 +57,7 @@ public class AisConsentSpiImpl implements AisConsentSpi {
     @Qualifier("aspspRestTemplate")
     private final RestTemplate aspspRestTemplate;
     private final KeycloakInvokerService keycloakInvokerService;
-    private final JsonConverter jsonConverter;
+    private final SpiMockJsonConverter jsonConverter;
 
     // Test data is used there for testing purposes to have the possibility to see if AisConsentSpiImpl is being invoked from xs2a.
     // TODO remove if some requirements will be received https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/394
@@ -99,7 +99,7 @@ public class AisConsentSpiImpl implements AisConsentSpi {
             remoteSpiUrls.getScaMethods(), HttpMethod.GET, null, new ParameterizedTypeReference<List<SpiScaMethod>>() {
             }, psuId);
         List<SpiScaMethod> spiScaMethods = Optional.ofNullable(response.getBody())
-                                               .orElse(Collections.emptyList());
+                                               .orElseGet(Collections::emptyList);
         return new SpiResponse<>(spiScaMethods, aspspConsentData);
     }
 
