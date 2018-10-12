@@ -16,10 +16,10 @@
 
 package de.adorsys.aspsp.xs2a.spi.impl;
 
-import de.adorsys.aspsp.xs2a.domain.security.AspspAuthorisationData;
 import de.adorsys.aspsp.xs2a.exception.RestException;
 import de.adorsys.aspsp.xs2a.spi.component.SpiMockJsonConverter;
 import de.adorsys.aspsp.xs2a.spi.config.rest.AspspRemoteUrls;
+import de.adorsys.aspsp.xs2a.spi.domain.SpiAspspAuthorisationData;
 import de.adorsys.aspsp.xs2a.spi.impl.service.KeycloakInvokerService;
 import de.adorsys.psd2.xs2a.spi.domain.account.SpiAccountConsent;
 import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiAuthorisationStatus;
@@ -86,7 +86,7 @@ public class AisConsentSpiImpl implements AisConsentSpi {
 
     @Override
     public SpiResponse<SpiAuthorisationStatus> authorisePsu(@NotNull SpiPsuData psuData, String password, SpiAccountConsent accountConsent, AspspConsentData aspspConsentData) {
-        Optional<AspspAuthorisationData> accessToken = keycloakInvokerService.obtainAuthorisationData(psuData.getPsuId(), password);
+        Optional<SpiAspspAuthorisationData> accessToken = keycloakInvokerService.obtainAuthorisationData(psuData.getPsuId(), password);
         SpiAuthorisationStatus spiAuthorisationStatus = accessToken.map(t -> SUCCESS)
                                                             .orElse(FAILURE);
         byte[] payload = accessToken.flatMap(jsonConverter::toJson)

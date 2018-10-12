@@ -18,8 +18,8 @@ package de.adorsys.aspsp.xs2a.spi.mapper;
 
 import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPaymentInitialisationResponse;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
-import de.adorsys.psd2.xs2a.spi.domain.payment.SpiPaymentProduct;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiSinglePayment;
+import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiSinglePaymentInitiateResponse;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +36,7 @@ public class SpiPaymentMapper {
             paymentResponse.setTransactionStatus(SpiTransactionStatus.RJCT);
             paymentResponse.setPaymentId(spiSinglePayment.getEndToEndIdentification());
             paymentResponse.setPsuMessage(null);
-            paymentResponse.setTppMessages(new String[]{"PAYMENT_FAILED"}); //TODO Create ENUM and update everywhere applicable https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/348
+            paymentResponse.setTppMessages(new String[]{"PAYMENT_FAILED"});
         } else {
             paymentResponse.setTransactionStatus(SpiTransactionStatus.RCVD);
             paymentResponse.setPaymentId(spiSinglePayment.getPaymentId());
@@ -56,21 +56,21 @@ public class SpiPaymentMapper {
         single.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
         single.setPaymentStatus(SpiTransactionStatus.RCVD);
         return single;
-
     }
 
-    public SpiSinglePayment mapToSpiSinglePayment(@NotNull de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment payment, SpiPaymentProduct paymentProduct) {
-        SpiSinglePayment single = new SpiSinglePayment(paymentProduct);
-        single.setPaymentId(payment.getPaymentId());
-        single.setEndToEndIdentification(payment.getEndToEndIdentification());
-        single.setDebtorAccount(payment.getDebtorAccount());
-        single.setInstructedAmount(payment.getInstructedAmount());
-        single.setCreditorAccount(payment.getCreditorAccount());
-        single.setCreditorAgent(payment.getCreditorAgent());
-        single.setCreditorName(payment.getCreditorName());
-        single.setCreditorAddress(payment.getCreditorAddress());
-        single.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
-        single.setPaymentStatus(SpiTransactionStatus.RCVD);
-        return single;
+    public SpiSinglePaymentInitiateResponse mapToSpiSinglePaymentResponse(@NotNull de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment payment) {
+        SpiSinglePaymentInitiateResponse spi = new SpiSinglePaymentInitiateResponse();
+        spi.setPaymentId(payment.getPaymentId());
+        spi.setEndToEndIdentification(payment.getEndToEndIdentification());
+        spi.setDebtorAccount(payment.getDebtorAccount());
+        spi.setInstructedAmount(payment.getInstructedAmount());
+        spi.setCreditorAccount(payment.getCreditorAccount());
+        spi.setCreditorAgent(payment.getCreditorAgent());
+        spi.setCreditorName(payment.getCreditorName());
+        spi.setCreditorAddress(payment.getCreditorAddress());
+        spi.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
+        spi.setPaymentStatus(SpiTransactionStatus.RCVD);
+        return spi;
     }
 }
+
