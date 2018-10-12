@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package de.adorsys.psd2.xs2a.spi.service;
+package de.adorsys.psd2.xs2a.spi.domain.payment.response;
 
-import de.adorsys.psd2.xs2a.spi.domain.payment.SpiPaymentProduct;
-import de.adorsys.psd2.xs2a.spi.domain.payment.SpiPaymentType;
 
-public interface SpiPayment {
-    String getPaymentId();
-    SpiPaymentType getPaymentType();
-    SpiPaymentProduct getPaymentProduct();
+import lombok.Data;
+
+/**
+ *  TODO clarify content for this class
+ */
+@Data
+public class SpiPaymentCancellationResponse {
+    boolean cancellationAuthorisationMandated;
 }

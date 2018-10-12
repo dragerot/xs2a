@@ -24,6 +24,7 @@ import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
 import de.adorsys.psd2.xs2a.spi.domain.psu.SpiPsuData;
 import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
 import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse.VoidResponse;
+import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponseStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -84,4 +85,14 @@ interface AuthorisationSpi<T> {
      */
     @NotNull
     SpiResponse<VoidResponse> verifyAuthorisationCodeAndExecuteRequest(@NotNull SpiPsuData psuData, @NotNull SpiScaConfirmation spiScaConfirmation, @NotNull T businessObject, @NotNull AspspConsentData aspspConsentData);
+
+    /**
+     *
+     * TODO java doc
+     * Not needed for ais consent authorisation
+     */
+    @NotNull
+    default SpiResponse<VoidResponse> executeRequestWithoutSca(@NotNull SpiPsuData psuData, @NotNull T businessObject, @NotNull AspspConsentData aspspConsentData){
+        return SpiResponse.<VoidResponse>builder().fail(SpiResponseStatus.NOT_SUPPORTED);
+    }
 }

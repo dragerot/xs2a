@@ -16,11 +16,13 @@
 
 package de.adorsys.psd2.xs2a.spi.service;
 
-import de.adorsys.psd2.xs2a.spi.domain.payment.SpiPaymentProduct;
-import de.adorsys.psd2.xs2a.spi.domain.payment.SpiPaymentType;
+import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
+import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiPaymentCancellationResponse;
+import de.adorsys.psd2.xs2a.spi.domain.psu.SpiPsuData;
+import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
+import org.jetbrains.annotations.NotNull;
 
-public interface SpiPayment {
-    String getPaymentId();
-    SpiPaymentType getPaymentType();
-    SpiPaymentProduct getPaymentProduct();
+//TODO javadocs!
+public interface PaymentCancellationSpi extends AuthorisationSpi<SpiPayment> {
+     SpiResponse<SpiPaymentCancellationResponse> initiatePaymentCancellation(@NotNull SpiPsuData psuData, @NotNull SpiPayment payment, @NotNull AspspConsentData aspspConsentData);
 }
