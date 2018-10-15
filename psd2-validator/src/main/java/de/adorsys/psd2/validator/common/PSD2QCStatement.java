@@ -16,23 +16,18 @@
 
 package de.adorsys.psd2.validator.common;
 
+import de.adorsys.psd2.validator.certificate.CertificateErrorMsgCode;
+import lombok.extern.slf4j.Slf4j;
+import no.difi.certvalidator.api.CertificateValidationException;
+import org.apache.commons.collections4.iterators.FilterIterator;
+import org.bouncycastle.asn1.*;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.qualified.QCStatement;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.Optional;
-
-import org.apache.commons.collections4.iterators.FilterIterator;
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.qualified.QCStatement;
-
-import de.adorsys.psd2.validator.certificate.CertificateErrorMsgCode;
-import lombok.extern.slf4j.Slf4j;
-import no.difi.certvalidator.api.CertificateValidationException;
 
 @Slf4j
 public class PSD2QCStatement {
@@ -40,10 +35,6 @@ public class PSD2QCStatement {
 
     private PSD2QCStatement() {
     }
-
-	public static QCStatement psd2QCStatement() {
-		return new QCStatement(idEtsiPsd2QcStatement);
-	}
 
 	public static PSD2QCType psd2QCType(X509Certificate cert) throws CertificateValidationException {
 		byte[] extValues = cert.getExtensionValue(Extension.qCStatements.getId());
@@ -87,16 +78,17 @@ public class PSD2QCStatement {
             .orElseThrow(() -> new CertificateValidationException(CertificateErrorMsgCode.CERTIFICATE_INVALID.toString()));
     }
 
-    /** Iterate the list of qcStatements and try to find teh EtsiPsd2 statenent
+    /** Iterate the list of qcStatements and try to find the EtsiPsd2 statement
      *
-     * @param qcStatements
+     * @param qcStatements - list of qcStatements to iterate
      * @return Etsi Pds2 Statement or Optional.empty if not found
      */
     private static Optional<QCStatement> getEtsiPsd2QcStatement(ASN1Sequence qcStatements) {
-        FilterIterator<ASN1Encodable> filteredIterator = new FilterIterator<>(qcStatements.iterator(), item -> {
-            QCStatement qcStatement = QCStatement.getInstance(item);
-            return qcStatement.getStatementId().getId().equals(idEtsiPsd2QcStatement.getId());
-        });
+        FilterIterator<ASN1Encodable> filteredIterator =
+            new FilterIterator<>(qcStatements.iterator(), item -> {
+                QCStatement qcStatement = QCStatement.getInstance(item);
+                return qcStatement.getStatementId().getId().equals(idEtsiPsd2QcStatement.getId());
+            });
 
         if (!filteredIterator.hasNext()) {
             log.debug("No ETSI PSD2 QcStatement in psd2 certificate");
@@ -109,9 +101,9 @@ public class PSD2QCStatement {
     /** This is a fallback for the cases where a single qcStatement with PSD2 items is added without wrapping it
      * in a SEQUENCE.
      *
-     * @param qcStatements
-     * @return QCStatement
-     * @throws CertificateValidationException
+     * @param qcStatements - sequence with a single qcStatement
+     * @return QCStatement - extracted qcStatement
+     * @throws CertificateValidationException - if no qcStatement was found
      */
     private static QCStatement getSingleQcStatement(ASN1Sequence qcStatements) throws CertificateValidationException {
         // We have a single entity with oid and value direct
