@@ -17,12 +17,14 @@
 package de.adorsys.psd2.xs2a.spi.domain.payment.response;
 
 
+import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
 import lombok.Data;
 
 /**
- *  TODO clarify content for this class
+ *  TODO clarify content for this class https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/435
  */
 @Data
 public class SpiPaymentCancellationResponse {
     boolean cancellationAuthorisationMandated;
+    SpiTransactionStatus transactionStatus;
 }
