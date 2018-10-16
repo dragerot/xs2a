@@ -37,6 +37,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Currency;
 import java.util.List;
 import java.util.Optional;
@@ -117,8 +118,24 @@ public class PaymentService {
                                                        p.setPaymentStatus(SpiTransactionStatus.RJCT);
                                                    }
                                                }).collect(Collectors.toList());
-        List<AspspPayment> savedPayments = paymentRepository.save(aspspPayments);
-        return paymentMapper.mapToSpiSinglePaymentList(savedPayments);
+
+        SpiAccountReference debtorAccount = aspspPayments.isEmpty()
+                                                ? null
+                                                : payments.get(0).getDebtorAccount();
+
+        if (areFundsSufficient(debtorAccount, getAmountFromPayments(aspspPayments))) {
+            List<AspspPayment> savedPayments = paymentRepository.save(aspspPayments);
+            return paymentMapper.mapToSpiSinglePaymentList(savedPayments);
+        }
+
+        log.warn("Insufficient funds for paying on account {}", debtorAccount);
+        return Collections.emptyList();
+    }
+
+    private BigDecimal getAmountFromPayments(List<AspspPayment> payments) {
+        return payments.stream()
+                   .map(this::getAmountFromPayment)
+                   .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private boolean isNonExistingAccount(AspspPayment p) {
@@ -193,7 +210,7 @@ public class PaymentService {
 
     private BigDecimal getAmountFromPayment(AspspPayment aspspPayment) {
         return Optional.ofNullable(aspspPayment)
-                   .map(paym -> getContentFromAmount(aspspPayment.getInstructedAmount()))
+                   .map(paym -> getContentFromAmount(paym.getInstructedAmount()))
                    .orElse(BigDecimal.ZERO);
     }
 

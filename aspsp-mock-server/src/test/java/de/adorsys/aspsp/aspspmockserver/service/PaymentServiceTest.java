@@ -38,6 +38,7 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -60,11 +61,12 @@ public class PaymentServiceTest {
     @Before
     public void setUp() {
         when(paymentRepository.save(any(AspspPayment.class)))
-            .thenReturn(getAspspPayment());
+            .thenReturn(getAspspPayment(50));
         when(paymentRepository.exists(PAYMENT_ID))
             .thenReturn(true);
         when(paymentRepository.exists(WRONG_PAYMENT_ID))
             .thenReturn(false);
+        when(accountService.getPsuIdByIban(IBAN)).thenReturn(Optional.of(getAccountDetails().get(0).getId()));
         when(accountService.getAccountsByIban(IBAN)).thenReturn(getAccountDetails());
         when(accountService.getAccountsByIban(WRONG_IBAN)).thenReturn(null);
         when(paymentMapper.mapToAspspPayment(any(), any())).thenReturn(new AspspPayment());
@@ -119,7 +121,13 @@ public class PaymentServiceTest {
     }
 
     @Test
-    public void addBulkPayments() {
+    public void addBulkPayments_Success() {
+        List<AspspPayment> payments = Collections.singletonList(getAspspPayment(50));
+        when(paymentMapper.mapToAspspPaymentList(any())).thenReturn(payments);
+        when(paymentRepository.save(anyListOf(AspspPayment.class))).thenReturn(payments);
+        when(paymentMapper.mapToSpiSinglePaymentList(anyListOf(AspspPayment.class)))
+            .thenReturn(Collections.singletonList(getSpiSinglePayment(50)));
+
         //Given
         List<SpiSinglePayment> expectedPayments = new ArrayList<>();
         expectedPayments.add(getSpiSinglePayment(50));
@@ -129,6 +137,24 @@ public class PaymentServiceTest {
 
         //Then
         assertThat(actualPayments).isNotNull();
+        assertThat(actualPayments.size()).isEqualTo(1);
+    }
+
+    @Test
+    public void addBulkPayments_Failure_InsufficientFunds() {
+        when(paymentMapper.mapToAspspPaymentList(any()))
+            .thenReturn(Arrays.asList(getAspspPayment(50), getAspspPayment(51)));
+
+        //Given
+        List<SpiSinglePayment> expectedPayments = new ArrayList<>();
+        expectedPayments.add(getSpiSinglePayment(50));
+        expectedPayments.add(getSpiSinglePayment(51));
+
+        //When
+        List<SpiSinglePayment> actualPayments = paymentService.addBulkPayments(expectedPayments);
+
+        //Then
+        assertThat(actualPayments).isEmpty();
     }
 
     @Test
@@ -161,9 +187,9 @@ public class PaymentServiceTest {
         return payment;
     }
 
-    private AspspPayment getAspspPayment() {
+    private AspspPayment getAspspPayment(long amountToTransfer) {
         AspspPayment payment = new AspspPayment();
-        SpiAmount amount = new SpiAmount(Currency.getInstance("EUR"), new BigDecimal((long) 50));
+        SpiAmount amount = new SpiAmount(Currency.getInstance("EUR"), new BigDecimal(amountToTransfer));
         payment.setInstructedAmount(amount);
         payment.setDebtorAccount(getReference());
         payment.setCreditorName("Merchant123");
