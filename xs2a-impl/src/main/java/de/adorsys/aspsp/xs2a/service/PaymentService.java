@@ -39,6 +39,7 @@ import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -222,7 +223,7 @@ public class PaymentService {
             case BULK:
                 List<PaymentInitialisationResponse> bulkPaymentResponse = (List<PaymentInitialisationResponse>) responseObject.getBody();
                 List<PaymentInitialisationResponse> responsesWithoutErrors = bulkPaymentResponse.stream()
-                                                                                 .filter(r -> r.getTppMessages() == null)
+                                                                                 .filter(r -> ArrayUtils.isEmpty(r.getTppMessages()))
                                                                                  .collect(Collectors.toList());
                 return CollectionUtils.isNotEmpty(responsesWithoutErrors);
             default:
