@@ -88,7 +88,7 @@ interface AuthorisationSpi<T> {
 
     /**
      *
-     * TODO java doc
+     * TODO java doc https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/434
      * Not needed for ais consent authorisation
      */
     @NotNull
