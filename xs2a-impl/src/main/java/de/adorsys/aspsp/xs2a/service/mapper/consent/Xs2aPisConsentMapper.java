@@ -24,18 +24,13 @@ import de.adorsys.aspsp.xs2a.domain.address.Xs2aCountryCode;
 import de.adorsys.aspsp.xs2a.domain.code.Xs2aPurposeCode;
 import de.adorsys.aspsp.xs2a.domain.consent.*;
 import de.adorsys.aspsp.xs2a.domain.pis.*;
-import de.adorsys.aspsp.xs2a.spi.domain.consent.AspspConsentData;
-import de.adorsys.psd2.consent.api.CmsAccountReference;
-import de.adorsys.psd2.consent.api.CmsAddress;
-import de.adorsys.psd2.consent.api.CmsRemittance;
-import de.adorsys.psd2.consent.api.CmsTppInfo;
+import de.adorsys.psd2.consent.api.*;
 import de.adorsys.psd2.consent.api.pis.PisPayment;
 import de.adorsys.psd2.consent.api.pis.PisPaymentProduct;
 import de.adorsys.psd2.consent.api.pis.PisPaymentType;
 import de.adorsys.psd2.consent.api.pis.authorisation.CreatePisConsentAuthorisationResponse;
 import de.adorsys.psd2.consent.api.pis.authorisation.UpdatePisConsentPsuDataResponse;
 import de.adorsys.psd2.consent.api.pis.proto.PisConsentRequest;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -48,17 +43,12 @@ import java.util.stream.Collectors;
 @Component
 public class Xs2aPisConsentMapper {
 
-    public PisConsentRequest mapToCmsPisConsentRequestForSinglePayment(CreatePisConsentData createPisConsentData) {
+    public PisConsentRequest mapToCmsPisConsentRequestForSinglePayment(SinglePayment singlePayment, PaymentProduct paymentProduct) {
         PisConsentRequest request = new PisConsentRequest();
-        request.setPayments(Collections.singletonList(mapToPisPaymentForSinglePayment(createPisConsentData.getSinglePayment())));
-        request.setPaymentProduct(PisPaymentProduct.getByCode(createPisConsentData.getPaymentProduct()).orElse(null));
-        request.setPaymentType(PisPaymentType.SINGLE);
-        request.setTppInfo(mapToTppInfo(createPisConsentData.getTppInfo()));
-        request.setAspspConsentData(
-            Optional.ofNullable(createPisConsentData.getAspspConsentData())
-                .map(AspspConsentData::getAspspConsentData)
-                .orElse(null));
-
+        request.setPayments(Collections.singletonList(mapToPisPaymentForSinglePayment(singlePayment)));
+        request.setPaymentProduct(PisPaymentProduct.getByCode(paymentProduct.getCode()).orElse(null));
+        // TODO put real tppInfo data https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/406
+        request.setTppInfo(new CmsTppInfo());
         return request;
     }
 
@@ -68,11 +58,6 @@ public class Xs2aPisConsentMapper {
         request.setPaymentProduct(PisPaymentProduct.getByCode(createPisConsentData.getPaymentProduct()).orElse(null));
         request.setPaymentType(PisPaymentType.PERIODIC);
         request.setTppInfo(mapToTppInfo(createPisConsentData.getTppInfo()));
-        request.setAspspConsentData(
-            Optional.ofNullable(createPisConsentData.getAspspConsentData())
-                .map(AspspConsentData::getAspspConsentData)
-                .orElse(null));
-
         return request;
     }
 
@@ -82,11 +67,6 @@ public class Xs2aPisConsentMapper {
         request.setPaymentProduct(PisPaymentProduct.getByCode(createPisConsentData.getPaymentProduct()).orElse(null));
         request.setPaymentType(PisPaymentType.BULK);
         request.setTppInfo(mapToTppInfo(createPisConsentData.getTppInfo()));
-        request.setAspspConsentData(
-            Optional.ofNullable(createPisConsentData.getAspspConsentData())
-                .map(AspspConsentData::getAspspConsentData)
-                .orElse(null));
-
         return request;
 
     }
@@ -101,6 +81,11 @@ public class Xs2aPisConsentMapper {
 
     public Optional<Xs2aPaymentCancellationAuthorisationSubResource> mapToXs2aPaymentCancellationAuthorisationSubResource(String authorisationId) {
         return Optional.of(new Xs2aPaymentCancellationAuthorisationSubResource(Collections.singletonList(authorisationId)));
+    }
+
+    public Optional<Xs2aUpdatePisConsentPsuDataResponse> mapToXs2aUpdatePisConsentPsuDataResponse(UpdatePisConsentPsuDataResponse response) {
+        return Optional.ofNullable(response)
+                   .map(r -> new Xs2aUpdatePisConsentPsuDataResponse(getScaStatus(response), response.getAvailableScaMethods()));
     }
 
     private PisPayment mapToPisPaymentForSinglePayment(SinglePayment payment) {
@@ -175,20 +160,28 @@ public class Xs2aPisConsentMapper {
         return Optional.ofNullable(tppInfo)
                    .map(tpp -> {
                        CmsTppInfo cmsTppInfo = new CmsTppInfo();
-
-                       cmsTppInfo.setRegistrationNumber(tpp.getAuthorisationNumber());
+                       cmsTppInfo.setAuthorisationNumber(tpp.getAuthorisationNumber());
                        cmsTppInfo.setTppName(tpp.getTppName());
-
-                       List<Xs2aTppRole> tppRoles = tpp.getTppRoles();
-                       if (CollectionUtils.isNotEmpty(tppRoles)) {
-                           cmsTppInfo.setTppRole(tppRoles.get(0).name()); // TODO properly map tppRoles to CmsTppInfo https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/266
-                       }
-
-                       cmsTppInfo.setNationalCompetentAuthority(tpp.getAuthorityName());
+                       cmsTppInfo.setTppRoles(mapToTppRoles(tpp.getTppRoles()));
+                       cmsTppInfo.setAuthorityId(tpp.getAuthorityId());
+                       cmsTppInfo.setAuthorityName(tpp.getAuthorityName());
+                       cmsTppInfo.setCountry(tpp.getCountry());
+                       cmsTppInfo.setOrganisation(tpp.getOrganisation());
+                       cmsTppInfo.setOrganisationUnit(tpp.getOrganisationUnit());
+                       cmsTppInfo.setCity(tpp.getCity());
+                       cmsTppInfo.setState(tpp.getState());
                        cmsTppInfo.setRedirectUri(tpp.getRedirectUri());
                        cmsTppInfo.setNokRedirectUri(tpp.getNokRedirectUri());
                        return cmsTppInfo;
                    }).orElse(null);
+    }
+
+    private List<CmsTppRole> mapToTppRoles(List<Xs2aTppRole> tppRoles) {
+        return Optional.ofNullable(tppRoles)
+                   .map(roles -> roles.stream()
+                                     .map(role -> CmsTppRole.valueOf(role.name()))
+                                     .collect(Collectors.toList()))
+                   .orElseGet(Collections::emptyList);
     }
 
     private CmsAccountReference mapToPisAccountReference(Xs2aAccountReference xs2aAccountReference) {
@@ -226,11 +219,6 @@ public class Xs2aPisConsentMapper {
                        return cmsRemittance;
                    })
                    .orElseGet(CmsRemittance::new);
-    }
-
-    public Optional<Xs2aUpdatePisConsentPsuDataResponse> mapToXs2aUpdatePisConsentPsuDataResponse(UpdatePisConsentPsuDataResponse response) {
-        return Optional.ofNullable(response)
-                   .map(r -> new Xs2aUpdatePisConsentPsuDataResponse(getScaStatus(response), response.getAvailableScaMethods()));
     }
 
     private String getScaStatus(UpdatePisConsentPsuDataResponse response) {

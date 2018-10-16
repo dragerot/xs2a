@@ -23,24 +23,24 @@ import de.adorsys.aspsp.xs2a.domain.TppInfo;
 import de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus;
 import de.adorsys.aspsp.xs2a.domain.pis.*;
 import de.adorsys.aspsp.xs2a.exception.MessageError;
+import de.adorsys.aspsp.xs2a.service.authorization.pis.CreateSinglePaymentService;
 import de.adorsys.aspsp.xs2a.service.consent.PisConsentDataService;
 import de.adorsys.aspsp.xs2a.service.consent.PisConsentService;
 import de.adorsys.aspsp.xs2a.service.mapper.PaymentMapper;
 import de.adorsys.aspsp.xs2a.service.payment.ReadPayment;
 import de.adorsys.aspsp.xs2a.service.payment.ScaPaymentService;
-import de.adorsys.aspsp.xs2a.spi.domain.SpiResponse;
-import de.adorsys.aspsp.xs2a.spi.domain.common.SpiTransactionStatus;
-import de.adorsys.aspsp.xs2a.spi.domain.consent.AspspConsentData;
-import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiCancelPayment;
+import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
+import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
+import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
 import de.adorsys.aspsp.xs2a.spi.service.PaymentSpi;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static de.adorsys.aspsp.xs2a.domain.MessageErrorCode.*;
 import static de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus.RJCT;
@@ -57,7 +57,8 @@ public class PaymentService {
     private final AccountReferenceValidationService referenceValidationService;
     private final PisConsentService pisConsentService;
     private final PisConsentDataService pisConsentDataService;
-
+    private final TppService tppService;
+    private final CreateSinglePaymentService createSinglePaymentService;
 
     /**
      * Initiates a payment though "payment service" corresponding service method
@@ -67,15 +68,24 @@ public class PaymentService {
      */
     public ResponseObject createPayment(Object payment, PaymentRequestParameters requestParameters) {
         ResponseObject response;
-        TppInfo tppInfo = paymentMapper.mapToTppInfo(requestParameters);
+        TppInfo tppInfo = tppService.getTppInfo();
+        tppInfo.setRedirectUri(requestParameters.getTppRedirectUri());
+        tppInfo.setNokRedirectUri(requestParameters.getTppNokRedirectUri());
+
         if (requestParameters.getPaymentType() == SINGLE) {
-            response = createPaymentInitiation((SinglePayment) payment, tppInfo, requestParameters.getPaymentProduct().getCode());
+            String consentId = pisConsentService.createPisConsentV2(requestParameters);
+            if (StringUtils.isBlank(consentId)) {
+                return ResponseObject.builder()
+                           .fail(new MessageError(CONSENT_UNKNOWN_400))
+                           .build();
+            }
+            return createSinglePaymentService.createPayment((SinglePayment) payment, requestParameters.getPaymentProduct(), requestParameters.isTppExplicitAuthorisationPreferred(), consentId, tppInfo);
         } else if (requestParameters.getPaymentType() == PERIODIC) {
             response = initiatePeriodicPayment((PeriodicPayment) payment, tppInfo, requestParameters.getPaymentProduct().getCode());
         } else {
             response = createBulkPayments((BulkPayment) payment, tppInfo, requestParameters.getPaymentProduct().getCode());
         }
-        if (!response.hasError()) {//TODO Refactor this https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/332
+        if (!response.hasError() && paymentHasNoTppMessages(response, requestParameters.getPaymentType())) {//TODO Refactor this https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/332
             response = pisConsentService.createPisConsent(payment, response.getBody(), requestParameters, tppInfo);
             getAspspConsentDataFromResponseObject(response, requestParameters.getPaymentType())
                 .ifPresent(pisConsentDataService::updateAspspConsentData);
@@ -142,23 +152,6 @@ public class PaymentService {
         }
         bulkPayment.setPayments(validPayments);
         return processValidPayments(tppInfo, paymentProduct, invalidPayments, bulkPayment);
-    }
-
-    /**
-     * Initiates a single payment
-     *
-     * @param singlePayment  Single payment information
-     * @param paymentProduct The addressed payment product
-     * @return Response containing information about created single payment or corresponding error
-     */
-    public ResponseObject<PaymentInitialisationResponse> createPaymentInitiation(SinglePayment singlePayment, TppInfo tppInfo, String paymentProduct) {
-        return validatePayment(singlePayment, singlePayment.isValidExecutionDateAndTime())
-                   .map(e -> ResponseObject.<PaymentInitialisationResponse>builder()
-                                 .body(paymentMapper.mapToPaymentInitResponseFailedPayment(singlePayment, e))
-                                 .build())
-                   .orElseGet(ResponseObject.<PaymentInitialisationResponse>builder()
-                                  .body(scaPaymentService.createSinglePayment(singlePayment, tppInfo, paymentProduct))
-                                  ::build);
     }
 
     /**
@@ -240,5 +233,23 @@ public class PaymentService {
         }
 
         return Optional.empty();
+    }
+
+    //TODO remove response object casting https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/428
+    private  <T> boolean paymentHasNoTppMessages(ResponseObject<T> responseObject, PaymentType paymentType) {
+        switch (paymentType) {
+            case SINGLE:
+            case PERIODIC:
+                PaymentInitialisationResponse paymentInitialisationResponse = (PaymentInitialisationResponse) responseObject.getBody();
+                return paymentInitialisationResponse.getTppMessages() == null;
+            case BULK:
+                List<PaymentInitialisationResponse> bulkPaymentResponse = (List<PaymentInitialisationResponse>) responseObject.getBody();
+                List<PaymentInitialisationResponse> responsesWithoutErrors = bulkPaymentResponse.stream()
+                                                                                 .filter(r -> r.getTppMessages() == null)
+                                                                                 .collect(Collectors.toList());
+                return CollectionUtils.isNotEmpty(responsesWithoutErrors);
+            default:
+                return false;
+        }
     }
 }
