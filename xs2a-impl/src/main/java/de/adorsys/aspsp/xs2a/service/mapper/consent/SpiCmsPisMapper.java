@@ -16,18 +16,20 @@
 
 package de.adorsys.aspsp.xs2a.service.mapper.consent;
 
-import de.adorsys.psd2.xs2a.spi.domain.account.SpiAccountReference;
-import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaConfirmation;
-import de.adorsys.psd2.xs2a.spi.domain.common.SpiAmount;
-import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
-import de.adorsys.aspsp.xs2a.spi.domain.payment.*;
+import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiBulkPayment;
+import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPeriodicPayment;
+import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment;
 import de.adorsys.psd2.consent.api.CmsAccountReference;
 import de.adorsys.psd2.consent.api.CmsAddress;
 import de.adorsys.psd2.consent.api.CmsRemittance;
 import de.adorsys.psd2.consent.api.CmsScaMethod;
 import de.adorsys.psd2.consent.api.pis.PisPayment;
 import de.adorsys.psd2.consent.api.pis.authorisation.UpdatePisConsentPsuDataRequest;
+import de.adorsys.psd2.xs2a.spi.domain.account.SpiAccountReference;
+import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaConfirmation;
 import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaMethod;
+import de.adorsys.psd2.xs2a.spi.domain.common.SpiAmount;
+import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiAddress;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiRemittance;
 import lombok.AllArgsConstructor;
@@ -54,7 +56,7 @@ public class SpiCmsPisMapper {
         payment.setRemittanceInformationUnstructured(pisPayment.getRemittanceInformationUnstructured());
         payment.setRemittanceInformationStructured(mapToSpiRemittanceStructuredFromCmsRemittance(pisPayment.getRemittanceInformationStructured()));
         payment.setRequestedExecutionDate(pisPayment.getRequestedExecutionDate());
-        payment.setRequestedExecutionTime(pisPayment.getRequestedExecutionTime().toLocalDateTime());
+        payment.setRequestedExecutionTime(pisPayment.getRequestedExecutionTime());
         payment.setUltimateCreditor(pisPayment.getUltimateCreditor());
         payment.setPurposeCode(pisPayment.getPurposeCode());
         payment.setPaymentStatus(SpiTransactionStatus.ACCP);
@@ -75,7 +77,7 @@ public class SpiCmsPisMapper {
         payment.setRemittanceInformationUnstructured(pisPayment.getRemittanceInformationUnstructured());
         payment.setRemittanceInformationStructured(mapToSpiRemittanceStructuredFromCmsRemittance(pisPayment.getRemittanceInformationStructured()));
         payment.setRequestedExecutionDate(pisPayment.getRequestedExecutionDate());
-        payment.setRequestedExecutionTime(pisPayment.getRequestedExecutionTime().toLocalDateTime());
+        payment.setRequestedExecutionTime(pisPayment.getRequestedExecutionTime());
         payment.setUltimateCreditor(pisPayment.getUltimateCreditor());
         payment.setPurposeCode(pisPayment.getPurposeCode());
         payment.setPaymentStatus(SpiTransactionStatus.ACCP);
