@@ -93,7 +93,7 @@ public class PeriodicPaymentSpiImpl implements PeriodicPaymentSpi {
 
     @Override
     @NotNull
-    public SpiResponse<VoidResponse> executePaymentWithoutSca(@NotNull SpiPsuData psuData, @NotNull SpiPeriodicPayment payment, @NotNull AspspConsentData aspspConsentData) {
+    public SpiResponse<VoidResponse> executeRequestWithoutSca(@NotNull SpiPsuData psuData, @NotNull SpiPeriodicPayment payment, @NotNull AspspConsentData aspspConsentData) {
         de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPeriodicPayment request = spiPeriodicPaymentMapper.mapToAspspSpiPeriodicPayment(payment);
 
         try {
