@@ -30,7 +30,7 @@
 - Confirmation of funds request. Interface on side of SPI is added.
 - Validation of TPP data is added.
 - Change logic of implicit/explicit method of authorisation
-- AspspConsentData field in the Consent is updated. Support bytearray and base64 encoding.
+- AspspConsentData field in the Consent is updated. Support base64 encoding.
 - Validation of Consent (expiration date).
 - Get list of reachable accounts. Embedded approach.
 - Get balances for a given account. Embedded approach.
