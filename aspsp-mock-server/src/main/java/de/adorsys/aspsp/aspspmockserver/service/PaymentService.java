@@ -119,16 +119,18 @@ public class PaymentService {
                                                    }
                                                }).collect(Collectors.toList());
 
-        SpiAccountReference debtorAccount = aspspPayments.isEmpty()
-                                                ? null
-                                                : payments.get(0).getDebtorAccount();
+        SpiAccountReference debtorAccount = null;
+        if (!aspspPayments.isEmpty()) {
+            debtorAccount = payments.get(0).getDebtorAccount();
+        }
 
-        if (areFundsSufficient(debtorAccount, getAmountFromPayments(aspspPayments))) {
+        BigDecimal totalAmount = getAmountFromPayments(aspspPayments);
+        if (areFundsSufficient(debtorAccount, totalAmount)) {
             List<AspspPayment> savedPayments = paymentRepository.save(aspspPayments);
             return paymentMapper.mapToSpiSinglePaymentList(savedPayments);
         }
 
-        log.warn("Insufficient funds for paying on account {}", debtorAccount);
+        log.warn("Insufficient funds for paying {} on account {}", totalAmount, debtorAccount);
         return Collections.emptyList();
     }
 
