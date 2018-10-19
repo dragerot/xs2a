@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-package de.adorsys.aspsp.xs2a.service.mapper;
+package de.adorsys.aspsp.xs2a.web.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.adorsys.aspsp.xs2a.domain.Xs2aChallengeData;
 import de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus;
 import de.adorsys.aspsp.xs2a.domain.consent.Xs2aAuthenticationObject;
 import de.adorsys.aspsp.xs2a.domain.pis.*;
+import de.adorsys.aspsp.xs2a.service.mapper.AccountModelMapper;
+import de.adorsys.aspsp.xs2a.service.mapper.MessageErrorMapper;
 import de.adorsys.psd2.model.*;
+import de.adorsys.psd2.xs2a.core.profile.PaymentType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -29,9 +32,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static de.adorsys.aspsp.xs2a.domain.pis.PaymentType.PERIODIC;
-import static de.adorsys.aspsp.xs2a.domain.pis.PaymentType.SINGLE;
 import static de.adorsys.aspsp.xs2a.service.mapper.AmountModelMapper.mapToAmount;
+import static de.adorsys.psd2.xs2a.core.profile.PaymentType.PERIODIC;
+import static de.adorsys.psd2.xs2a.core.profile.PaymentType.SINGLE;
 
 @Component
 @RequiredArgsConstructor
@@ -95,30 +98,19 @@ public class PaymentModelMapperPsd2 {
         return TransactionStatus.valueOf(responseObject.name());
     }
 
-    public Object mapToPaymentInitiationResponse12(Object response, PaymentInitiationParameters requestParameters) {
+    public Object mapToPaymentInitiationResponse12(Object response) {
         PaymentInitationRequestResponse201 response201 = new PaymentInitationRequestResponse201();
-        if (EnumSet.of(SINGLE, PERIODIC).contains(requestParameters.getPaymentType())) {
-            PaymentInitiationResponse specificResponse = (PaymentInitiationResponse) response;
-            response201.setTransactionStatus(mapToTransactionStatus12(specificResponse.getTransactionStatus()));
-            response201.setPaymentId(specificResponse.getPaymentId());
-            response201.setTransactionFees(mapToAmount(specificResponse.getTransactionFees()));
-            response201.setTransactionFeeIndicator(specificResponse.isTransactionFeeIndicator());
-            response201.setScaMethods(mapToScaMethods(specificResponse.getScaMethods()));
-            response201.setChallengeData(mapToChallengeData(specificResponse.getChallengeData()));
-            response201.setLinks(mapper.convertValue(((PaymentInitiationResponse) response).getLinks(), Map.class));
-            response201.setPsuMessage(specificResponse.getPsuMessage());
-            response201.setTppMessages(messageErrorMapper.mapToTppMessages(specificResponse.getTppMessages()));
-            return response201;
-        } else {
-            List<PaymentInitiationResponse> specificResponse = (List<PaymentInitiationResponse>) response;
-            return specificResponse.stream()
-                       .peek(r -> {
-                           PaymentInitiationParameters parameters = new PaymentInitiationParameters();
-                           parameters.setPaymentType(SINGLE);
-                           mapToPaymentInitiationResponse12(r, parameters);
-                       })
-                       .collect(Collectors.toList());
-        }
+        PaymentInitiationResponse specificResponse = (PaymentInitiationResponse) response;
+        response201.setTransactionStatus(mapToTransactionStatus12(specificResponse.getTransactionStatus()));
+        response201.setPaymentId(specificResponse.getPaymentId());
+        response201.setTransactionFees(mapToAmount(specificResponse.getTransactionFees()));
+        response201.setTransactionFeeIndicator(specificResponse.isTransactionFeeIndicator());
+        response201.setScaMethods(mapToScaMethods(specificResponse.getScaMethods()));
+        response201.setChallengeData(mapToChallengeData(specificResponse.getChallengeData()));
+        response201.setLinks(mapper.convertValue(((PaymentInitiationResponse) response).getLinks(), Map.class));
+        response201.setPsuMessage(specificResponse.getPsuMessage());
+        response201.setTppMessages(messageErrorMapper.mapToTppMessages(specificResponse.getTppMessages()));
+        return response201;
     }
 
     private List<PaymentInitiationTarget2Json> mapToBulkPartList12(List<SinglePayment> payments) {

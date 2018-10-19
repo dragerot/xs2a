@@ -23,10 +23,7 @@ import de.adorsys.aspsp.aspspmockserver.domain.spi.account.SpiAccountReference;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiAmount;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiTransactionStatus;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.consent.SpiConsentStatus;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.AspspPayment;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiCancelPayment;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiPeriodicPayment;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiSinglePayment;
+import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.*;
 import de.adorsys.aspsp.aspspmockserver.repository.PaymentRepository;
 import de.adorsys.aspsp.aspspmockserver.service.mapper.PaymentMapper;
 import lombok.RequiredArgsConstructor;
@@ -37,11 +34,10 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static de.adorsys.aspsp.aspspmockserver.domain.pis.PisPaymentType.PERIODIC;
 import static de.adorsys.aspsp.aspspmockserver.domain.pis.PisPaymentType.SINGLE;
@@ -111,20 +107,21 @@ public class PaymentService {
      * @param payments Bulk payment
      * @return list of single payments forming bulk payment
      */
-    public List<SpiSinglePayment> addBulkPayments(List<SpiSinglePayment> payments) {
-        List<AspspPayment> aspspPayments = paymentMapper.mapToAspspPaymentList(payments).stream()
-                                               .peek(p -> {
-                                                   if (isNonExistingAccount(p)) {
-                                                       p.setPaymentStatus(SpiTransactionStatus.RJCT);
-                                                   }
-                                               }).collect(Collectors.toList());
+    public Optional<SpiBulkPayment> addBulkPayments(SpiBulkPayment payments) {
+        List<AspspPayment> aspspPayments = new ArrayList<>(paymentMapper.mapToAspspPaymentList(payments.getPayments()));
+        Optional<AspspPayment> firstInvalid = aspspPayments.stream()
+                                                  .filter(this::isNonExistingAccount)
+                                                  .findFirst();
 
-        SpiAccountReference debtorAccount = getDebtorAccountFromPayments(aspspPayments);
-        BigDecimal totalAmount = getAmountFromPayments(aspspPayments);
-        if (areFundsSufficient(debtorAccount, totalAmount)) {
-            List<AspspPayment> savedPayments = paymentRepository.save(aspspPayments);
-            return paymentMapper.mapToSpiSinglePaymentList(savedPayments);
+        if (firstInvalid.isPresent()) {
+            return Optional.empty();
         }
+
+        List<AspspPayment> savedPayments = paymentRepository.save(aspspPayments);
+        SpiBulkPayment result = new SpiBulkPayment();
+        result.setPayments(paymentMapper.mapToSpiSinglePaymentList(savedPayments));
+        result.setPaymentId(savedPayments.get(0).getPaymentId());
+
 
         log.warn("Insufficient funds for paying {} on account {}", totalAmount, debtorAccount);
         return Collections.emptyList();

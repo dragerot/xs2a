@@ -14,25 +14,14 @@
  * limitations under the License.
  */
 
-package de.adorsys.psd2.xs2a.spi.domain.payment;
+package de.adorsys.psd2.consent.api.pis;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import de.adorsys.psd2.consent.api.CmsConsentStatus;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-@JsonFormat(shape = JsonFormat.Shape.OBJECT)
-public enum SpiPaymentType {
-    SINGLE("payments"),
-    BULK("bulk-payments"),
-    PERIODIC("periodic-payments");
-
-    private String paymentType;
-
-    @JsonCreator
-    SpiPaymentType(String paymentType) {
-        this.paymentType = paymentType;
-    }
-
-    public String getSpiPaymentType() {
-        return paymentType;
-    }
+@Data
+@AllArgsConstructor
+public class PisConsentStatusResponse {
+    private CmsConsentStatus consentStatus;
 }
