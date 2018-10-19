@@ -17,18 +17,18 @@
 package de.adorsys.aspsp.aspspmockserver.service;
 
 import de.adorsys.aspsp.aspspmockserver.config.rest.consent.PisConsentRemoteUrls;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.account.SpiAccountBalance;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.account.SpiAccountDetails;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.account.SpiAccountReference;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiAmount;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiTransactionStatus;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.consent.SpiConsentStatus;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.AspspPayment;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiCancelPayment;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiPeriodicPayment;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiSinglePayment;
+import de.adorsys.aspsp.aspspmockserver.domain.pis.AspspPayment;
 import de.adorsys.aspsp.aspspmockserver.repository.PaymentRepository;
 import de.adorsys.aspsp.aspspmockserver.service.mapper.PaymentMapper;
+import de.adorsys.psd2.aspsp.mock.api.account.AspspAccountBalance;
+import de.adorsys.psd2.aspsp.mock.api.account.AspspAccountDetails;
+import de.adorsys.psd2.aspsp.mock.api.account.AspspAccountReference;
+import de.adorsys.psd2.aspsp.mock.api.common.AspspAmount;
+import de.adorsys.psd2.aspsp.mock.api.common.AspspTransactionStatus;
+import de.adorsys.psd2.aspsp.mock.api.consent.AspspConsentStatus;
+import de.adorsys.psd2.aspsp.mock.api.payment.AspspCancelPayment;
+import de.adorsys.psd2.aspsp.mock.api.payment.AspspPeriodicPayment;
+import de.adorsys.psd2.aspsp.mock.api.payment.AspspSinglePayment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -62,10 +62,10 @@ public class PaymentService {
      * @param payment Single payment
      * @return Optional of saved single payment
      */
-    public Optional<SpiSinglePayment> addPayment(@NotNull SpiSinglePayment payment) {
+    public Optional<AspspSinglePayment> addPayment(@NotNull AspspSinglePayment payment) {
         if (areFundsSufficient(payment.getDebtorAccount(), payment.getInstructedAmount().getAmount())) {
             AspspPayment saved = paymentRepository.save(paymentMapper.mapToAspspPayment(payment, SINGLE));
-            return Optional.ofNullable(paymentMapper.mapToSpiSinglePayment(saved));
+            return Optional.ofNullable(paymentMapper.mapToAspspSinglePayment(saved));
         }
 
         log.warn("Insufficient funds for paying {} on account {}", payment.getInstructedAmount(), payment.getDebtorAccount());
@@ -78,9 +78,9 @@ public class PaymentService {
      * @param payment Periodic payment
      * @return Optional of saved periodic payment
      */
-    public Optional<SpiPeriodicPayment> addPeriodicPayment(@NotNull SpiPeriodicPayment payment) {
+    public Optional<AspspPeriodicPayment> addPeriodicPayment(@NotNull AspspPeriodicPayment payment) {
         AspspPayment saved = paymentRepository.save(paymentMapper.mapToAspspPayment(payment, PERIODIC));
-        return Optional.ofNullable(paymentMapper.mapToSpiPeriodicPayment(saved));
+        return Optional.ofNullable(paymentMapper.mapToAspspPeriodicPayment(saved));
     }
 
     /**
@@ -97,9 +97,9 @@ public class PaymentService {
      * Checks payment status
      *
      * @param paymentId Payments primary ASPSP identifier
-     * @return SpiPaymentStatus status of payment
+     * @return AspspPaymentStatus status of payment
      */
-    public Optional<SpiTransactionStatus> getPaymentStatusById(String paymentId) {
+    public Optional<AspspTransactionStatus> getPaymentStatusById(String paymentId) {
         return Optional.ofNullable(paymentRepository.findOne(paymentId))
                    .map(AspspPayment::getPaymentStatus);
     }
@@ -110,15 +110,15 @@ public class PaymentService {
      * @param payments Bulk payment
      * @return list of single payments forming bulk payment
      */
-    public List<SpiSinglePayment> addBulkPayments(List<SpiSinglePayment> payments) {
+    public List<AspspSinglePayment> addBulkPayments(List<AspspSinglePayment> payments) {
         List<AspspPayment> aspspPayments = paymentMapper.mapToAspspPaymentList(payments).stream()
                                                .peek(p -> {
                                                    if (isNonExistingAccount(p)) {
-                                                       p.setPaymentStatus(SpiTransactionStatus.RJCT);
+                                                       p.setPaymentStatus(AspspTransactionStatus.RJCT);
                                                    }
                                                }).collect(Collectors.toList());
         List<AspspPayment> savedPayments = paymentRepository.save(aspspPayments);
-        return paymentMapper.mapToSpiSinglePaymentList(savedPayments);
+        return paymentMapper.mapToAspspSinglePaymentList(savedPayments);
     }
 
     private boolean isNonExistingAccount(AspspPayment p) {
@@ -141,7 +141,7 @@ public class PaymentService {
      * @param consentId     Consent primary identifier
      * @param consentStatus New status of the PIS consent
      */
-    public void updatePaymentConsentStatus(@NotNull String consentId, SpiConsentStatus consentStatus) {
+    public void updatePaymentConsentStatus(@NotNull String consentId, AspspConsentStatus consentStatus) {
         consentRestTemplate.put(remotePisConsentUrls.updatePisConsentStatus(), null, consentId, consentStatus.name());
     }
 
@@ -153,32 +153,32 @@ public class PaymentService {
      * Cancel payment
      *
      * @param paymentId Payment identifier
-     * @return SpiCancelPayment containing information about the requirement of aspsp for start authorisation
+     * @return AspspCancelPayment containing information about the requirement of aspsp for start authorisation
      */
-    public Optional<SpiCancelPayment> cancelPayment(String paymentId) {
+    public Optional<AspspCancelPayment> cancelPayment(String paymentId) {
         return Optional.ofNullable(paymentRepository.findOne(paymentId))
-                   .map(p -> new SpiCancelPayment());
+                   .map(p -> new AspspCancelPayment());
     }
 
     public List<AspspPayment> getAllPayments() {
         return paymentRepository.findAll();
     }
 
-    private boolean areFundsSufficient(SpiAccountReference reference, BigDecimal amount) {
-        Optional<SpiAccountBalance> balance = Optional.ofNullable(reference)
+    private boolean areFundsSufficient(AspspAccountReference reference, BigDecimal amount) {
+        Optional<AspspAccountBalance> balance = Optional.ofNullable(reference)
                                                   .flatMap(this::getInterimAvailableBalanceByReference);
         return balance
                    .map(b -> b.getSpiBalanceAmount().getAmount().compareTo(amount) >= 0)
                    .orElse(false);
     }
 
-    private Optional<SpiAccountBalance> getInterimAvailableBalanceByReference(SpiAccountReference reference) {
-        List<SpiAccountDetails> accountsByIban = accountService.getAccountsByIban(reference.getIban());
+    private Optional<AspspAccountBalance> getInterimAvailableBalanceByReference(AspspAccountReference reference) {
+        List<AspspAccountDetails> accountsByIban = accountService.getAccountsByIban(reference.getIban());
         return filterDetailsByCurrency(accountsByIban, reference.getCurrency())
-                   .flatMap(SpiAccountDetails::getFirstBalance);
+                   .flatMap(AspspAccountDetails::getFirstBalance);
     }
 
-    private Optional<SpiAccountDetails> filterDetailsByCurrency(List<SpiAccountDetails> accounts, Currency currency) {
+    private Optional<AspspAccountDetails> filterDetailsByCurrency(List<AspspAccountDetails> accounts, Currency currency) {
         return Optional.ofNullable(accounts)
                    .flatMap(accs -> accs.stream()
                                         .filter(ac -> ac.getCurrency() == currency)
@@ -187,7 +187,7 @@ public class PaymentService {
 
     private String getDebtorAccountIdFromPayment(AspspPayment aspspPayment) {
         return Optional.ofNullable(aspspPayment.getDebtorAccount())
-                   .map(SpiAccountReference::getIban)
+                   .map(AspspAccountReference::getIban)
                    .orElse("");
     }
 
@@ -197,9 +197,9 @@ public class PaymentService {
                    .orElse(BigDecimal.ZERO);
     }
 
-    private BigDecimal getContentFromAmount(SpiAmount amount) {
+    private BigDecimal getContentFromAmount(AspspAmount amount) {
         return Optional.ofNullable(amount)
-                   .map(SpiAmount::getAmount)
+                   .map(AspspAmount::getAmount)
                    .orElse(BigDecimal.ZERO);
     }
 }

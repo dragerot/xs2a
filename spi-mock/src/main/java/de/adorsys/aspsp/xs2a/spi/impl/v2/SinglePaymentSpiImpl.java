@@ -19,6 +19,7 @@ package de.adorsys.aspsp.xs2a.spi.impl.v2;
 import de.adorsys.aspsp.xs2a.exception.RestException;
 import de.adorsys.aspsp.xs2a.spi.config.rest.AspspRemoteUrls;
 import de.adorsys.aspsp.xs2a.spi.mapper.SpiSinglePaymentMapper;
+import de.adorsys.psd2.aspsp.mock.api.payment.AspspSinglePayment;
 import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaConfirmation;
 import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiSinglePayment;
@@ -51,10 +52,10 @@ public class SinglePaymentSpiImpl implements SinglePaymentSpi {
     @NotNull
     public SpiResponse<SpiSinglePaymentInitiationResponse> initiatePayment(@NotNull SpiPsuData psuData, @NotNull SpiSinglePayment spiSinglePayment, @NotNull AspspConsentData initialAspspConsentData) {
         try {
-            de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment request = spiSinglePaymentMapper.mapToSpiSinglePayment(spiSinglePayment);
+            AspspSinglePayment request = spiSinglePaymentMapper.mapToAspspSinglePayment(spiSinglePayment);
 
-            ResponseEntity<de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment> responseEntity =
-                aspspRestTemplate.postForEntity(aspspRemoteUrls.createPayment(), request, de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment.class);
+            ResponseEntity<AspspSinglePayment> responseEntity =
+                aspspRestTemplate.postForEntity(aspspRemoteUrls.createPayment(), request, AspspSinglePayment.class);
 
             return SpiResponse.<SpiSinglePaymentInitiationResponse>builder()
                        .aspspConsentData(initialAspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))

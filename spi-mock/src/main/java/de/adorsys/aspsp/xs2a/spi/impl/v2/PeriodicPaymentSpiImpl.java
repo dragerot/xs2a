@@ -19,6 +19,7 @@ package de.adorsys.aspsp.xs2a.spi.impl.v2;
 import de.adorsys.aspsp.xs2a.exception.RestException;
 import de.adorsys.aspsp.xs2a.spi.config.rest.AspspRemoteUrls;
 import de.adorsys.aspsp.xs2a.spi.mapper.SpiPeriodicPaymentMapper;
+import de.adorsys.psd2.aspsp.mock.api.payment.AspspPeriodicPayment;
 import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaConfirmation;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
 import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
@@ -54,10 +55,10 @@ public class PeriodicPaymentSpiImpl implements PeriodicPaymentSpi {
     @NotNull
     public SpiResponse<SpiPeriodicPaymentInitiationResponse> initiatePayment(@NotNull SpiPsuData psuData, @NotNull SpiPeriodicPayment payment, @NotNull AspspConsentData initialAspspConsentData) {
         try {
-            de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPeriodicPayment request = spiPeriodicPaymentMapper.mapToAspspSpiPeriodicPayment(payment);
+            AspspPeriodicPayment request = spiPeriodicPaymentMapper.mapToAspspPeriodicPayment(payment);
 
-            ResponseEntity<de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPeriodicPayment> aspspResponse =
-                aspspRestTemplate.postForEntity(aspspRemoteUrls.createPeriodicPayment(), request, de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPeriodicPayment.class);
+            ResponseEntity<AspspPeriodicPayment> aspspResponse =
+                aspspRestTemplate.postForEntity(aspspRemoteUrls.createPeriodicPayment(), request, AspspPeriodicPayment.class);
 
             return SpiResponse.<SpiPeriodicPaymentInitiationResponse>builder()
                        .aspspConsentData(initialAspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))
@@ -80,10 +81,10 @@ public class PeriodicPaymentSpiImpl implements PeriodicPaymentSpi {
     @NotNull
     public SpiResponse<SpiPeriodicPayment> getPaymentById(@NotNull SpiPsuData psuData, @NotNull SpiPeriodicPayment payment, @NotNull AspspConsentData aspspConsentData) {
         try {
-            ResponseEntity<List<de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPeriodicPayment>> aspspResponse =
-                aspspRestTemplate.exchange(aspspRemoteUrls.getPaymentById(), HttpMethod.GET, null, new ParameterizedTypeReference<List<de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPeriodicPayment>>() {
+            ResponseEntity<List<AspspPeriodicPayment>> aspspResponse =
+                aspspRestTemplate.exchange(aspspRemoteUrls.getPaymentById(), HttpMethod.GET, null, new ParameterizedTypeReference<List<AspspPeriodicPayment>>() {
                 }, payment.getPaymentType(), payment.getPaymentProduct(), payment.getPaymentId());
-            de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPeriodicPayment periodic = aspspResponse.getBody().get(0);
+            AspspPeriodicPayment periodic = aspspResponse.getBody().get(0);
             SpiPeriodicPayment spiPeriodicPayment = spiPeriodicPaymentMapper.mapToSpiPeriodicPayment(periodic, payment.getPaymentProduct());
 
             return SpiResponse.<SpiPeriodicPayment>builder()
@@ -135,10 +136,10 @@ public class PeriodicPaymentSpiImpl implements PeriodicPaymentSpi {
 
     @Override
     public @NotNull SpiResponse<SpiResponse.VoidResponse> executePaymentWithoutSca(@NotNull SpiPsuData psuData, @NotNull SpiPeriodicPayment payment, @NotNull AspspConsentData aspspConsentData) {
-        de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPeriodicPayment request = spiPeriodicPaymentMapper.mapToAspspSpiPeriodicPayment(payment);
+        AspspPeriodicPayment request = spiPeriodicPaymentMapper.mapToAspspPeriodicPayment(payment);
 
         try {
-            aspspRestTemplate.postForEntity(aspspRemoteUrls.createPeriodicPayment(), request, de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPeriodicPayment.class);
+            aspspRestTemplate.postForEntity(aspspRemoteUrls.createPeriodicPayment(), request, AspspPeriodicPayment.class);
 
             return SpiResponse.<SpiResponse.VoidResponse>builder()
                        .aspspConsentData(aspspConsentData)

@@ -16,30 +16,20 @@
 
 package de.adorsys.aspsp.xs2a.spi.mapper;
 
+import de.adorsys.psd2.aspsp.mock.api.payment.AspspSinglePayment;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiSinglePayment;
 import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiSinglePaymentInitiationResponse;
+import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 @Service
+@AllArgsConstructor
 public class SpiSinglePaymentMapper {
+    private final SpiPaymentMapper spiPaymentMapper;
 
-    public de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment mapToSpiSinglePayment(@NotNull SpiSinglePayment payment) {
-        de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment single = new de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment();
-        single.setEndToEndIdentification(payment.getEndToEndIdentification());
-        single.setDebtorAccount(payment.getDebtorAccount());
-        single.setInstructedAmount(payment.getInstructedAmount());
-        single.setCreditorAccount(payment.getCreditorAccount());
-        single.setCreditorAgent(payment.getCreditorAgent());
-        single.setCreditorName(payment.getCreditorName());
-        single.setCreditorAddress(payment.getCreditorAddress());
-        single.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
-        single.setPaymentStatus(SpiTransactionStatus.RCVD);
-        return single;
-    }
-
-    public SpiSinglePaymentInitiationResponse mapToSpiSinglePaymentResponse(@NotNull de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment payment) {
+    public SpiSinglePaymentInitiationResponse mapToSpiSinglePaymentResponse(@NotNull AspspSinglePayment payment) {
         SpiSinglePaymentInitiationResponse spi = new SpiSinglePaymentInitiationResponse();
         spi.setPaymentId(payment.getPaymentId());
         if (payment.getPaymentId() == null) {
@@ -48,5 +38,47 @@ public class SpiSinglePaymentMapper {
             spi.setTransactionStatus(SpiTransactionStatus.RCVD);
         }
         return spi;
+    }
+
+    public AspspSinglePayment mapToAspspSinglePayment(@NotNull SpiSinglePayment spiSinglePayment) {
+        AspspSinglePayment mockSingle = new AspspSinglePayment();
+        mockSingle.setPaymentId(spiSinglePayment.getPaymentId());
+        mockSingle.setEndToEndIdentification(spiSinglePayment.getEndToEndIdentification());
+        mockSingle.setDebtorAccount(spiPaymentMapper.mapToAspspAccountReference(spiSinglePayment.getDebtorAccount()));
+        mockSingle.setUltimateDebtor(null);
+        mockSingle.setInstructedAmount(spiPaymentMapper.mapToAspspAmount(spiSinglePayment.getInstructedAmount()));
+        mockSingle.setCreditorAccount(spiPaymentMapper.mapToAspspAccountReference(spiSinglePayment.getCreditorAccount()));
+        mockSingle.setCreditorAgent(spiSinglePayment.getCreditorAgent());
+        mockSingle.setCreditorName(spiSinglePayment.getCreditorName());
+        mockSingle.setCreditorAddress(spiPaymentMapper.mapToAspspAddress(spiSinglePayment.getCreditorAddress()));
+        mockSingle.setUltimateCreditor(null);
+        mockSingle.setPurposeCode(null);
+        mockSingle.setRemittanceInformationUnstructured(spiSinglePayment.getRemittanceInformationUnstructured());
+        mockSingle.setRemittanceInformationStructured(null);
+        mockSingle.setRequestedExecutionDate(null);
+        mockSingle.setRequestedExecutionTime(null);
+        mockSingle.setPaymentStatus(spiPaymentMapper.mapToAspspTransactionStatus(spiSinglePayment.getPaymentStatus()));
+        return mockSingle;
+    }
+
+    public AspspSinglePayment mapToAspspSinglePayment(@NotNull de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment spiSinglePayment) {
+        AspspSinglePayment mockSingle = new AspspSinglePayment();
+        mockSingle.setPaymentId(spiSinglePayment.getPaymentId());
+        mockSingle.setEndToEndIdentification(spiSinglePayment.getEndToEndIdentification());
+        mockSingle.setDebtorAccount(spiPaymentMapper.mapToAspspAccountReference(spiSinglePayment.getDebtorAccount()));
+        mockSingle.setUltimateDebtor(spiSinglePayment.getUltimateDebtor());
+        mockSingle.setInstructedAmount(spiPaymentMapper.mapToAspspAmount(spiSinglePayment.getInstructedAmount()));
+        mockSingle.setCreditorAccount(spiPaymentMapper.mapToAspspAccountReference(spiSinglePayment.getCreditorAccount()));
+        mockSingle.setCreditorAgent(spiSinglePayment.getCreditorAgent());
+        mockSingle.setCreditorName(spiSinglePayment.getCreditorName());
+        mockSingle.setCreditorAddress(spiPaymentMapper.mapToAspspAddress(spiSinglePayment.getCreditorAddress()));
+        mockSingle.setUltimateCreditor(spiSinglePayment.getUltimateCreditor());
+        mockSingle.setPurposeCode(spiSinglePayment.getPurposeCode());
+        mockSingle.setRemittanceInformationUnstructured(spiSinglePayment.getRemittanceInformationUnstructured());
+        mockSingle.setRemittanceInformationStructured(spiPaymentMapper.mapToAspspRemittance(spiSinglePayment.getRemittanceInformationStructured()));
+        mockSingle.setRequestedExecutionDate(spiSinglePayment.getRequestedExecutionDate());
+        mockSingle.setRequestedExecutionTime(spiSinglePayment.getRequestedExecutionTime().toLocalDateTime());
+        mockSingle.setPaymentStatus(spiPaymentMapper.mapToAspspTransactionStatus(spiSinglePayment.getPaymentStatus()));
+        return mockSingle;
     }
 }
