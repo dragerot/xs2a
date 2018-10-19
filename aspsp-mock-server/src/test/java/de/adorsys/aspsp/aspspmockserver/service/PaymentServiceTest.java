@@ -65,8 +65,8 @@ public class PaymentServiceTest {
     public void setUp() {
         when(paymentRepository.save(any(AspspPayment.class)))
             .thenReturn(getAspspPayment(AMOUNT_TO_TRANSFER));
-        when(paymentRepository.save(any(List.class)))
-            .thenReturn(Collections.singletonList(getAspspPayment()));
+        when(paymentRepository.save(anyListOf(AspspPayment.class)))
+            .thenReturn(Collections.singletonList(getAspspPayment(AMOUNT_TO_TRANSFER)));
         when(paymentRepository.exists(PAYMENT_ID))
             .thenReturn(true);
         when(paymentRepository.exists(WRONG_PAYMENT_ID))
@@ -134,16 +134,17 @@ public class PaymentServiceTest {
             .thenReturn(Collections.singletonList(getSpiSinglePayment(AMOUNT_TO_TRANSFER)));
 
         //Given
-        SpiBulkPayment expectedPayment = new SpiBulkPayment();
-        expectedPayment.setPayments(new ArrayList<>());
-        expectedPayment.getPayments().add(getSpiSinglePayment(AMOUNT_TO_TRANSFER));
+        SpiBulkPayment spiBulkPayment = new SpiBulkPayment();
+        spiBulkPayment.setPayments(new ArrayList<>());
+        spiBulkPayment.getPayments().add(getSpiSinglePayment(AMOUNT_TO_TRANSFER));
 
         //When
-        SpiBulkPayment actualPayments = paymentService.addBulkPayments(expectedPayment).get();
+        Optional<SpiBulkPayment> actualPayment = paymentService.addBulkPayments(spiBulkPayment);
 
         //Then
-        assertThat(actualPayments).isNotNull();
-        assertThat(actualPayments.size()).isEqualTo(1);
+        assertThat(actualPayment.isPresent()).isTrue();
+        SpiBulkPayment bulkPayment = actualPayment.get();
+        assertThat(bulkPayment.getPayments().size()).isEqualTo(1);
     }
 
     @Test
@@ -152,15 +153,16 @@ public class PaymentServiceTest {
             .thenReturn(Arrays.asList(getAspspPayment(AMOUNT_TO_TRANSFER), getAspspPayment(AMOUNT_TO_TRANSFER + 1)));
 
         //Given
-        List<SpiSinglePayment> expectedPayments = new ArrayList<>();
-        expectedPayments.add(getSpiSinglePayment(AMOUNT_TO_TRANSFER));
-        expectedPayments.add(getSpiSinglePayment(AMOUNT_TO_TRANSFER + 1));
+        SpiBulkPayment spiBulkPayment = new SpiBulkPayment();
+        List<SpiSinglePayment> payments = Arrays.asList(getSpiSinglePayment(AMOUNT_TO_TRANSFER),
+                                                        getSpiSinglePayment(AMOUNT_TO_TRANSFER + 1));
+        spiBulkPayment.setPayments(payments);
 
         //When
-        List<SpiSinglePayment> actualPayments = paymentService.addBulkPayments(expectedPayments);
+        Optional<SpiBulkPayment> actualPayment = paymentService.addBulkPayments(spiBulkPayment);
 
         //Then
-        assertThat(actualPayments).isEmpty();
+        assertThat(actualPayment.isPresent()).isFalse();
     }
 
     @Test
