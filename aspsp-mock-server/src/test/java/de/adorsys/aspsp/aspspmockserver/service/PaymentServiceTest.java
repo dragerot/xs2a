@@ -47,6 +47,8 @@ public class PaymentServiceTest {
     private static final String WRONG_PAYMENT_ID = "0";
     private static final String IBAN = "DE123456789";
     private static final String WRONG_IBAN = "wrong_iban";
+    private static final long BALANCE_AMOUNT = 100;
+    private static final long AMOUNT_TO_TRANSFER = BALANCE_AMOUNT / 2;
     private static final Currency CURRENCY = Currency.getInstance("EUR");
 
     @InjectMocks
@@ -61,7 +63,7 @@ public class PaymentServiceTest {
     @Before
     public void setUp() {
         when(paymentRepository.save(any(AspspPayment.class)))
-            .thenReturn(getAspspPayment(50));
+            .thenReturn(getAspspPayment(AMOUNT_TO_TRANSFER));
         when(paymentRepository.exists(PAYMENT_ID))
             .thenReturn(true);
         when(paymentRepository.exists(WRONG_PAYMENT_ID))
@@ -70,7 +72,7 @@ public class PaymentServiceTest {
         when(accountService.getAccountsByIban(IBAN)).thenReturn(getAccountDetails());
         when(accountService.getAccountsByIban(WRONG_IBAN)).thenReturn(null);
         when(paymentMapper.mapToAspspPayment(any(), any())).thenReturn(new AspspPayment());
-        when(paymentMapper.mapToSpiSinglePayment(any(AspspPayment.class))).thenReturn(getSpiSinglePayment(50));
+        when(paymentMapper.mapToSpiSinglePayment(any(AspspPayment.class))).thenReturn(getSpiSinglePayment(AMOUNT_TO_TRANSFER));
         when(paymentService.cancelPayment(PAYMENT_ID)).thenReturn(buildSpiCancelPayment());
         when(paymentRepository.findOne(PAYMENT_ID)).thenReturn(new AspspPayment());
     }
@@ -79,7 +81,7 @@ public class PaymentServiceTest {
     public void addPayment_Success() {
         when(accountService.getAccountsByIban(IBAN)).thenReturn(getAccountDetails());
         //Given
-        SpiSinglePayment expectedPayment = getSpiSinglePayment(50);
+        SpiSinglePayment expectedPayment = getSpiSinglePayment(AMOUNT_TO_TRANSFER);
 
         //When
         Optional<SpiSinglePayment> spiSinglePayment = paymentService.addPayment(expectedPayment);
@@ -92,7 +94,7 @@ public class PaymentServiceTest {
     @Test
     public void addPayment_AmountsAreEqual() {
         //Given
-        SpiSinglePayment expectedPayment = getSpiSinglePayment(100);
+        SpiSinglePayment expectedPayment = getSpiSinglePayment(BALANCE_AMOUNT);
 
         //When
         Optional<SpiSinglePayment> actualPayment = paymentService.addPayment(expectedPayment);
@@ -104,7 +106,7 @@ public class PaymentServiceTest {
     @Test
     public void addPayment_Failure() {
         //Given
-        SpiSinglePayment expectedPayment = getSpiSinglePayment(101);
+        SpiSinglePayment expectedPayment = getSpiSinglePayment(BALANCE_AMOUNT + 1);
 
         //When
         Optional<SpiSinglePayment> actualPayment = paymentService.addPayment(expectedPayment);
@@ -122,15 +124,15 @@ public class PaymentServiceTest {
 
     @Test
     public void addBulkPayments_Success() {
-        List<AspspPayment> payments = Collections.singletonList(getAspspPayment(50));
+        List<AspspPayment> payments = Collections.singletonList(getAspspPayment(AMOUNT_TO_TRANSFER));
         when(paymentMapper.mapToAspspPaymentList(any())).thenReturn(payments);
         when(paymentRepository.save(anyListOf(AspspPayment.class))).thenReturn(payments);
         when(paymentMapper.mapToSpiSinglePaymentList(anyListOf(AspspPayment.class)))
-            .thenReturn(Collections.singletonList(getSpiSinglePayment(50)));
+            .thenReturn(Collections.singletonList(getSpiSinglePayment(AMOUNT_TO_TRANSFER)));
 
         //Given
         List<SpiSinglePayment> expectedPayments = new ArrayList<>();
-        expectedPayments.add(getSpiSinglePayment(50));
+        expectedPayments.add(getSpiSinglePayment(AMOUNT_TO_TRANSFER));
 
         //When
         List<SpiSinglePayment> actualPayments = paymentService.addBulkPayments(expectedPayments);
@@ -143,12 +145,12 @@ public class PaymentServiceTest {
     @Test
     public void addBulkPayments_Failure_InsufficientFunds() {
         when(paymentMapper.mapToAspspPaymentList(any()))
-            .thenReturn(Arrays.asList(getAspspPayment(50), getAspspPayment(51)));
+            .thenReturn(Arrays.asList(getAspspPayment(AMOUNT_TO_TRANSFER), getAspspPayment(AMOUNT_TO_TRANSFER + 1)));
 
         //Given
         List<SpiSinglePayment> expectedPayments = new ArrayList<>();
-        expectedPayments.add(getSpiSinglePayment(50));
-        expectedPayments.add(getSpiSinglePayment(51));
+        expectedPayments.add(getSpiSinglePayment(AMOUNT_TO_TRANSFER));
+        expectedPayments.add(getSpiSinglePayment(AMOUNT_TO_TRANSFER + 1));
 
         //When
         List<SpiSinglePayment> actualPayments = paymentService.addBulkPayments(expectedPayments);
@@ -208,7 +210,7 @@ public class PaymentServiceTest {
 
     private List<SpiAccountBalance> getBalances() {
         SpiAccountBalance balance = new SpiAccountBalance();
-        balance.setSpiBalanceAmount(new SpiAmount(CURRENCY, BigDecimal.valueOf(100)));
+        balance.setSpiBalanceAmount(new SpiAmount(CURRENCY, BigDecimal.valueOf(BALANCE_AMOUNT)));
         balance.setSpiBalanceType(SpiBalanceType.INTERIM_AVAILABLE);
         return Collections.singletonList(balance);
     }
