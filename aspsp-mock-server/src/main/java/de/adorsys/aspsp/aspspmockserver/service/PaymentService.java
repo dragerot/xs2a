@@ -37,10 +37,10 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static de.adorsys.aspsp.aspspmockserver.domain.pis.PisPaymentType.PERIODIC;
 import static de.adorsys.aspsp.aspspmockserver.domain.pis.PisPaymentType.SINGLE;
@@ -110,15 +110,22 @@ public class PaymentService {
      * @param payments Bulk payment
      * @return list of single payments forming bulk payment
      */
-    public List<AspspSinglePayment> addBulkPayments(List<AspspSinglePayment> payments) {
-        List<AspspPayment> aspspPayments = paymentMapper.mapToAspspPaymentList(payments).stream()
-                                               .peek(p -> {
-                                                   if (isNonExistingAccount(p)) {
-                                                       p.setPaymentStatus(AspspTransactionStatus.RJCT);
-                                                   }
-                                               }).collect(Collectors.toList());
+    public Optional<AspspBulkPayment> addBulkPayments(AspspBulkPayment payments) {
+        List<AspspPayment> aspspPayments = new ArrayList<>(paymentMapper.mapToAspspPaymentList(payments.getPayments()));
+        Optional<AspspPayment> firstInvalid = aspspPayments.stream()
+                                                  .filter(this::isNonExistingAccount)
+                                                  .findFirst();
+
+        if (firstInvalid.isPresent()) {
+            return Optional.empty();
+        }
+
         List<AspspPayment> savedPayments = paymentRepository.save(aspspPayments);
-        return paymentMapper.mapToAspspSinglePaymentList(savedPayments);
+        AspspBulkPayment result = new AspspBulkPayment();
+        result.setPayments(paymentMapper.mapToAspspSinglePaymentList(savedPayments));
+        result.setPaymentId(savedPayments.get(0).getPaymentId());
+
+        return Optional.of(result);
     }
 
     private boolean isNonExistingAccount(AspspPayment p) {

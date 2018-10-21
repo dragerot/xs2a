@@ -18,6 +18,7 @@ package de.adorsys.aspsp.xs2a.spi.mapper;
 
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspSinglePayment;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
+import de.adorsys.psd2.xs2a.spi.domain.payment.SpiPaymentProduct;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiSinglePayment;
 import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiSinglePaymentInitiationResponse;
 import lombok.AllArgsConstructor;
@@ -38,6 +39,21 @@ public class SpiSinglePaymentMapper {
             spi.setTransactionStatus(SpiTransactionStatus.RCVD);
         }
         return spi;
+    }
+
+    public SpiSinglePayment mapToSpiSinglePayment(@NotNull de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment payment, SpiPaymentProduct paymentProduct) {
+        SpiSinglePayment single = new SpiSinglePayment(paymentProduct);
+        single.setPaymentId(payment.getPaymentId());
+        single.setEndToEndIdentification(payment.getEndToEndIdentification());
+        single.setDebtorAccount(payment.getDebtorAccount());
+        single.setInstructedAmount(payment.getInstructedAmount());
+        single.setCreditorAccount(payment.getCreditorAccount());
+        single.setCreditorAgent(payment.getCreditorAgent());
+        single.setCreditorName(payment.getCreditorName());
+        single.setCreditorAddress(payment.getCreditorAddress());
+        single.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
+        single.setPaymentStatus(SpiTransactionStatus.RCVD);
+        return single;
     }
 
     public AspspSinglePayment mapToAspspSinglePayment(@NotNull SpiSinglePayment spiSinglePayment) {

@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package de.adorsys.psd2.consent.api;
+package de.adorsys.psd2.xs2a.spi.domain.payment.response;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import de.adorsys.psd2.xs2a.spi.domain.payment.SpiSinglePayment;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import java.util.List;
 
 @Data
-@ApiModel(description = "Ais/Pis consent aspsp data update request", value = "UpdateConsentAspspDataRequest")
-public class UpdateConsentAspspDataRequest {
-
-    @ApiModelProperty(value = "Consent ID", required = true, example = "3e18d032-ee06-4670-b043-9d43ba367db3")
-    private String consentId;
-    @ApiModelProperty(value = "ASPSP consent data Base64", required = true, example = "zdxcvvzzzxcvzzzz")
-    private String aspspConsentDataBase64;
+@EqualsAndHashCode(callSuper = true)
+public class SpiBulkPaymentInitiationResponse extends SpiPaymentInitiationResponse {
+    private List<SpiSinglePayment> payments;
 }

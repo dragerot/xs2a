@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package de.adorsys.psd2.consent.api.ais;
+package de.adorsys.psd2.xs2a.core.profile;
 
-import io.swagger.annotations.ApiModel;
-
-@ApiModel(description = "AccountAccess type", value = "AccountAccessType")
-public enum AccountAccessType {
-    ALL_ACCOUNTS,
-    ALL_ACCOUNTS_WITH_BALANCES
+public enum ScaApproach {
+    REDIRECT,
+    OAUTH,
+    DECOUPLED,
+    EMBEDDED
 }

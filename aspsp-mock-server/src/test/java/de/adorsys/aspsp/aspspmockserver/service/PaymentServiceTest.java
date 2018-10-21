@@ -61,6 +61,8 @@ public class PaymentServiceTest {
     public void setUp() {
         when(paymentRepository.save(any(AspspPayment.class)))
             .thenReturn(getAspspPayment());
+        when(paymentRepository.save(any(List.class)))
+            .thenReturn(Collections.singletonList(getAspspPayment()));
         when(paymentRepository.exists(PAYMENT_ID))
             .thenReturn(true);
         when(paymentRepository.exists(WRONG_PAYMENT_ID))
@@ -121,11 +123,12 @@ public class PaymentServiceTest {
     @Test
     public void addBulkPayments() {
         //Given
-        List<AspspSinglePayment> expectedPayments = new ArrayList<>();
-        expectedPayments.add(getAspspSinglePayment(50));
+        AspspBulkPayment expectedPayment = new AspspBulkPayment();
+        expectedPayment.setPayments(new ArrayList<>());
+        expectedPayment.getPayments().add(getAspspSinglePayment(50));
 
         //When
-        List<AspspSinglePayment> actualPayments = paymentService.addBulkPayments(expectedPayments);
+        AspspBulkPayment actualPayments = paymentService.addBulkPayments(expectedPayment).get();
 
         //Then
         assertThat(actualPayments).isNotNull();

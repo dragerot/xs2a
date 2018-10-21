@@ -54,12 +54,12 @@ public class PaymentControllerTest {
     public void setUpPaymentServiceMock() {
         AspspSinglePayment response = getAspspSinglePayment();
         response.setPaymentId(PAYMENT_ID);
-        List<AspspSinglePayment> responseList = new ArrayList<>();
-        responseList.add(response);
+        AspspBulkPayment bulkResponse = new AspspBulkPayment();
+        bulkResponse.setPaymentId(PAYMENT_ID);
         when(paymentService.addPayment(getAspspSinglePayment()))
             .thenReturn(Optional.of(response));
         when(paymentService.addBulkPayments(any()))
-            .thenReturn(responseList);
+            .thenReturn(Optional.of(bulkResponse));
         when(paymentService.isPaymentExist(PAYMENT_ID))
             .thenReturn(true);
         when(paymentService.isPaymentExist(WRONG_PAYMENT_ID))
@@ -91,13 +91,13 @@ public class PaymentControllerTest {
         HttpStatus expectedStatus = HttpStatus.CREATED;
         AspspBulkPayment expectedRequest = getAspspBulkPayment();
         //When
-        ResponseEntity<List<AspspSinglePayment>> actualResponse = paymentController.createBulkPayments(expectedRequest);
+        ResponseEntity<AspspBulkPayment> actualResponse = paymentController.createBulkPayments(expectedRequest);
 
         //Then
         HttpStatus actualStatus = actualResponse.getStatusCode();
         assertThat(actualStatus).isEqualTo(expectedStatus);
         assertThat(actualResponse.getBody()).isNotNull();
-        assertThat(actualResponse.getBody().get(0).getPaymentId()).isEqualTo(PAYMENT_ID);
+        assertThat(actualResponse.getBody().getPaymentId()).isEqualTo(PAYMENT_ID);
     }
 
     @Test

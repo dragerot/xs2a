@@ -69,13 +69,11 @@ public class PaymentController {
         @ApiResponse(code = 201, message = "Created", response = List.class),
         @ApiResponse(code = 204, message = "Payment Failed")})
     @PostMapping(path = "/bulk-payments")
-    public ResponseEntity<List<AspspSinglePayment>> createBulkPayments(
+    public ResponseEntity<AspspBulkPayment> createBulkPayments(
         @RequestBody AspspBulkPayment bulkPayment) {
-        List<AspspSinglePayment> saved = paymentService.addBulkPayments(bulkPayment.getPayments());
-        return saved.stream()
-                   .anyMatch(p -> p.getPaymentStatus() != RJCT)
-                   ? new ResponseEntity<>(saved, CREATED)
-                   : ResponseEntity.noContent().build();
+        return paymentService.addBulkPayments(bulkPayment)
+                   .map(saved -> new ResponseEntity<>(saved, CREATED))
+                   .orElseGet(ResponseEntity.noContent()::build);
     }
 
     @ApiOperation(value = "Returns the status of payment requested by it`s ASPSP identifier", authorizations = {@Authorization(value = "oauth2", scopes = {@AuthorizationScope(scope = "read", description = "Access read API")})})
