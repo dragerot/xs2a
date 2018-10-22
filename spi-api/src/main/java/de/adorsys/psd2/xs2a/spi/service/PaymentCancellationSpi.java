@@ -22,7 +22,14 @@ import de.adorsys.psd2.xs2a.spi.domain.psu.SpiPsuData;
 import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
 import org.jetbrains.annotations.NotNull;
 
-//TODO javadocs!
 public interface PaymentCancellationSpi extends AuthorisationSpi<SpiPayment> {
-     SpiResponse<SpiPaymentCancellationResponse> initiatePaymentCancellation(@NotNull SpiPsuData psuData, @NotNull SpiPayment payment, @NotNull AspspConsentData aspspConsentData);
+    /**
+     * Initiates payment cancellation process
+     *
+     * @param psuData          ASPSP identifier(s) of the psu
+     * @param payment          Payment to be cancelled
+     * @param aspspConsentData Encrypted data that may stored in the consent management system in the consent linked to a request.
+     * @return Payment cancellation response with information about transaction status and whether authorisation of the request is required
+     */
+    SpiResponse<SpiPaymentCancellationResponse> initiatePaymentCancellation(@NotNull SpiPsuData psuData, @NotNull SpiPayment payment, @NotNull AspspConsentData aspspConsentData);
 }

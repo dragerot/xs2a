@@ -19,6 +19,7 @@ package de.adorsys.aspsp.xs2a.spi.impl;
 import de.adorsys.aspsp.xs2a.service.mapper.consent.SpiCmsPisMapper;
 import de.adorsys.aspsp.xs2a.spi.component.SpiMockJsonConverter;
 import de.adorsys.aspsp.xs2a.spi.config.rest.AspspRemoteUrls;
+import de.adorsys.aspsp.xs2a.spi.domain.SpiAspspAuthorisationData;
 import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiBulkPayment;
 import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPaymentInitialisationResponse;
 import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPeriodicPayment;
@@ -33,7 +34,6 @@ import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaConfirmation;
 import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaMethod;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
 import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
-import de.adorsys.aspsp.xs2a.spi.domain.SpiAspspAuthorisationData;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiPaymentType;
 import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
 import lombok.AllArgsConstructor;
@@ -64,7 +64,6 @@ public class PaymentSpiImpl implements PaymentSpi {
     private final SpiMockJsonConverter jsonConverter;
     private final SpiPaymentMapper spiPaymentMapper;
     private final SpiCmsPisMapper spiCmsPisMapper;
-    private final AspspProfileServiceWrapper aspspProfileServiceWrapper;
 
     /**
      * For detailed description see {@link PaymentSpi#createPaymentInitiation(SpiSinglePayment, AspspConsentData)}

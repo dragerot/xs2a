@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package de.adorsys.psd2.xs2a.spi.domain.payment;
+package de.adorsys.aspsp.aspspmockserver.domain.spi.payment;
 
-import de.adorsys.aspsp.xs2a.spi.domain.common.SpiTransactionStatus;
-import lombok.Value;
+import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiTransactionStatus;
+import lombok.Data;
 
-@Value
-public class SpiCancelPayment {
-    private SpiTransactionStatus transactionStatus;
-    private boolean startAuthorisationRequired;
+@Data
+public class SpiPaymentCancellationResponse {
+    boolean cancellationAuthorisationMandated;
+    SpiTransactionStatus transactionStatus;
 }

@@ -24,12 +24,16 @@ import de.adorsys.aspsp.xs2a.service.consent.PisConsentDataService;
 import de.adorsys.aspsp.xs2a.service.mapper.PaymentMapper;
 import de.adorsys.aspsp.xs2a.service.payment.ReadSinglePayment;
 import de.adorsys.aspsp.xs2a.service.payment.ScaPaymentService;
-import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
+import de.adorsys.aspsp.xs2a.service.profile.AspspProfileServiceWrapper;
+import de.adorsys.aspsp.xs2a.spi.service.PaymentSpi;
 import de.adorsys.psd2.xs2a.spi.domain.account.SpiAccountReference;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
 import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiPaymentType;
-import de.adorsys.aspsp.xs2a.spi.service.PaymentSpi;
+import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiPaymentCancellationResponse;
+import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
+import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponseStatus;
+import de.adorsys.psd2.xs2a.spi.service.PaymentCancellationSpi;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,11 +50,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static de.adorsys.aspsp.xs2a.domain.MessageErrorCode.*;
-import static de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus.RCVD;
-import static de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus.RJCT;
+import static de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus.*;
 import static de.adorsys.aspsp.xs2a.domain.pis.PaymentType.SINGLE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -85,6 +89,8 @@ public class PaymentServiceTest {
     @Mock
     private PaymentSpi paymentSpi;
     @Mock
+    private PaymentCancellationSpi paymentCancellationSpi;
+    @Mock
     private ReadPaymentFactory readPaymentFactory;
     @Mock
     private ReadSinglePayment readSinglePayment;
@@ -92,6 +98,8 @@ public class PaymentServiceTest {
     private AccountReferenceValidationService referenceValidationService;
     @Mock
     private PisConsentDataService pisConsentDataService;
+    @Mock
+    private AspspProfileServiceWrapper aspspProfileService;
 
     @Before
     public void setUp() {
@@ -241,31 +249,69 @@ public class PaymentServiceTest {
     }
 
     @Test
-    public void cancelPayment_Success() {
-        when(paymentSpi.cancelPayment(eq(PAYMENT_ID), any())).thenReturn(getSpiCancelPaymentResponse(SpiTransactionStatus.CANC, false));
-        when(paymentMapper.mapToCancelPaymentResponse(any())).thenReturn(getCancelPaymentResponse(false));
+    public void cancelPayment_WithoutAuthorisation_Success() {
+        when(aspspProfileService.isPaymentCancellationAuthorizationMandated()).thenReturn(Boolean.FALSE);
+        when(paymentCancellationSpi.executeRequestWithoutSca(any(), any(), any()))
+            .thenReturn(SpiResponse.<SpiResponse.VoidResponse>builder().success());
+        when(paymentMapper.mapToCancelPaymentResponse(getSpiCancelPaymentResponse(false, SpiTransactionStatus.CANC)))
+            .thenReturn(getCancelPaymentResponse(false, CANC));
 
         //When
         ResponseObject<CancelPaymentResponse> response = paymentService.cancelPayment(SINGLE, PAYMENT_ID);
 
         //Than
         assertThat(response.hasError()).isFalse();
-        assertThat(response.getError()).isNull();
-        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).isEqualTo(getCancelPaymentResponse(false, CANC));
     }
 
     @Test
-    public void cancelPayment_Failure_wrong_id() {
-        when(paymentSpi.cancelPayment(eq(WRONG_PAYMENT_ID), any())).thenReturn(SpiResponse.<SpiCancelPayment>builder().fail());
-        when(paymentMapper.mapToCancelPaymentResponse(any())).thenReturn(getCancelPaymentResponse(false));
+    public void cancelPayment_WithoutAuthorisation_Failure_WrongId() {
+        when(aspspProfileService.isPaymentCancellationAuthorizationMandated()).thenReturn(Boolean.FALSE);
+        when(paymentCancellationSpi.executeRequestWithoutSca(any(), any(), any()))
+            .thenReturn(SpiResponse.<SpiResponse.VoidResponse>builder().fail(SpiResponseStatus.LOGICAL_FAILURE));
+        when(paymentMapper.mapToCancelPaymentResponse(getSpiCancelPaymentResponse(false, SpiTransactionStatus.CANC)))
+            .thenReturn(getCancelPaymentResponse(false, CANC));
 
         //When
         ResponseObject<CancelPaymentResponse> response = paymentService.cancelPayment(SINGLE, WRONG_PAYMENT_ID);
 
         //Than
+        assertThat(response.hasError()).isTrue();
+        assertThat(response.getBody()).isNull();
+    }
+
+    @Test
+    public void cancelPayment_WithAuthorisation_Success() {
+        when(aspspProfileService.isPaymentCancellationAuthorizationMandated()).thenReturn(Boolean.TRUE);
+        when(paymentCancellationSpi.initiatePaymentCancellation(any(), any(), any()))
+            .thenReturn(SpiResponse.<SpiPaymentCancellationResponse>builder()
+                            .payload(getSpiCancelPaymentResponse(true, SpiTransactionStatus.ACTC))
+                            .success());
+        when(paymentMapper.mapToCancelPaymentResponse(getSpiCancelPaymentResponse(true, SpiTransactionStatus.ACTC)))
+            .thenReturn(getCancelPaymentResponse(true, ACTC));
+
+        //When
+        ResponseObject<CancelPaymentResponse> response = paymentService.cancelPayment(SINGLE, PAYMENT_ID);
+
+        //Than
         assertThat(response.hasError()).isFalse();
-        assertThat(response.getError()).isNull();
-        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).isEqualTo(getCancelPaymentResponse(true, ACTC));
+    }
+
+    @Test
+    public void cancelPayment_WithAuthorisation_Failure_WrongId() {
+        when(aspspProfileService.isPaymentCancellationAuthorizationMandated()).thenReturn(Boolean.TRUE);
+        when(paymentCancellationSpi.initiatePaymentCancellation(any(), any(), any()))
+            .thenReturn(SpiResponse.<SpiPaymentCancellationResponse>builder().fail(SpiResponseStatus.LOGICAL_FAILURE));
+        when(paymentMapper.mapToCancelPaymentResponse(getSpiCancelPaymentResponse(true, SpiTransactionStatus.ACTC)))
+            .thenReturn(getCancelPaymentResponse(true, ACTC));
+
+        //When
+        ResponseObject<CancelPaymentResponse> response = paymentService.cancelPayment(SINGLE, WRONG_PAYMENT_ID);
+
+        //Than
+        assertThat(response.hasError()).isTrue();
+        assertThat(response.getBody()).isNull();
     }
 
     //Test additional methods
@@ -359,15 +405,17 @@ public class PaymentServiceTest {
         return requestParameters;
     }
 
-    private SpiResponse<SpiCancelPayment> getSpiCancelPaymentResponse(SpiTransactionStatus transactionStatus, boolean authorisationRequired) {
-        return SpiResponse.<SpiCancelPayment>builder()
-                   .payload(new SpiCancelPayment(transactionStatus, authorisationRequired))
-                   .success();
+    private SpiPaymentCancellationResponse getSpiCancelPaymentResponse(boolean authorisationRequired, SpiTransactionStatus transactionStatus) {
+        SpiPaymentCancellationResponse response = new SpiPaymentCancellationResponse();
+        response.setCancellationAuthorisationMandated(authorisationRequired);
+        response.setTransactionStatus(transactionStatus);
+        return response;
     }
 
-    private CancelPaymentResponse getCancelPaymentResponse(boolean authorisationRequired) {
-        CancelPaymentResponse cancelPaymentResponse = new CancelPaymentResponse();
-        cancelPaymentResponse.setStartAuthorisationRequired(authorisationRequired);
-        return cancelPaymentResponse;
+    private CancelPaymentResponse getCancelPaymentResponse(boolean authorisationRequired, Xs2aTransactionStatus transactionStatus) {
+        CancelPaymentResponse response = new CancelPaymentResponse();
+        response.setStartAuthorisationRequired(authorisationRequired);
+        response.setTransactionStatus(transactionStatus);
+        return response;
     }
 }

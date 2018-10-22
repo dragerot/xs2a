@@ -27,22 +27,31 @@ import de.adorsys.aspsp.xs2a.service.authorization.pis.CreateSinglePaymentServic
 import de.adorsys.aspsp.xs2a.service.consent.PisConsentDataService;
 import de.adorsys.aspsp.xs2a.service.consent.PisConsentService;
 import de.adorsys.aspsp.xs2a.service.mapper.PaymentMapper;
+import de.adorsys.aspsp.xs2a.service.mapper.spi_xs2a_mappers.Xs2aToSpiPaymentMapper;
 import de.adorsys.aspsp.xs2a.service.payment.ReadPayment;
 import de.adorsys.aspsp.xs2a.service.payment.ScaPaymentService;
-import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
+import de.adorsys.aspsp.xs2a.service.profile.AspspProfileServiceWrapper;
+import de.adorsys.aspsp.xs2a.spi.service.PaymentSpi;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
 import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
-import de.adorsys.aspsp.xs2a.spi.service.PaymentSpi;
+import de.adorsys.psd2.xs2a.spi.domain.payment.SpiSinglePayment;
+import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiPaymentCancellationResponse;
+import de.adorsys.psd2.xs2a.spi.domain.psu.SpiPsuData;
+import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
+import de.adorsys.psd2.xs2a.spi.service.PaymentCancellationSpi;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static de.adorsys.aspsp.xs2a.domain.MessageErrorCode.*;
+import static de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus.CANC;
 import static de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus.RJCT;
 import static de.adorsys.aspsp.xs2a.domain.pis.PaymentType.*;
 
@@ -51,6 +60,7 @@ import static de.adorsys.aspsp.xs2a.domain.pis.PaymentType.*;
 @AllArgsConstructor
 public class PaymentService {
     private final PaymentSpi paymentSpi;
+    private final PaymentCancellationSpi paymentCancellationSpi;
     private final PaymentMapper paymentMapper;
     private final ScaPaymentService scaPaymentService;
     private final ReadPaymentFactory readPaymentFactory;
@@ -59,6 +69,8 @@ public class PaymentService {
     private final PisConsentDataService pisConsentDataService;
     private final TppService tppService;
     private final CreateSinglePaymentService createSinglePaymentService;
+    private final AspspProfileServiceWrapper profileService;
+    private final Xs2aToSpiPaymentMapper xs2aToSpiPaymentMapper;
 
     /**
      * Initiates a payment though "payment service" corresponding service method
@@ -180,8 +192,32 @@ public class PaymentService {
      * @return Response containing information about cancelled payment or corresponding error
      */
     public ResponseObject<CancelPaymentResponse> cancelPayment(PaymentType paymentType, String paymentId) {
-        SpiResponse<SpiCancelPayment> spiResponse = paymentSpi.cancelPayment(paymentId, pisConsentDataService.getAspspConsentDataByPaymentId(paymentId));
-        CancelPaymentResponse cancelPaymentResponse = paymentMapper.mapToCancelPaymentResponse(spiResponse.getPayload());
+        SpiPsuData psuData = new SpiPsuData(null, null, null, null); // TODO get it from XS2A Interface https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/332
+        SpiSinglePayment payment = new SpiSinglePayment(null); // TODO get actual payment from SPI
+        payment.setPaymentId(paymentId);
+        AspspConsentData consentData = pisConsentDataService.getAspspConsentDataByPaymentId(paymentId);
+
+        CancelPaymentResponse cancelPaymentResponse;
+        if (profileService.isPaymentCancellationAuthorizationMandated()) {
+            SpiResponse<SpiPaymentCancellationResponse> spiResponse = paymentCancellationSpi.initiatePaymentCancellation(psuData, payment, consentData);
+
+            if (spiResponse.hasError()) {
+                return ResponseObject.<CancelPaymentResponse>builder().fail(new MessageError(RESOURCE_UNKNOWN_403)).build();
+            }
+
+            cancelPaymentResponse = paymentMapper.mapToCancelPaymentResponse(spiResponse.getPayload());
+            pisConsentDataService.updateAspspConsentData(spiResponse.getAspspConsentData());
+        } else {
+            SpiResponse<SpiResponse.VoidResponse> spiResponse = paymentCancellationSpi.executeRequestWithoutSca(psuData, payment, consentData);
+
+            if (spiResponse.hasError()) {
+                return ResponseObject.<CancelPaymentResponse>builder().fail(new MessageError(RESOURCE_UNKNOWN_403)).build();
+            }
+
+            cancelPaymentResponse = new CancelPaymentResponse();
+            cancelPaymentResponse.setTransactionStatus(CANC);
+            pisConsentDataService.updateAspspConsentData(spiResponse.getAspspConsentData());
+        }
 
         return Optional.ofNullable(cancelPaymentResponse)
                    .map(p -> ResponseObject.<CancelPaymentResponse>builder()

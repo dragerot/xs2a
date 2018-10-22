@@ -29,7 +29,6 @@ import javax.validation.constraints.NotNull;
 @Data
 public class CancelPaymentResponse {
     private boolean startAuthorisationRequired;
-    private String authorisationId;
     private Xs2aTransactionStatus transactionStatus;
     private Xs2aAuthenticationObject[] scaMethods;
     private Xs2aChosenScaMethod chosenScaMethod;

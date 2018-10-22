@@ -18,7 +18,9 @@ package de.adorsys.aspsp.aspspmockserver.web;
 
 import de.adorsys.aspsp.aspspmockserver.domain.spi.account.SpiAccountReference;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiAmount;
+import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiTransactionStatus;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiBulkPayment;
+import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiPaymentCancellationResponse;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiSinglePayment;
 import de.adorsys.aspsp.aspspmockserver.service.PaymentService;
 import org.junit.Before;
@@ -34,8 +36,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 
-import static de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiTransactionStatus.ACCP;
-import static de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiTransactionStatus.RJCT;
+import static de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiTransactionStatus.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
@@ -68,6 +69,14 @@ public class PaymentControllerTest {
             .thenReturn(Optional.of(ACCP));
         when(paymentService.getPaymentStatusById(WRONG_PAYMENT_ID))
             .thenReturn(Optional.of(RJCT));
+        when(paymentService.cancelPayment(PAYMENT_ID))
+            .thenReturn(Optional.of(getSpiPaymentCancellationResponse(false, CANC)));
+        when(paymentService.cancelPayment(WRONG_PAYMENT_ID))
+            .thenReturn(Optional.empty());
+        when(paymentService.initiatePaymentCancellation(PAYMENT_ID))
+            .thenReturn(Optional.of(getSpiPaymentCancellationResponse(true, ACTC)));
+        when(paymentService.initiatePaymentCancellation(WRONG_PAYMENT_ID))
+            .thenReturn(Optional.empty());
     }
 
     @Test
@@ -120,6 +129,46 @@ public class PaymentControllerTest {
         assertThat(actualResponse.getBody()).isEqualTo(RJCT);
     }
 
+    @Test
+    public void cancelPayment_Success() {
+        //When
+        ResponseEntity actualResponse = paymentController.cancelPayment(PAYMENT_ID);
+
+        //Then
+        assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(actualResponse.getBody()).isEqualTo(getSpiPaymentCancellationResponse(false, CANC));
+    }
+
+    @Test
+    public void cancelPayment_Failure_WrongId() {
+        //When
+        ResponseEntity actualResponse = paymentController.cancelPayment(WRONG_PAYMENT_ID);
+
+        //Then
+        assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(actualResponse.hasBody()).isFalse();
+    }
+
+    @Test
+    public void initiatePaymentCancellation_Success() {
+        //When
+        ResponseEntity actualResponse = paymentController.initiatePaymentCancellation(PAYMENT_ID);
+
+        //Then
+        assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+        assertThat(actualResponse.getBody()).isEqualTo(getSpiPaymentCancellationResponse(true, ACTC));
+    }
+
+    @Test
+    public void initiatePaymentCancellation_Failure_WrongId() {
+        //When
+        ResponseEntity actualResponse = paymentController.initiatePaymentCancellation(WRONG_PAYMENT_ID);
+
+        //Then
+        assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(actualResponse.hasBody()).isFalse();
+    }
+
     private SpiSinglePayment getSpiSinglePayment() {
         SpiSinglePayment payment = new SpiSinglePayment();
         SpiAmount amount = new SpiAmount(Currency.getInstance("EUR"), BigDecimal.valueOf(20));
@@ -151,5 +200,12 @@ public class PaymentControllerTest {
             null,
             null,
             Currency.getInstance("EUR"));
+    }
+
+    private SpiPaymentCancellationResponse getSpiPaymentCancellationResponse(boolean authorisationMandated, SpiTransactionStatus transactionStatus) {
+        SpiPaymentCancellationResponse response = new SpiPaymentCancellationResponse();
+        response.setCancellationAuthorisationMandated(authorisationMandated);
+        response.setTransactionStatus(transactionStatus);
+        return response;
     }
 }

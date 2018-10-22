@@ -1,0 +1,78 @@
+/*
+ * Copyright 2018-2018 adorsys GmbH & Co KG
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package de.adorsys.aspsp.xs2a.spi.impl.v2;
+
+import de.adorsys.aspsp.xs2a.spi.config.rest.AspspRemoteUrls;
+import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiAuthorisationStatus;
+import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiAuthorizationCodeResult;
+import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaConfirmation;
+import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaMethod;
+import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
+import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiPaymentCancellationResponse;
+import de.adorsys.psd2.xs2a.spi.domain.psu.SpiPsuData;
+import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
+import de.adorsys.psd2.xs2a.spi.service.PaymentCancellationSpi;
+import de.adorsys.psd2.xs2a.spi.service.SpiPayment;
+import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
+
+@Service
+@AllArgsConstructor
+public class PaymentCancellationSpiImpl implements PaymentCancellationSpi {
+    private final AspspRemoteUrls aspspRemoteUrls;
+    @Qualifier("aspspRestTemplate")
+    private final RestTemplate aspspRestTemplate;
+
+    @Override
+    public SpiResponse<SpiPaymentCancellationResponse> initiatePaymentCancellation(@NotNull SpiPsuData psuData, @NotNull SpiPayment payment, @NotNull AspspConsentData aspspConsentData) {
+        ResponseEntity<SpiPaymentCancellationResponse> responseEntity = aspspRestTemplate.exchange(aspspRemoteUrls.initiatePaymentCancellation(), HttpMethod.POST, null, SpiPaymentCancellationResponse.class, payment.getPaymentId());
+        return new SpiResponse<>(responseEntity.getBody(), aspspConsentData);
+    }
+
+    @Override
+    public SpiResponse<SpiAuthorisationStatus> authorisePsu(@NotNull SpiPsuData psuData, String password, SpiPayment businessObject, AspspConsentData aspspConsentData) {
+        return null;
+    }
+
+    @Override
+    public SpiResponse<List<SpiScaMethod>> requestAvailableScaMethods(@NotNull SpiPsuData psuData, SpiPayment businessObject, AspspConsentData aspspConsentData) {
+        return null;
+    }
+
+    @Override
+    public @NotNull SpiResponse<SpiAuthorizationCodeResult> requestAuthorisationCode(@NotNull SpiPsuData psuData, @NotNull SpiScaMethod scaMethod, @NotNull SpiPayment businessObject, @NotNull AspspConsentData aspspConsentData) {
+        return null;
+    }
+
+    @Override
+    public @NotNull SpiResponse<SpiResponse.VoidResponse> verifyAuthorisationCodeAndExecuteRequest(@NotNull SpiPsuData psuData, @NotNull SpiScaConfirmation spiScaConfirmation, @NotNull SpiPayment businessObject, @NotNull AspspConsentData aspspConsentData) {
+        return null;
+    }
+
+    @Override
+    public @NotNull SpiResponse<SpiResponse.VoidResponse> executeRequestWithoutSca(@NotNull SpiPsuData psuData, @NotNull SpiPayment payment, @NotNull AspspConsentData aspspConsentData) {
+        ResponseEntity<SpiPaymentCancellationResponse> responseEntity = aspspRestTemplate.exchange(aspspRemoteUrls.cancelPayment(), HttpMethod.DELETE, null, SpiPaymentCancellationResponse.class, payment.getPaymentId());
+        return new SpiResponse<>(SpiResponse.voidResponse(), aspspConsentData);
+    }
+}

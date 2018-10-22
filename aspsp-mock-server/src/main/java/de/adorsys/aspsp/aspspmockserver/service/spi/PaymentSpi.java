@@ -273,5 +273,5 @@ public interface PaymentSpi {
      *                         May be null if consent does not contain such data, or request isn't done from a workflow with a consent
      * @return payment cancellation information
      */
-    SpiResponse<SpiCancelPayment> cancelPayment(String paymentId, AspspConsentData aspspConsentData);
+    SpiResponse<SpiPaymentCancellationResponse> cancelPayment(String paymentId, AspspConsentData aspspConsentData);
 }

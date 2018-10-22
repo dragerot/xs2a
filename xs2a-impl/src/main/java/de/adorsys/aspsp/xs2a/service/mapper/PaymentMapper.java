@@ -26,14 +26,18 @@ import de.adorsys.aspsp.xs2a.domain.code.Xs2aPurposeCode;
 import de.adorsys.aspsp.xs2a.domain.consent.Xs2aAuthenticationObject;
 import de.adorsys.aspsp.xs2a.domain.pis.*;
 import de.adorsys.aspsp.xs2a.service.mapper.spi_xs2a_mappers.SpiXs2aAccountMapper;
+import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiBulkPayment;
+import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPaymentInitialisationResponse;
+import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPeriodicPayment;
+import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiAmount;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
 import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
-import de.adorsys.aspsp.xs2a.spi.domain.payment.*;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiAddress;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiChallengeData;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiPaymentType;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiRemittance;
+import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiPaymentCancellationResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -246,11 +250,11 @@ public class PaymentMapper { // NOPMD TODO fix large amount of methods in Paymen
         return null;
     }
 
-    public CancelPaymentResponse mapToCancelPaymentResponse(SpiCancelPayment spiCancelPayment) {
+    public CancelPaymentResponse mapToCancelPaymentResponse(SpiPaymentCancellationResponse spiCancelPayment) {
         return Optional.ofNullable(spiCancelPayment)
                    .map(cancelPayment -> {
                        CancelPaymentResponse response = new CancelPaymentResponse();
-                       response.setStartAuthorisationRequired(cancelPayment.isStartAuthorisationRequired());
+                       response.setStartAuthorisationRequired(cancelPayment.isCancellationAuthorisationMandated());
                        response.setTransactionStatus(mapToTransactionStatus(spiCancelPayment.getTransactionStatus()));
                        return response;
                    }).orElse(null);

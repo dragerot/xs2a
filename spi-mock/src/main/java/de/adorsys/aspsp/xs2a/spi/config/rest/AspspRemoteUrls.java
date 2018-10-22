@@ -165,7 +165,6 @@ public class AspspRemoteUrls {
         return spiMockBaseUrl + "/payments/{paymentId}";
     }
 
-
     public String initiatePaymentCancellation() {
         return spiMockBaseUrl + "/payments/{paymentId}/cancel";
     }

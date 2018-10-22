@@ -24,7 +24,7 @@ import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiAmount;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiTransactionStatus;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.consent.SpiConsentStatus;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.AspspPayment;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiCancelPayment;
+import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiPaymentCancellationResponse;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiPeriodicPayment;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiSinglePayment;
 import de.adorsys.aspsp.aspspmockserver.repository.PaymentRepository;
@@ -152,19 +152,25 @@ public class PaymentService {
     /**
      * Cancels payment
      *
-     * @param paymentId                  Payment identifier
-     * @param startAuthorisationRequired boolean indicator whether authorisation of payment cancellation is required
+     * @param paymentId Payment identifier
      * @return SpiCancelPayment containing information about the requirement of aspsp for start authorisation
      */
-    public Optional<SpiCancelPayment> cancelPayment(String paymentId, boolean startAuthorisationRequired) {
-        SpiTransactionStatus transactionStatus = startAuthorisationRequired
-                                                     ? SpiTransactionStatus.ACTC
-                                                     : SpiTransactionStatus.CANC;
+    public Optional<SpiPaymentCancellationResponse> cancelPayment(String paymentId) {
+        return Optional.ofNullable(paymentRepository.findOne(paymentId))
+                   .map(p -> updateAspsPaymentStatus(p, SpiTransactionStatus.CANC))
+                   .map(p -> getPaymentCancellationResponse(false, p.getPaymentStatus()));
+    }
 
-        return Optional.ofNullable(paymentId)
-                   .map(paymentRepository::findOne)
-                   .map(p -> updateAspsPaymentStatus(p, transactionStatus))
-                   .map(p -> new SpiCancelPayment(p.getPaymentStatus(), startAuthorisationRequired));
+    /**
+     * Initiates payment cancellation process
+     *
+     * @param paymentId Payment identifier
+     * @return SpiCancelPayment containing information about the requirement of aspsp for start authorisation
+     */
+    public Optional<SpiPaymentCancellationResponse> initiatePaymentCancellation(String paymentId) {
+        return Optional.ofNullable(paymentRepository.findOne(paymentId))
+                   .map(p -> updateAspsPaymentStatus(p, SpiTransactionStatus.ACTC))
+                   .map(p -> getPaymentCancellationResponse(true, p.getPaymentStatus()));
     }
 
     public List<AspspPayment> getAllPayments() {
@@ -174,6 +180,14 @@ public class PaymentService {
     private AspspPayment updateAspsPaymentStatus(AspspPayment payment, SpiTransactionStatus transactionStatus) {
         payment.setPaymentStatus(transactionStatus);
         return paymentRepository.save(payment);
+    }
+
+    private SpiPaymentCancellationResponse getPaymentCancellationResponse(boolean cancellationAuthorisationMandated,
+                                                                          SpiTransactionStatus transactionStatus) {
+        SpiPaymentCancellationResponse response = new SpiPaymentCancellationResponse();
+        response.setCancellationAuthorisationMandated(cancellationAuthorisationMandated);
+        response.setTransactionStatus(transactionStatus);
+        return response;
     }
 
     private boolean areFundsSufficient(SpiAccountReference reference, BigDecimal amount) {

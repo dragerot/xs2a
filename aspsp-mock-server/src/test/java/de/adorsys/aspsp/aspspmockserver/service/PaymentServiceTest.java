@@ -23,7 +23,7 @@ import de.adorsys.aspsp.aspspmockserver.domain.spi.account.SpiBalanceType;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiAmount;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiTransactionStatus;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.AspspPayment;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiCancelPayment;
+import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiPaymentCancellationResponse;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiSinglePayment;
 import de.adorsys.aspsp.aspspmockserver.repository.PaymentRepository;
 import de.adorsys.aspsp.aspspmockserver.service.mapper.PaymentMapper;
@@ -68,8 +68,7 @@ public class PaymentServiceTest {
         when(accountService.getAccountsByIban(WRONG_IBAN)).thenReturn(null);
         when(paymentMapper.mapToAspspPayment(any(), any())).thenReturn(new AspspPayment());
         when(paymentMapper.mapToSpiSinglePayment(any(AspspPayment.class))).thenReturn(getSpiSinglePayment(50));
-        when(paymentRepository.findOne(any(String.class))).thenReturn(getAspspPayment());
-        when(paymentRepository.findOne(PAYMENT_ID)).thenReturn(new AspspPayment());
+        when(paymentRepository.findOne(PAYMENT_ID)).thenReturn(getAspspPayment());
     }
 
     @Test
@@ -131,35 +130,58 @@ public class PaymentServiceTest {
     }
 
     @Test
-    public void cancelPayment_WithoutAuthorisation_Success() {
-        when(paymentRepository.save(any(AspspPayment.class))).thenReturn(getAspspPayment(SpiTransactionStatus.CANC));
+    public void cancelPayment_Success() {
+        when(paymentRepository.save(getAspspPayment(SpiTransactionStatus.CANC)))
+            .thenReturn(getAspspPayment(SpiTransactionStatus.CANC));
 
         //Given
-        Optional<SpiCancelPayment> given = buildSpiCancelPayment(SpiTransactionStatus.CANC, false);
+        Optional<SpiPaymentCancellationResponse> given = buildSpiCancelPayment(SpiTransactionStatus.CANC, false);
 
         //When
-        Optional<SpiCancelPayment> actual = paymentService.cancelPayment(PAYMENT_ID, false);
+        Optional<SpiPaymentCancellationResponse> actual = paymentService.cancelPayment(PAYMENT_ID);
 
         //Then
         assertThat(given).isEqualTo(actual);
     }
 
     @Test
-    public void cancelPayment_WithAuthorisation_Success() {
-        when(paymentRepository.save(any(AspspPayment.class))).thenReturn(getAspspPayment(SpiTransactionStatus.ACTC));
+    public void cancelPayment_Failure_WrongId() {
+        //When
+        Optional<SpiPaymentCancellationResponse> actual = paymentService.cancelPayment(WRONG_PAYMENT_ID);
+
+        //Then
+        assertThat(actual.isPresent()).isFalse();
+    }
+
+    @Test
+    public void initiatePaymentCancellation_Success() {
+        when(paymentRepository.save(getAspspPayment(SpiTransactionStatus.ACTC)))
+            .thenReturn(getAspspPayment(SpiTransactionStatus.ACTC));
 
         //Given
-        Optional<SpiCancelPayment> given = buildSpiCancelPayment(SpiTransactionStatus.ACTC, true);
+        Optional<SpiPaymentCancellationResponse> given = buildSpiCancelPayment(SpiTransactionStatus.ACTC, true);
 
         //When
-        Optional<SpiCancelPayment> actual = paymentService.cancelPayment(PAYMENT_ID, true);
+        Optional<SpiPaymentCancellationResponse> actual = paymentService.initiatePaymentCancellation(PAYMENT_ID);
 
         //Then
         assertThat(given).isEqualTo(actual);
     }
 
-    private Optional<SpiCancelPayment> buildSpiCancelPayment(SpiTransactionStatus transactionStatus, boolean startAuthorisationRequired) {
-        return Optional.of(new SpiCancelPayment(transactionStatus, startAuthorisationRequired));
+    @Test
+    public void initiatePaymentCancellation_Failure_WrongId() {
+        //When
+        Optional<SpiPaymentCancellationResponse> actual = paymentService.initiatePaymentCancellation(WRONG_PAYMENT_ID);
+
+        //Then
+        assertThat(actual.isPresent()).isFalse();
+    }
+
+    private Optional<SpiPaymentCancellationResponse> buildSpiCancelPayment(SpiTransactionStatus transactionStatus, boolean startAuthorisationRequired) {
+        SpiPaymentCancellationResponse response = new SpiPaymentCancellationResponse();
+        response.setTransactionStatus(transactionStatus);
+        response.setCancellationAuthorisationMandated(startAuthorisationRequired);
+        return Optional.of(response);
     }
 
     private SpiSinglePayment getSpiSinglePayment(long amountToTransfer) {
