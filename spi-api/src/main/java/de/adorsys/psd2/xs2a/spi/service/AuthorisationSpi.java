@@ -87,12 +87,16 @@ interface AuthorisationSpi<T> {
     SpiResponse<VoidResponse> verifyAuthorisationCodeAndExecuteRequest(@NotNull SpiPsuData psuData, @NotNull SpiScaConfirmation spiScaConfirmation, @NotNull T businessObject, @NotNull AspspConsentData aspspConsentData);
 
     /**
+     * Executes request without any strong customer authentication. Not needed for ais consent authorisation.
      *
-     * TODO java doc https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/434
-     * Not needed for ais consent authorisation
+     * @param psuData          ASPSP identifier(s) of the psu
+     * @param businessObject   generic business object
+     * @param aspspConsentData Encrypted data that may stored in the consent management system in the consent linked to a request.
+     *                         May be null if consent does not contain such data, or request isn't done from a workflow with a consent
+     * @return Return a positive or negative response as part of SpiResponse
      */
     @NotNull
-    default SpiResponse<VoidResponse> executeRequestWithoutSca(@NotNull SpiPsuData psuData, @NotNull T businessObject, @NotNull AspspConsentData aspspConsentData){
+    default SpiResponse<VoidResponse> executeRequestWithoutSca(@NotNull SpiPsuData psuData, @NotNull T businessObject, @NotNull AspspConsentData aspspConsentData) {
         return SpiResponse.<VoidResponse>builder().fail(SpiResponseStatus.NOT_SUPPORTED);
     }
 }
