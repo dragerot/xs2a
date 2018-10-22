@@ -16,8 +16,7 @@
 
 package de.adorsys.psd2.xs2a.spi.domain.account;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -26,8 +25,7 @@ import java.util.List;
 /**
  * Transaction report of Spi layer to be used as a container for account reference, transactions and balances
  */
-@Data
-@AllArgsConstructor
+@Value
 public class SpiTransactionReport {
     @NotNull
     private SpiAccountReference xs2aAccountReference;
