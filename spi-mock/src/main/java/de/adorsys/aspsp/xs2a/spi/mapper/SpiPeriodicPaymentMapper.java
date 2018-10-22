@@ -18,9 +18,9 @@ package de.adorsys.aspsp.xs2a.spi.mapper;
 
 import de.adorsys.psd2.aspsp.mock.api.common.AspspTransactionStatus;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspPeriodicPayment;
+import de.adorsys.psd2.xs2a.core.profile.PaymentProduct;
 import de.adorsys.psd2.xs2a.spi.domain.code.SpiFrequencyCode;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
-import de.adorsys.psd2.xs2a.spi.domain.payment.SpiPaymentProduct;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiPeriodicPayment;
 import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiPeriodicPaymentInitiationResponse;
 import lombok.AllArgsConstructor;
@@ -71,7 +71,7 @@ public class SpiPeriodicPaymentMapper {
         return aspspPayment;
     }
 
-    public SpiPeriodicPayment mapToSpiPeriodicPayment(@NotNull AspspPeriodicPayment aspspPeriodicPayment, SpiPaymentProduct paymentProduct) {
+    public SpiPeriodicPayment mapToSpiPeriodicPayment(@NotNull AspspPeriodicPayment aspspPeriodicPayment, PaymentProduct paymentProduct) {
         SpiPeriodicPayment spiPayment = new SpiPeriodicPayment(paymentProduct);
         spiPayment.setEndToEndIdentification(aspspPeriodicPayment.getEndToEndIdentification());
         spiPayment.setDebtorAccount(spiPaymentMapper.mapToSpiAccountReference(aspspPeriodicPayment.getDebtorAccount()));
