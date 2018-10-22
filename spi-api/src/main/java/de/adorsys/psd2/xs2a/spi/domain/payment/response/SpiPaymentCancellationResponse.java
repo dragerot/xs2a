@@ -25,6 +25,6 @@ import lombok.Data;
  */
 @Data
 public class SpiPaymentCancellationResponse {
-    boolean cancellationAuthorisationMandated;
-    SpiTransactionStatus transactionStatus;
+    private boolean cancellationAuthorisationMandated;
+    private SpiTransactionStatus transactionStatus;
 }
