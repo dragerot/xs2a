@@ -17,26 +17,26 @@
 package de.adorsys.aspsp.xs2a.service.payment;
 
 import de.adorsys.aspsp.xs2a.domain.TppInfo;
+import de.adorsys.aspsp.xs2a.domain.consent.Xs2aPisConsent;
 import de.adorsys.aspsp.xs2a.domain.pis.*;
+import de.adorsys.psd2.xs2a.core.profile.PaymentProduct;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class OauthScaPaymentService implements ScaPaymentService {
 
     @Override
-    public PaymentInitialisationResponse createPeriodicPayment(PeriodicPayment periodicPayment, TppInfo tppInfo, String paymentProduct) {
-         throw new UnsupportedOperationException("Unsupported operation");
-    }
-
-    @Override
-    public List<PaymentInitialisationResponse> createBulkPayment(BulkPayment bulkPayment, TppInfo tppInfo, String paymentProduct) {
+    public PeriodicPaymentInitiationResponse createPeriodicPayment(PeriodicPayment periodicPayment, TppInfo tppInfo, PaymentProduct paymentProduct, Xs2aPisConsent pisConsent) {
         throw new UnsupportedOperationException("Unsupported operation");
     }
 
     @Override
-    public SinglePaymentInitiateResponse createSinglePayment(SinglePayment singlePayment, TppInfo tppInfo, PaymentProduct paymentProduct) {
+    public BulkPaymentInitiationResponse createBulkPayment(BulkPayment bulkPayment, TppInfo tppInfo, PaymentProduct paymentProduct, Xs2aPisConsent pisConsent) {
+        throw new UnsupportedOperationException("Unsupported operation");
+    }
+
+    @Override
+    public SinglePaymentInitiationResponse createSinglePayment(SinglePayment singlePayment, TppInfo tppInfo, PaymentProduct paymentProduct, Xs2aPisConsent pisConsent) {
         throw new UnsupportedOperationException("Unsupported operation");
     }
 }

@@ -35,7 +35,6 @@ import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
 import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiAddress;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiChallengeData;
-import de.adorsys.psd2.xs2a.spi.domain.payment.SpiPaymentType;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiRemittance;
 import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiPaymentCancellationResponse;
 import lombok.AllArgsConstructor;
@@ -44,7 +43,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -56,6 +54,12 @@ public class PaymentMapper { // NOPMD TODO fix large amount of methods in Paymen
     // TODO fix high amount of different objects as members denotes a high coupling https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/322
     private final ObjectMapper objectMapper;
     private final SpiXs2aAccountMapper spiXs2aAccountMapper;
+
+    private static MessageErrorCode[] apply(List<String> codes) {
+        return codes.stream()
+                   .map(MessageErrorCode::valueOf)
+                   .toArray(MessageErrorCode[]::new);
+    }
 
     public SpiBulkPayment mapToSpiBulkPayment(BulkPayment bulkPayment) {
         return Optional.ofNullable(bulkPayment)
@@ -156,7 +160,6 @@ public class PaymentMapper { // NOPMD TODO fix large amount of methods in Paymen
                        initialisationResponse.setTransactionFees(spiXs2aAccountMapper.mapToXs2aAmount(pir.getSpiTransactionFees()));
                        initialisationResponse.setTransactionFeeIndicator(pir.isSpiTransactionFeeIndicator());
                        initialisationResponse.setPsuMessage(pir.getPsuMessage());
-                       initialisationResponse.setTppRedirectPreferred(pir.isTppRedirectPreferred());
                        initialisationResponse.setScaMethods(mapToAuthenticationObjects(pir.getScaMethods()));
                        initialisationResponse.setChallengeData(mapToChallengeData(pir.getChallengeData()));
                        initialisationResponse.setTppMessages(mapToMessageErrorCodes(pir.getTppMessages()));
@@ -177,12 +180,7 @@ public class PaymentMapper { // NOPMD TODO fix large amount of methods in Paymen
         response.setScaMethods(null); //Not Present in 1.1 payment entity
         response.setPsuMessage(null);
         response.setLinks(null); //Not Present in 1.1 payment entity
-        response.setTppRedirectPreferred(false); //Not Present in 1.1 payment entity
         return response;
-    }
-
-    public SpiPaymentType mapToSpiPaymentType(PaymentType paymentType) {
-        return SpiPaymentType.valueOf(paymentType.name());
     }
 
     public SinglePayment mapToSinglePayment(SpiSinglePayment spiSinglePayment) {
@@ -264,15 +262,13 @@ public class PaymentMapper { // NOPMD TODO fix large amount of methods in Paymen
         return spiXs2aAccountMapper.mapToXs2aAccountReference(spiSinglePayments.get(0).getDebtorAccount());
     }
 
-    private Xs2aAuthenticationObject[] mapToAuthenticationObjects(String[] authObjects) { //NOPMD TODO review and check PMD assertion https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/115
+    private Xs2aAuthenticationObject[] mapToAuthenticationObjects(List<String> authObjects) { //NOPMD TODO review and check PMD assertion https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/115
         return new Xs2aAuthenticationObject[]{};//TODO Fill in th Linx
     }
 
-    private MessageErrorCode[] mapToMessageErrorCodes(String[] messageCodes) { //NOPMD TODO review and check PMD assertion https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/115
+    private MessageErrorCode[] mapToMessageErrorCodes(List<String> messageCodes) { //NOPMD TODO review and check PMD assertion https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/115
         return Optional.ofNullable(messageCodes)
-                   .map(codes -> Arrays.stream(codes)
-                                     .map(MessageErrorCode::valueOf)
-                                     .toArray(MessageErrorCode[]::new))
+                   .map(PaymentMapper::apply)
                    .orElseGet(() -> new MessageErrorCode[]{});
     }
 
