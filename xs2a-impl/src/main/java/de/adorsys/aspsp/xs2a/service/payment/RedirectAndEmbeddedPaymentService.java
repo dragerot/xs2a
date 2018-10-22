@@ -76,6 +76,11 @@ public class RedirectAndEmbeddedPaymentService implements ScaPaymentService {
         SpiResponse<SpiBulkPaymentInitiationResponse> response = bulkPaymentSpi.initiatePayment(psuData, xs2aToSpiBulkPaymentMapper.mapToSpiBulkPayment(bulkPayment, paymentProduct), aspspConsentData); //TODO don't create AspspConsentData without consentId https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/332
 
         pisConsentDataService.updateAspspConsentData(response.getAspspConsentData());
+
+        if (response.hasError()) {
+            return null;
+        }
+
         return spiToXs2aPaymentMapper.mapToPaymentInitiateResponse(response.getPayload(), BulkPaymentInitiationResponse::new);
     }
 }
