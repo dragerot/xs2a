@@ -32,14 +32,4 @@ public interface PaymentCancellationSpi extends AuthorisationSpi<SpiPayment> {
      * @return Payment cancellation response with information about transaction status and whether authorisation of the request is required
      */
     SpiResponse<SpiPaymentCancellationResponse> initiatePaymentCancellation(@NotNull SpiPsuData psuData, @NotNull SpiPayment payment, @NotNull AspspConsentData aspspConsentData);
-
-    /**
-     * Cancels payment
-     *
-     * @param psuData          ASPSP identifier(s) of the psu
-     * @param payment          Payment to be cancelled
-     * @param aspspConsentData Encrypted data that may stored in the consent management system in the consent linked to a request.
-     * @return Payment cancellation response with information about transaction status and whether authorisation of the request is required
-     */
-    SpiResponse<SpiPaymentCancellationResponse> cancelPayment(@NotNull SpiPsuData psuData, @NotNull SpiPayment payment, @NotNull AspspConsentData aspspConsentData);
 }
