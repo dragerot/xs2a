@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package de.adorsys.psd2.consent.server.service.security;
+package de.adorsys.psd2.consent.server.config;
 
-import java.util.Optional;
+import de.adorsys.psd2.consent.server.service.security.AesCbsCryptoProviderImpl;
+import de.adorsys.psd2.consent.server.service.security.CryptoProvider;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-public interface CryptoProvider {
-    Optional<AspspConsentData> encryptData(byte[] data, String password);
+@Configuration
+public class SecurityConfig {
 
-    Optional<AspspConsentData> decryptData(byte[] data, String password);
-
-    Optional<String> encryptId(String decryptedId, String password);
-
-    Optional<String> decryptId(String encryptedId, String password);
+    @Bean
+    public CryptoProvider cryptoProvider() {
+        return new AesCbsCryptoProviderImpl();
+    }
 }

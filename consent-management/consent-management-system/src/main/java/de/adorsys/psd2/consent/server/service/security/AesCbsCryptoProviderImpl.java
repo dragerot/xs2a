@@ -33,5 +33,15 @@ public class AesCbsCryptoProviderImpl implements CryptoProvider {
     public Optional<AspspConsentData> decryptData(byte[] data, String password) {
         return Optional.empty();
     }
+
+    @Override
+    public Optional<String> encryptId(String decryptedId, String password){
+        return Optional.of(decryptedId);
+    }
+
+    @Override
+    public Optional<String> decryptId(String encryptedId, String password) {
+        return Optional.of(encryptedId);
+    }
 }
 

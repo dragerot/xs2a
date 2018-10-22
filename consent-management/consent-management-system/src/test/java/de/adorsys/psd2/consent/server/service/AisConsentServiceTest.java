@@ -24,6 +24,7 @@ import de.adorsys.psd2.consent.api.ais.CreateAisConsentRequest;
 import de.adorsys.psd2.consent.server.domain.account.AisConsent;
 import de.adorsys.psd2.consent.server.repository.AisConsentRepository;
 import de.adorsys.psd2.consent.server.service.mapper.AisConsentMapper;
+import de.adorsys.psd2.consent.server.service.security.SecurityDataService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,6 +56,8 @@ public class AisConsentServiceTest {
     private AisConsentMapper consentMapper;
     @Mock
     private AisConsentRepository aisConsentRepository;
+    @Mock
+    SecurityDataService securityDataService;
 
 
     private AisConsent aisConsent;
@@ -65,6 +68,11 @@ public class AisConsentServiceTest {
     @Before
     public void setUp() {
         aisConsent = buildConsent();
+        when(securityDataService.getConsentId(EXTERNAL_CONSENT_ID)).thenReturn(Optional.of(EXTERNAL_CONSENT_ID));
+        when(securityDataService.getConsentId(EXTERNAL_CONSENT_ID_NOT_EXIST)).thenReturn(Optional.of(EXTERNAL_CONSENT_ID_NOT_EXIST));
+        when(securityDataService.getEncryptedId(EXTERNAL_CONSENT_ID)).thenReturn(Optional.of(EXTERNAL_CONSENT_ID));
+        when(securityDataService.getEncryptedId(EXTERNAL_CONSENT_ID_NOT_EXIST)).thenReturn(Optional.of(EXTERNAL_CONSENT_ID_NOT_EXIST));
+
     }
 
     @Test
