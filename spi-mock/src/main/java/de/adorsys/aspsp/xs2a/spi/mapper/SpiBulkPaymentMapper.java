@@ -17,8 +17,11 @@
 package de.adorsys.aspsp.xs2a.spi.mapper;
 
 
+import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiBulkPayment;
+import de.adorsys.psd2.aspsp.mock.api.common.AspspTransactionStatus;
+import de.adorsys.psd2.aspsp.mock.api.payment.AspspBulkPayment;
+import de.adorsys.psd2.aspsp.mock.api.payment.AspspSinglePayment;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
-import de.adorsys.psd2.xs2a.spi.domain.payment.SpiBulkPayment;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiPaymentProduct;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiSinglePayment;
 import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiBulkPaymentInitiationResponse;
@@ -35,13 +38,23 @@ public class SpiBulkPaymentMapper {
     private final SpiSinglePaymentMapper spiSinglePaymentMapper;
     private final SpiPaymentMapper spiPaymentMapper;
 
-    public de.adorsys.aspsp.xs2a.spi.domain.payment.SpiBulkPayment mapToAspspSpiBulkPayment(@NotNull SpiBulkPayment payment) {
-        de.adorsys.aspsp.xs2a.spi.domain.payment.SpiBulkPayment bulk = new de.adorsys.aspsp.xs2a.spi.domain.payment.SpiBulkPayment();
-        bulk.setDebtorAccount(payment.getDebtorAccount());
+    public AspspBulkPayment mapToAspspBulkPayment(@NotNull de.adorsys.psd2.xs2a.spi.domain.payment.SpiBulkPayment payment) {
+        AspspBulkPayment bulk = new AspspBulkPayment();
+        bulk.setDebtorAccount(spiPaymentMapper.mapToAspspAccountReference(payment.getDebtorAccount()));
         bulk.setBatchBookingPreferred(payment.getBatchBookingPreferred());
         bulk.setRequestedExecutionDate(payment.getRequestedExecutionDate());
-        bulk.setPayments(mapToListAspspSpiSinglePayment(payment));
-        bulk.setPaymentStatus(SpiTransactionStatus.RCVD);
+        bulk.setPayments(mapToListAspspSinglePayment(payment));
+        bulk.setPaymentStatus(AspspTransactionStatus.RCVD);
+        return bulk;
+    }
+
+    public AspspBulkPayment mapToAspspBulkPayment(@NotNull de.adorsys.aspsp.xs2a.spi.domain.payment.SpiBulkPayment payment) {
+        AspspBulkPayment bulk = new AspspBulkPayment();
+        bulk.setDebtorAccount(spiPaymentMapper.mapToAspspAccountReference(payment.getDebtorAccount()));
+        bulk.setBatchBookingPreferred(payment.getBatchBookingPreferred());
+        bulk.setRequestedExecutionDate(payment.getRequestedExecutionDate());
+        bulk.setPayments(mapToListAspspSinglePayment(payment));
+        bulk.setPaymentStatus(AspspTransactionStatus.RCVD);
         return bulk;
     }
 
@@ -59,9 +72,15 @@ public class SpiBulkPaymentMapper {
         return spi;
     }
 
-    private List<de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment> mapToListAspspSpiSinglePayment(@NotNull SpiBulkPayment payment) {
+    private List<AspspSinglePayment> mapToListAspspSinglePayment(@NotNull SpiBulkPayment payment) {
         return payment.getPayments().stream()
-                   .map(spiSinglePaymentMapper::mapToAspspSpiSinglePayment)
+                   .map(spiSinglePaymentMapper::mapToAspspSinglePayment)
+                   .collect(Collectors.toList());
+    }
+
+    private List<AspspSinglePayment> mapToListAspspSinglePayment(@NotNull de.adorsys.psd2.xs2a.spi.domain.payment.SpiBulkPayment payment) {
+        return payment.getPayments().stream()
+                   .map(spiSinglePaymentMapper::mapToAspspSinglePayment)
                    .collect(Collectors.toList());
     }
 

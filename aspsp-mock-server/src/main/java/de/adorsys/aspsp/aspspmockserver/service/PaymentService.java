@@ -26,6 +26,7 @@ import de.adorsys.psd2.aspsp.mock.api.account.AspspAccountReference;
 import de.adorsys.psd2.aspsp.mock.api.common.AspspAmount;
 import de.adorsys.psd2.aspsp.mock.api.common.AspspTransactionStatus;
 import de.adorsys.psd2.aspsp.mock.api.consent.AspspConsentStatus;
+import de.adorsys.psd2.aspsp.mock.api.payment.AspspBulkPayment;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspCancelPayment;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspPeriodicPayment;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspSinglePayment;

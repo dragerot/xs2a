@@ -21,6 +21,7 @@ import de.adorsys.aspsp.xs2a.exception.RestException;
 import de.adorsys.aspsp.xs2a.spi.config.rest.AspspRemoteUrls;
 import de.adorsys.aspsp.xs2a.spi.impl.service.KeycloakInvokerService;
 import de.adorsys.aspsp.xs2a.spi.mapper.SpiBulkPaymentMapper;
+import de.adorsys.psd2.aspsp.mock.api.payment.AspspBulkPayment;
 import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaConfirmation;
 import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiBulkPayment;
@@ -53,7 +54,7 @@ public class BulkPaymentSpiImpl implements BulkPaymentSpi {
     @NotNull
     public SpiResponse<SpiBulkPaymentInitiationResponse> initiatePayment(@NotNull SpiPsuData psuData, @NotNull SpiBulkPayment spiBulkPayment, @NotNull AspspConsentData initialAspspConsentData) {
         try {
-            de.adorsys.aspsp.xs2a.spi.domain.payment.SpiBulkPayment request = spiBulkPaymentMapper.mapToAspspSpiBulkPayment(spiBulkPayment);
+            AspspBulkPayment request = spiBulkPaymentMapper.mapToAspspBulkPayment(spiBulkPayment);
             ResponseEntity<de.adorsys.aspsp.xs2a.spi.domain.payment.SpiBulkPayment> responseEntity = aspspRestTemplate.postForEntity(aspspRemoteUrls.createBulkPayment(), request, de.adorsys.aspsp.xs2a.spi.domain.payment.SpiBulkPayment.class);
             SpiBulkPaymentInitiationResponse response = spiBulkPaymentMapper.mapToSpiBulkPaymentResponse(responseEntity.getBody(), spiBulkPayment.getPaymentProduct());
 

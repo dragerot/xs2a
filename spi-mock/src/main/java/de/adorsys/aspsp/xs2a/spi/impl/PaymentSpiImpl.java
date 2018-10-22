@@ -40,7 +40,6 @@ import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaConfirmation;
 import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaMethod;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
 import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
-import de.adorsys.psd2.xs2a.spi.domain.payment.SpiPaymentType;
 import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
