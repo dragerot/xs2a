@@ -18,6 +18,7 @@ package de.adorsys.aspsp.xs2a.web;
 
 import de.adorsys.aspsp.xs2a.domain.ResponseObject;
 import de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus;
+import de.adorsys.aspsp.xs2a.domain.pis.CancelPaymentResponse;
 import de.adorsys.aspsp.xs2a.domain.pis.PaymentInitiationParameters;
 import de.adorsys.aspsp.xs2a.exception.MessageError;
 import de.adorsys.aspsp.xs2a.service.ConsentService;
@@ -27,9 +28,9 @@ import de.adorsys.aspsp.xs2a.service.mapper.ResponseMapper;
 import de.adorsys.aspsp.xs2a.web.mapper.PaymentModelMapperPsd2;
 import de.adorsys.aspsp.xs2a.web.mapper.PaymentModelMapperXs2a;
 import de.adorsys.psd2.api.PaymentApi;
+import de.adorsys.psd2.model.PaymentInitiationCancelResponse200202;
 import de.adorsys.psd2.xs2a.core.profile.PaymentProduct;
 import de.adorsys.psd2.xs2a.core.profile.PaymentType;
-import de.adorsys.psd2.model.PaymentInitiationCancelResponse200202;
 import io.swagger.annotations.Api;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.BooleanUtils;

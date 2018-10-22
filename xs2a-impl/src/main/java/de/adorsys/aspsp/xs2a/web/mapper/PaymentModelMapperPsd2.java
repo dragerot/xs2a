@@ -21,7 +21,6 @@ import de.adorsys.aspsp.xs2a.domain.Xs2aChallengeData;
 import de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus;
 import de.adorsys.aspsp.xs2a.domain.consent.Xs2aAuthenticationObject;
 import de.adorsys.aspsp.xs2a.domain.consent.Xs2aChosenScaMethod;
-import de.adorsys.aspsp.xs2a.domain.consent.Xs2aChosenScaMethod.ExtendedChosenScaMethod;
 import de.adorsys.aspsp.xs2a.domain.pis.*;
 import de.adorsys.aspsp.xs2a.service.mapper.AccountModelMapper;
 import de.adorsys.aspsp.xs2a.service.mapper.MessageErrorMapper;
@@ -187,13 +186,12 @@ public class PaymentModelMapperPsd2 {
 
     private ChosenScaMethod mapToChosenScaMethod(Xs2aChosenScaMethod xs2aChosenScaMethod) {
         return Optional.ofNullable(xs2aChosenScaMethod)
-                   .map(method -> {
-                       ExtendedChosenScaMethod scaMethod = new Xs2aChosenScaMethod.ExtendedChosenScaMethod();
-                       scaMethod.setAuthenticationMethodId(method.getAuthenticationMethodId());
-                       scaMethod.setAuthenticationType(method.getAuthenticationType());
-                       return scaMethod;
-                   })
-                   .orElse(null);
+                   .map(ch -> {
+                       ChosenScaMethod method = new ChosenScaMethod();
+                       method.setAuthenticationMethodId(ch.getAuthenticationMethodId());
+                       method.setAuthenticationType(AuthenticationType.fromValue(ch.getAuthenticationType()));
+                       return method;
+                   }).orElse(null);
     }
 
     private ChallengeData mapToChallengeData(Xs2aChallengeData xs2aChallengeData) {

@@ -24,7 +24,7 @@ import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiAmount;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiTransactionStatus;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.AspspPayment;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiBulkPayment;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiCancelPayment;
+import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiPaymentCancellationResponse;
 import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiSinglePayment;
 import de.adorsys.aspsp.aspspmockserver.repository.PaymentRepository;
 import de.adorsys.aspsp.aspspmockserver.service.mapper.PaymentMapper;

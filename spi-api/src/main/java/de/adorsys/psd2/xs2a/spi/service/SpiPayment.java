@@ -21,6 +21,8 @@ import de.adorsys.psd2.xs2a.core.profile.PaymentType;
 
 public interface SpiPayment {
     String getPaymentId();
-    SpiPaymentType getPaymentType();
-    SpiPaymentProduct getPaymentProduct();
+
+    PaymentType getPaymentType();
+
+    PaymentProduct getPaymentProduct();
 }

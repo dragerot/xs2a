@@ -21,10 +21,7 @@ import de.adorsys.aspsp.xs2a.domain.ResponseObject;
 import de.adorsys.aspsp.xs2a.domain.TppInfo;
 import de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus;
 import de.adorsys.aspsp.xs2a.domain.consent.Xs2aPisConsent;
-import de.adorsys.aspsp.xs2a.domain.pis.BulkPayment;
-import de.adorsys.aspsp.xs2a.domain.pis.PaymentInitiationParameters;
-import de.adorsys.aspsp.xs2a.domain.pis.PeriodicPayment;
-import de.adorsys.aspsp.xs2a.domain.pis.SinglePayment;
+import de.adorsys.aspsp.xs2a.domain.pis.*;
 import de.adorsys.aspsp.xs2a.exception.MessageError;
 import de.adorsys.aspsp.xs2a.service.consent.PisConsentDataService;
 import de.adorsys.aspsp.xs2a.service.consent.PisConsentService;
@@ -34,11 +31,17 @@ import de.adorsys.aspsp.xs2a.service.payment.CreateBulkPaymentService;
 import de.adorsys.aspsp.xs2a.service.payment.CreatePeriodicPaymentService;
 import de.adorsys.aspsp.xs2a.service.payment.CreateSinglePaymentService;
 import de.adorsys.aspsp.xs2a.service.payment.ReadPayment;
+import de.adorsys.aspsp.xs2a.service.profile.AspspProfileServiceWrapper;
 import de.adorsys.aspsp.xs2a.spi.service.PaymentSpi;
 import de.adorsys.psd2.xs2a.core.profile.PaymentProduct;
 import de.adorsys.psd2.xs2a.core.profile.PaymentType;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
+import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
+import de.adorsys.psd2.xs2a.spi.domain.payment.SpiSinglePayment;
+import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiPaymentCancellationResponse;
+import de.adorsys.psd2.xs2a.spi.domain.psu.SpiPsuData;
 import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
+import de.adorsys.psd2.xs2a.spi.service.PaymentCancellationSpi;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -66,6 +69,7 @@ public class PaymentService {
     private final CreatePeriodicPaymentService createPeriodicPaymentService;
     private final CreateBulkPaymentService createBulkPaymentService;
     private final Xs2aPisConsentMapper xs2aPisConsentMapper;
+    private final AspspProfileServiceWrapper profileService;
 
     /**
      * Initiates a payment though "payment service" corresponding service method
@@ -160,7 +164,7 @@ public class PaymentService {
             }
 
             cancelPaymentResponse = new CancelPaymentResponse();
-            cancelPaymentResponse.setTransactionStatus(CANC);
+            cancelPaymentResponse.setTransactionStatus(Xs2aTransactionStatus.CANC);
             pisConsentDataService.updateAspspConsentData(spiResponse.getAspspConsentData());
         }
 
