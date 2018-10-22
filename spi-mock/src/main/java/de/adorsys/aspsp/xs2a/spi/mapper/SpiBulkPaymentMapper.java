@@ -17,11 +17,11 @@
 package de.adorsys.aspsp.xs2a.spi.mapper;
 
 
-import de.adorsys.aspsp.xs2a.spi.domain.payment.SpiBulkPayment;
 import de.adorsys.psd2.aspsp.mock.api.common.AspspTransactionStatus;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspBulkPayment;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspSinglePayment;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
+import de.adorsys.psd2.xs2a.spi.domain.payment.SpiBulkPayment;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiPaymentProduct;
 import de.adorsys.psd2.xs2a.spi.domain.payment.SpiSinglePayment;
 import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiBulkPaymentInitiationResponse;
@@ -38,7 +38,7 @@ public class SpiBulkPaymentMapper {
     private final SpiSinglePaymentMapper spiSinglePaymentMapper;
     private final SpiPaymentMapper spiPaymentMapper;
 
-    public AspspBulkPayment mapToAspspBulkPayment(@NotNull de.adorsys.psd2.xs2a.spi.domain.payment.SpiBulkPayment payment) {
+    public AspspBulkPayment mapToAspspBulkPayment(@NotNull SpiBulkPayment payment) {
         AspspBulkPayment bulk = new AspspBulkPayment();
         bulk.setDebtorAccount(spiPaymentMapper.mapToAspspAccountReference(payment.getDebtorAccount()));
         bulk.setBatchBookingPreferred(payment.getBatchBookingPreferred());
@@ -72,13 +72,13 @@ public class SpiBulkPaymentMapper {
         return spi;
     }
 
-    private List<AspspSinglePayment> mapToListAspspSinglePayment(@NotNull SpiBulkPayment payment) {
+    private List<AspspSinglePayment> mapToListAspspSinglePayment(@NotNull de.adorsys.aspsp.xs2a.spi.domain.payment.SpiBulkPayment payment) {
         return payment.getPayments().stream()
                    .map(spiSinglePaymentMapper::mapToAspspSinglePayment)
                    .collect(Collectors.toList());
     }
 
-    private List<AspspSinglePayment> mapToListAspspSinglePayment(@NotNull de.adorsys.psd2.xs2a.spi.domain.payment.SpiBulkPayment payment) {
+    private List<AspspSinglePayment> mapToListAspspSinglePayment(@NotNull SpiBulkPayment payment) {
         return payment.getPayments().stream()
                    .map(spiSinglePaymentMapper::mapToAspspSinglePayment)
                    .collect(Collectors.toList());

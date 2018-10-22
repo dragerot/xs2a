@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static de.adorsys.psd2.aspsp.mock.api.common.AspspTransactionStatus.RJCT;
 import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.CREATED;
 
