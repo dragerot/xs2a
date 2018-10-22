@@ -18,8 +18,8 @@ package de.adorsys.psd2.xs2a.spi.domain.account;
 
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,7 +30,7 @@ public class SpiTransactionReport {
     @NotNull
     private SpiAccountReference xs2aAccountReference;
     @NotNull
-    private List<SpiTransaction> transactions = new ArrayList<>();
-    @NotNull
-    private List<SpiAccountBalance> balances = new ArrayList<>();
+    private List<SpiTransaction> transactions;
+    @Nullable
+    private List<SpiAccountBalance> balances;
 }
