@@ -24,6 +24,7 @@ import de.adorsys.aspsp.xs2a.domain.pis.*;
 import de.adorsys.aspsp.xs2a.service.mapper.AccountModelMapper;
 import de.adorsys.aspsp.xs2a.service.mapper.MessageErrorMapper;
 import de.adorsys.psd2.model.*;
+import de.adorsys.psd2.xs2a.core.profile.PaymentProduct;
 import de.adorsys.psd2.xs2a.core.profile.PaymentType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -95,7 +96,9 @@ public class PaymentModelMapperPsd2 {
     }
 
     public static TransactionStatus mapToTransactionStatus12(Xs2aTransactionStatus responseObject) {
-        return TransactionStatus.valueOf(responseObject.name());
+        return Optional.ofNullable(responseObject)
+                   .map(r -> TransactionStatus.valueOf(r.name()))
+                   .orElse(null);
     }
 
     public Object mapToPaymentInitiationResponse12(Object response) {

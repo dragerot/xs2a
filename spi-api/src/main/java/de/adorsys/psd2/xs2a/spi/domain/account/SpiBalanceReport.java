@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package de.adorsys.psd2.xs2a.spi.service;
+package de.adorsys.psd2.xs2a.spi.domain.account;
 
-import de.adorsys.psd2.xs2a.core.profile.PaymentProduct;
-import de.adorsys.psd2.xs2a.core.profile.PaymentType;
+import lombok.Data;
 
-public interface SpiPayment {
-    PaymentType getPaymentType();
-    PaymentProduct getPaymentProduct();
+import java.util.List;
+
+@Data
+public class SpiBalanceReport {
+    private List<SpiAccountBalance> balances;
+    private SpiAccountReference accountReference;
 }
