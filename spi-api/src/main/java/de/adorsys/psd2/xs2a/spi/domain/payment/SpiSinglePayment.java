@@ -45,9 +45,4 @@ public class SpiSinglePayment implements SpiPayment {
     public PaymentType getPaymentType() {
         return PaymentType.SINGLE;
     }
-
-    @Override
-    public SpiPaymentProduct getPaymentProduct() {
-        return paymentProduct;
-    }
 }

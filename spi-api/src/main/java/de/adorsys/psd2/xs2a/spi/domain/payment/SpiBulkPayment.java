@@ -39,9 +39,4 @@ public class SpiBulkPayment implements SpiPayment {
     public PaymentType getPaymentType() {
         return PaymentType.BULK;
     }
-
-    @Override
-    public SpiPaymentProduct getPaymentProduct() {
-        return paymentProduct;
-    }
 }

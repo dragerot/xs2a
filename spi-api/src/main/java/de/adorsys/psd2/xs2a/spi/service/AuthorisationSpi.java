@@ -22,6 +22,8 @@ import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaMethod;
 import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
 import de.adorsys.psd2.xs2a.spi.domain.psu.SpiPsuData;
 import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
+import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse.VoidResponse;
+import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponseStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -69,4 +71,18 @@ interface AuthorisationSpi<T> {
      */
     @NotNull
     SpiResponse<SpiAuthorizationCodeResult> requestAuthorisationCode(@NotNull SpiPsuData psuData, @NotNull SpiScaMethod scaMethod, @NotNull T businessObject, @NotNull AspspConsentData aspspConsentData);
+
+    /**
+     * Executes request without any strong customer authentication. Not needed for ais consent authorisation.
+     *
+     * @param psuData          ASPSP identifier(s) of the psu
+     * @param businessObject   generic business object
+     * @param aspspConsentData Encrypted data that may stored in the consent management system in the consent linked to a request.
+     *                         May be null if consent does not contain such data, or request isn't done from a workflow with a consent
+     * @return Return a positive or negative response as part of SpiResponse
+     */
+    @NotNull
+    default SpiResponse<VoidResponse> executeRequestWithoutSca(@NotNull SpiPsuData psuData, @NotNull T businessObject, @NotNull AspspConsentData aspspConsentData) {
+        return SpiResponse.<VoidResponse>builder().fail(SpiResponseStatus.NOT_SUPPORTED);
+    }
 }
