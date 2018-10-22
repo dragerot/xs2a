@@ -25,6 +25,7 @@ import de.adorsys.aspsp.xs2a.service.consent.PisConsentDataService;
 import de.adorsys.aspsp.xs2a.service.consent.PisConsentService;
 import de.adorsys.aspsp.xs2a.service.mapper.PaymentMapper;
 import de.adorsys.aspsp.xs2a.service.mapper.consent.Xs2aPisConsentMapper;
+import de.adorsys.aspsp.xs2a.service.payment.CancelPaymentService;
 import de.adorsys.aspsp.xs2a.service.payment.CreateBulkPaymentService;
 import de.adorsys.aspsp.xs2a.service.payment.ReadSinglePayment;
 import de.adorsys.aspsp.xs2a.service.profile.AspspProfileServiceWrapper;
@@ -32,10 +33,7 @@ import de.adorsys.aspsp.xs2a.spi.service.PaymentSpi;
 import de.adorsys.psd2.xs2a.core.profile.PaymentType;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
 import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
-import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiPaymentCancellationResponse;
 import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
-import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponseStatus;
-import de.adorsys.psd2.xs2a.spi.service.PaymentCancellationSpi;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,7 +77,7 @@ public class PaymentServiceTest {
     @Mock
     private PaymentSpi paymentSpi;
     @Mock
-    private PaymentCancellationSpi paymentCancellationSpi;
+    private CancelPaymentService cancelPaymentService;
     @Mock
     private ReadPaymentFactory readPaymentFactory;
     @Mock
@@ -118,6 +116,15 @@ public class PaymentServiceTest {
 
         when(pisConsentDataService.getAspspConsentDataByPaymentId(anyString())).thenReturn(ASPSP_CONSENT_DATA);
         when(tppService.getTppInfo()).thenReturn(getTppInfo());
+
+        when(cancelPaymentService.cancelPaymentWithAuthorisation(any(), any(), any()))
+            .thenReturn(ResponseObject.<CancelPaymentResponse>builder()
+                            .body(getCancelPaymentResponse(true, ACTC))
+                            .build());
+        when(cancelPaymentService.cancelPaymentWithoutAuthorisation(any(), any(), any()))
+            .thenReturn(ResponseObject.<CancelPaymentResponse>builder()
+                            .body(getCancelPaymentResponse(false, CANC))
+                            .build());
     }
 
     // TODO Update tests after rearranging order of payment creation with pis consent https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/159
@@ -180,69 +187,27 @@ public class PaymentServiceTest {
     }
 
     @Test
-    public void cancelPayment_WithoutAuthorisation_Success() {
-        when(aspspProfileService.isPaymentCancellationAuthorizationMandated()).thenReturn(Boolean.FALSE);
-        when(paymentCancellationSpi.executeRequestWithoutSca(any(), any(), any()))
-            .thenReturn(SpiResponse.<SpiResponse.VoidResponse>builder().success());
-        when(paymentMapper.mapToCancelPaymentResponse(getSpiCancelPaymentResponse(false, SpiTransactionStatus.CANC)))
-            .thenReturn(getCancelPaymentResponse(false, CANC));
-
-        //When
-        ResponseObject<CancelPaymentResponse> response = paymentService.cancelPayment(SINGLE, PAYMENT_ID);
-
-        //Than
-        assertThat(response.hasError()).isFalse();
-        assertThat(response.getBody()).isEqualTo(getCancelPaymentResponse(false, CANC));
-    }
-
-    @Test
-    public void cancelPayment_WithoutAuthorisation_Failure_WrongId() {
-        when(aspspProfileService.isPaymentCancellationAuthorizationMandated()).thenReturn(Boolean.FALSE);
-        when(paymentCancellationSpi.executeRequestWithoutSca(any(), any(), any()))
-            .thenReturn(SpiResponse.<SpiResponse.VoidResponse>builder().fail(SpiResponseStatus.LOGICAL_FAILURE));
-        when(paymentMapper.mapToCancelPaymentResponse(getSpiCancelPaymentResponse(false, SpiTransactionStatus.CANC)))
-            .thenReturn(getCancelPaymentResponse(false, CANC));
-
-        //When
-        ResponseObject<CancelPaymentResponse> response = paymentService.cancelPayment(SINGLE, WRONG_PAYMENT_ID);
-
-        //Than
-        assertThat(response.hasError()).isTrue();
-        assertThat(response.getBody()).isNull();
-    }
-
-    @Test
-    public void cancelPayment_WithAuthorisation_Success() {
+    public void cancelPayment_Success_WithAuthorisation() {
         when(aspspProfileService.isPaymentCancellationAuthorizationMandated()).thenReturn(Boolean.TRUE);
-        when(paymentCancellationSpi.initiatePaymentCancellation(any(), any(), any()))
-            .thenReturn(SpiResponse.<SpiPaymentCancellationResponse>builder()
-                            .payload(getSpiCancelPaymentResponse(true, SpiTransactionStatus.ACTC))
-                            .success());
-        when(paymentMapper.mapToCancelPaymentResponse(getSpiCancelPaymentResponse(true, SpiTransactionStatus.ACTC)))
-            .thenReturn(getCancelPaymentResponse(true, ACTC));
 
-        //When
-        ResponseObject<CancelPaymentResponse> response = paymentService.cancelPayment(SINGLE, PAYMENT_ID);
+        // When
+        ResponseObject<CancelPaymentResponse> actual = paymentService.cancelPayment(PaymentType.SINGLE, PAYMENT_ID);
 
-        //Than
-        assertThat(response.hasError()).isFalse();
-        assertThat(response.getBody()).isEqualTo(getCancelPaymentResponse(true, ACTC));
+        // Then
+        assertThat(actual.getBody()).isNotNull();
+        assertThat(actual.getBody().isStartAuthorisationRequired()).isEqualTo(true);
     }
 
     @Test
-    public void cancelPayment_WithAuthorisation_Failure_WrongId() {
-        when(aspspProfileService.isPaymentCancellationAuthorizationMandated()).thenReturn(Boolean.TRUE);
-        when(paymentCancellationSpi.initiatePaymentCancellation(any(), any(), any()))
-            .thenReturn(SpiResponse.<SpiPaymentCancellationResponse>builder().fail(SpiResponseStatus.LOGICAL_FAILURE));
-        when(paymentMapper.mapToCancelPaymentResponse(getSpiCancelPaymentResponse(true, SpiTransactionStatus.ACTC)))
-            .thenReturn(getCancelPaymentResponse(true, ACTC));
+    public void cancelPayment_Success_WithoutAuthorisation() {
+        when(aspspProfileService.isPaymentCancellationAuthorizationMandated()).thenReturn(Boolean.FALSE);
 
-        //When
-        ResponseObject<CancelPaymentResponse> response = paymentService.cancelPayment(SINGLE, WRONG_PAYMENT_ID);
+        // When
+        ResponseObject<CancelPaymentResponse> actual = paymentService.cancelPayment(PaymentType.SINGLE, PAYMENT_ID);
 
-        //Than
-        assertThat(response.hasError()).isTrue();
-        assertThat(response.getBody()).isNull();
+        // Then
+        assertThat(actual.getBody()).isNotNull();
+        assertThat(actual.getBody().isStartAuthorisationRequired()).isEqualTo(false);
     }
 
     //Test additional methods
@@ -347,13 +312,6 @@ public class PaymentServiceTest {
 
     private ResponseObject<BulkPaymentInitiationResponse> getValidResponse() {
         return ResponseObject.<BulkPaymentInitiationResponse>builder().body(getBulkResponses(RCVD, null)).build();
-    }
-
-    private SpiPaymentCancellationResponse getSpiCancelPaymentResponse(boolean authorisationRequired, SpiTransactionStatus transactionStatus) {
-        SpiPaymentCancellationResponse response = new SpiPaymentCancellationResponse();
-        response.setCancellationAuthorisationMandated(authorisationRequired);
-        response.setTransactionStatus(transactionStatus);
-        return response;
     }
 
     private CancelPaymentResponse getCancelPaymentResponse(boolean authorisationRequired, Xs2aTransactionStatus transactionStatus) {

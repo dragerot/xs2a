@@ -106,22 +106,22 @@ public class PaymentController {
     @ApiOperation(value = "Cancel payment by it`s ASPSP identifier", authorizations = {@Authorization(value = "oauth2", scopes = {@AuthorizationScope(scope = "read", description = "Access read API")})})
     @ApiResponses(value = {
         @ApiResponse(code = 202, message = "ACCEPTED", response = SpiPaymentCancellationResponse.class),
-        @ApiResponse(code = 204, message = "Payment Not Found")})
+        @ApiResponse(code = 404, message = "Payment Not Found")})
     @DeleteMapping("/{payment-id}")
     public ResponseEntity<SpiPaymentCancellationResponse> cancelPayment(@PathVariable("payment-id") String paymentId) {
         return paymentService.cancelPayment(paymentId)
                    .map(p -> new ResponseEntity<>(p, ACCEPTED))
-                   .orElseGet(ResponseEntity.noContent()::build);
+                   .orElseGet(ResponseEntity.notFound()::build);
     }
 
     @ApiOperation(value = "Initiate cancellation of payment by it`s ASPSP identifier", authorizations = {@Authorization(value = "oauth2", scopes = {@AuthorizationScope(scope = "read", description = "Access read API")})})
     @ApiResponses(value = {
         @ApiResponse(code = 202, message = "ACCEPTED", response = SpiPaymentCancellationResponse.class),
-        @ApiResponse(code = 204, message = "Payment Not Found")})
+        @ApiResponse(code = 404, message = "Payment Not Found")})
     @PostMapping("/{payment-id}/cancel")
     public ResponseEntity<SpiPaymentCancellationResponse> initiatePaymentCancellation(@PathVariable("payment-id") String paymentId) {
         return paymentService.initiatePaymentCancellation(paymentId)
                    .map(p -> new ResponseEntity<>(p, ACCEPTED))
-                   .orElseGet(ResponseEntity.noContent()::build);
+                   .orElseGet(ResponseEntity.notFound()::build);
     }
 }

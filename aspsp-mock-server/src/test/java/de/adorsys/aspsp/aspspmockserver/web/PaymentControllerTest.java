@@ -34,7 +34,9 @@ import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collections;
+import java.util.Currency;
+import java.util.Optional;
 
 import static de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiTransactionStatus.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -145,7 +147,7 @@ public class PaymentControllerTest {
         ResponseEntity actualResponse = paymentController.cancelPayment(WRONG_PAYMENT_ID);
 
         //Then
-        assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(actualResponse.hasBody()).isFalse();
     }
 
@@ -165,7 +167,7 @@ public class PaymentControllerTest {
         ResponseEntity actualResponse = paymentController.initiatePaymentCancellation(WRONG_PAYMENT_ID);
 
         //Then
-        assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(actualResponse.hasBody()).isFalse();
     }
 
