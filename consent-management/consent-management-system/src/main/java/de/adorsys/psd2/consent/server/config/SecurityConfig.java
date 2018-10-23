@@ -16,14 +16,24 @@
 
 package de.adorsys.psd2.consent.server.config;
 
-import de.adorsys.psd2.consent.server.service.security.AesCbsCryptoProviderImpl;
+import de.adorsys.psd2.consent.server.service.security.AesEcbCryptoProviderImpl;
 import de.adorsys.psd2.consent.server.service.security.CryptoProvider;
 import de.adorsys.psd2.consent.server.service.security.JweCryptoProviderImpl;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+@Slf4j
 @Configuration
 public class SecurityConfig {
+    @Value("${server_key}")
+    String serverKey;
+
+    @Bean(value = "serverKey")
+    public String serverKey() {
+        return serverKey;
+    }
 
     @Bean(value = "cryptoProviderId")
     public CryptoProvider cryptoProviderId() {

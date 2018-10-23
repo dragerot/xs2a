@@ -16,10 +16,10 @@
 
 package de.adorsys.psd2.consent.server.service.security;
 
-import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
@@ -27,24 +27,16 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-@Data
+@RequiredArgsConstructor
 public class SecurityDataService {
+    @Qualifier(value = "serverKey")
+    private final String serverKey;
     @Qualifier(value = "cryptoProviderId")
     private final CryptoProvider cryptoProviderId;
     @Qualifier(value = "cryptoProviderConsentData")
     private final CryptoProvider cryptoProviderConsentData;
-    private final String SERVER_KEY;
     private static final String SEPARATOR = "_";
-
-    public SecurityDataService(CryptoProvider cryptoProvider) {
-        this.cryptoProvider = cryptoProvider;
-        this.SERVER_KEY = System.getenv().get("server_key");
-        if (StringUtils.isBlank(this.SERVER_KEY)) {
-            String error = "Environment variable server_key is not set";
-            log.warn(error);
-            throw new IllegalArgumentException(error);
-        }
-    }
+    private static final String VERSION = "v1";
 
     /**
      * Encrypts external consent ID with secret consent key via configuration server key
@@ -54,18 +46,12 @@ public class SecurityDataService {
      */
     public Optional<String> getEncryptedId(String consentId) {
         String consent_key = getConsentKey();
-        //Concatenate consent key with consent id
-        String consentIdWithKey = concatWithSeparator(consentId, consent_key);
-        //Encrypted with server key
-        return cryptoProvider.encryptId(consentIdWithKey, getSERVER_KEY())
-                   .map(this::enrichId);
-    }
-
-    private String enrichId(String encryptedId) {
-        //Add algorithm version
-        String consentIdWithKeyEncryptedVersion = concatWithSeparator(encryptedId, getVersion());
-        //Base64 encode
-        return encode(consentIdWithKeyEncryptedVersion);
+        String compositeConsentId = concatWithSeparator(consentId, consent_key);
+        byte[] bytesCompositeConsentId = compositeConsentId.getBytes();
+        return cryptoProviderId.encryptData(bytesCompositeConsentId, serverKey)
+                   .map(EncryptedData::getData)
+                   .map(this::encode)
+                   .map(this::addVersion);
     }
 
     /**
@@ -76,15 +62,38 @@ public class SecurityDataService {
      */
     public Optional<String> getConsentId(String encryptedConsentId) {
         Optional<String> compositeId = getCompositeId(encryptedConsentId);
-        return compositeId.map(cid -> cid.split(SEPARATOR)[0]);
+        return compositeId.map(this::getConsentIdFromCompositeId);
+    }
+
+    private Optional<String> getCompositeId(String encryptedConsentId) {
+        String encryptedConsentIdWithoutVersion = minusVersion(encryptedConsentId);
+        byte[] bytesCompositeConsentId = decode(encryptedConsentIdWithoutVersion);
+        return cryptoProviderId.decryptData(bytesCompositeConsentId, serverKey)
+                   .map(ed -> new String(ed.getData()));
+    }
+
+    private String getConsentIdFromCompositeId(String compositeId) {
+        return compositeId.split(SEPARATOR)[0];
     }
 
     private String getConsentKey() {
         return RandomStringUtils.random(16, true, true);
     }
 
-    private String getVersion() {
-        return "v1";
+    private String encode(byte[] raw) {
+        return Base64.getUrlEncoder().encodeToString(raw);
+    }
+
+    private byte[] decode(String raw) {
+        return Base64.getUrlDecoder().decode(raw);
+    }
+
+    private String addVersion(String id) {
+        return concatWithSeparator(id, VERSION);
+    }
+
+    private String minusVersion(String id) {
+        return id.substring(0, id.length() - VERSION.length() - 1);
     }
 
     private String concatWithSeparator(String leftPart, String rightPart) {
@@ -93,20 +102,5 @@ public class SecurityDataService {
         sb.append(SEPARATOR);
         sb.append(rightPart);
         return sb.toString();
-    }
-
-    private Optional<String> getCompositeId(String encryptedConsentId) {
-        //Get consent id with key encrypted with version
-        String consentIdWithKeyEncryptedVersion = decode(encryptedConsentId);
-        //Decrypted
-        return cryptoProvider.decryptId(consentIdWithKeyEncryptedVersion, getSERVER_KEY());
-    }
-
-    private String encode(String raw) {
-        return Base64.getUrlEncoder().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private String decode(String raw) {
-        return new String(Base64.getDecoder().decode(raw), StandardCharsets.UTF_8);
     }
 }

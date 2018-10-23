@@ -17,9 +17,7 @@
 package de.adorsys.psd2.consent.server.service;
 
 import de.adorsys.psd2.consent.server.service.security.CryptoProvider;
-import de.adorsys.psd2.consent.server.service.security.JweCryptoProviderImpl;
 import de.adorsys.psd2.consent.server.service.security.SecurityDataService;
-import org.junit.Before;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
@@ -28,7 +26,6 @@ import java.util.Base64;
 import java.util.Optional;
 
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
 
 //@RunWith(MockitoJUnitRunner.class)
 public class SecurityDataServiceTest {
@@ -42,7 +39,7 @@ public class SecurityDataServiceTest {
 
 
 
-    @Before
+   /* @Before
     public void setUp() {
         System.getenv().put("server_key", server_key);
         when(cryptoProvider.encryptId(consentId, password)).thenReturn(Optional.of(consentId));
@@ -50,7 +47,7 @@ public class SecurityDataServiceTest {
         when(securityDataService.getSERVER_KEY()).thenReturn(server_key);
 
     }
-
+*/
     //@Test
     public void test() {
         // When
