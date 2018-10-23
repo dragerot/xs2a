@@ -123,7 +123,7 @@ public class PaymentService {
         }
 
         AspspAccountReference debtorAccount = getDebtorAccountFromPayments(aspspPayments);
-        BigDecimal totalAmount = getAmountFromPayments(aspspPayments);
+        BigDecimal totalAmount = calculateTotalAmountFromPayments(aspspPayments);
         if (!areFundsSufficient(debtorAccount, totalAmount)) {
             log.warn("Insufficient funds for paying {} on account {}", totalAmount, debtorAccount);
             return Optional.empty();
@@ -144,7 +144,7 @@ public class PaymentService {
                    .orElse(null);
     }
 
-    private BigDecimal getAmountFromPayments(List<AspspPayment> payments) {
+    private BigDecimal calculateTotalAmountFromPayments(List<AspspPayment> payments) {
         return payments.stream()
                    .map(this::getAmountFromPayment)
                    .reduce(BigDecimal.ZERO, BigDecimal::add);
