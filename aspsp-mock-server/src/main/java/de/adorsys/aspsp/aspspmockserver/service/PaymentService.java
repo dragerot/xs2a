@@ -122,7 +122,7 @@ public class PaymentService {
             return Optional.empty();
         }
 
-        SpiAccountReference debtorAccount = getDebtorAccountFromPayments(aspspPayments);
+        AspspAccountReference debtorAccount = getDebtorAccountFromPayments(aspspPayments);
         BigDecimal totalAmount = getAmountFromPayments(aspspPayments);
         if (!areFundsSufficient(debtorAccount, totalAmount)) {
             log.warn("Insufficient funds for paying {} on account {}", totalAmount, debtorAccount);
@@ -137,7 +137,7 @@ public class PaymentService {
         return Optional.of(result);
     }
 
-    private SpiAccountReference getDebtorAccountFromPayments(List<AspspPayment> aspspPayments) {
+    private AspspAccountReference getDebtorAccountFromPayments(List<AspspPayment> aspspPayments) {
         return aspspPayments.stream()
                    .findFirst()
                    .map(AspspPayment::getDebtorAccount)

@@ -131,8 +131,8 @@ public class PaymentServiceTest {
         List<AspspPayment> payments = Collections.singletonList(getAspspPayment(AMOUNT_TO_TRANSFER));
         when(paymentMapper.mapToAspspPaymentList(any())).thenReturn(payments);
         when(paymentRepository.save(anyListOf(AspspPayment.class))).thenReturn(payments);
-        when(paymentMapper.mapToSpiSinglePaymentList(anyListOf(AspspPayment.class)))
-            .thenReturn(Collections.singletonList(getSpiSinglePayment(AMOUNT_TO_TRANSFER)));
+        when(paymentMapper.mapToAspspSinglePaymentList(anyListOf(AspspPayment.class)))
+            .thenReturn(Collections.singletonList(getAspspSinglePayment(AMOUNT_TO_TRANSFER)));
 
         //Given
         AspspBulkPayment expectedPayment = new AspspBulkPayment();
@@ -140,11 +140,11 @@ public class PaymentServiceTest {
         expectedPayment.getPayments().add(getAspspSinglePayment(AMOUNT_TO_TRANSFER));
 
         //When
-        AspspBulkPayment actualPayments = paymentService.addBulkPayments(expectedPayment).get();
+        Optional<AspspBulkPayment> actualPayment = paymentService.addBulkPayments(expectedPayment);
 
         //Then
         assertThat(actualPayment.isPresent()).isTrue();
-        SpiBulkPayment bulkPayment = actualPayment.get();
+        AspspBulkPayment bulkPayment = actualPayment.get();
         assertThat(bulkPayment.getPayments().size()).isEqualTo(1);
     }
 
@@ -154,13 +154,13 @@ public class PaymentServiceTest {
             .thenReturn(Arrays.asList(getAspspPayment(AMOUNT_TO_TRANSFER), getAspspPayment(EXCEEDING_AMOUNT_TO_TRANSFER)));
 
         //Given
-        SpiBulkPayment spiBulkPayment = new SpiBulkPayment();
-        List<SpiSinglePayment> payments = Arrays.asList(getSpiSinglePayment(AMOUNT_TO_TRANSFER),
-                                                        getSpiSinglePayment(EXCEEDING_AMOUNT_TO_TRANSFER));
+        AspspBulkPayment spiBulkPayment = new AspspBulkPayment();
+        List<AspspSinglePayment> payments = Arrays.asList(getAspspSinglePayment(AMOUNT_TO_TRANSFER),
+                                                          getAspspSinglePayment(EXCEEDING_AMOUNT_TO_TRANSFER));
         spiBulkPayment.setPayments(payments);
 
         //When
-        Optional<SpiBulkPayment> actualPayment = paymentService.addBulkPayments(spiBulkPayment);
+        Optional<AspspBulkPayment> actualPayment = paymentService.addBulkPayments(spiBulkPayment);
 
         //Then
         assertThat(actualPayment.isPresent()).isFalse();
@@ -198,7 +198,7 @@ public class PaymentServiceTest {
 
     private AspspPayment getAspspPayment(long amountToTransfer) {
         AspspPayment payment = new AspspPayment();
-        AspspAmount amount = new AspspAmount(Currency.getInstance("EUR"), new BigDecimal(amountToTransfer);
+        AspspAmount amount = new AspspAmount(Currency.getInstance("EUR"), new BigDecimal(amountToTransfer));
         payment.setInstructedAmount(amount);
         payment.setDebtorAccount(getReference());
         payment.setCreditorName("Merchant123");
