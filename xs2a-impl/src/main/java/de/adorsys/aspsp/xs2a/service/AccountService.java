@@ -287,7 +287,7 @@ public class AccountService {
         }
 
         SpiResponse<List<SpiAccountDetails>> spiResponse = accountSpi.readAccountDetailsByIban(reference.getIban(), aisConsentDataService.getAspspConsentDataByConsentId(consentId));
-        //aisConsentDataService.updateAspspConsentData(spiResponse.getAspspConsentData());
+        aisConsentDataService.updateAspspConsentData(spiResponse.getAspspConsentData());
         return Optional.of(spiResponse.getPayload())
                    .map(Collection::stream)
                    .flatMap(accDts -> accDts
