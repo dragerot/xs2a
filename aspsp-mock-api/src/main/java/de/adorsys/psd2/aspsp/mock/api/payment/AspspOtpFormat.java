@@ -27,7 +27,7 @@ public enum AspspOtpFormat {
     CHARACTERS("characters"),
     INTEGER("integer");
 
-    private final static Map<String, AspspOtpFormat> container = new HashMap<>();
+    private static final Map<String, AspspOtpFormat> container = new HashMap<>();
 
     static {
         for (AspspOtpFormat otpFormat : values()) {
