@@ -16,6 +16,8 @@
 
 package de.adorsys.psd2.consent.server.service;
 
+import de.adorsys.psd2.consent.server.domain.CryptoAlgorithm;
+import de.adorsys.psd2.consent.server.repository.CryptoAlgorithmRepository;
 import de.adorsys.psd2.consent.server.service.security.*;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,9 +30,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SecurityDataServiceTest {
@@ -39,16 +40,28 @@ public class SecurityDataServiceTest {
     private CryptoProvider aes = new AesEcbCryptoProviderImpl();
     private CryptoProvider jwe = new JweCryptoProviderImpl();
     private String consentId = "9d8db308a-ad6e-4b0b-a2e1-cea6043eb080";
-    private String encryptedConsentId = "JnWWElxC8zqRB3RTmCIYFmGMdpEdYEU4C75oWn5jXSwrk9LHx7qHMEqZwzRNkfQg3kqn0nJaPKAcmBKGQxkgUg==_v1";
+    private String encryptedConsentId = "JnWWElxC8zqRB3RTmCIYFmGMdpEdYEU4C75oWn5jXSwrk9LHx7qHMEqZwzRNkfQg3kqn0nJaPKAcmBKGQxkgUg==_=_v1";
     private String server_key = "mvLBiZsiTbGwrfJB";
     private byte[] aspspConsentData = "VGVzdCBhc3BzcCBkYXRh".getBytes();
-
+    @Mock
+    private CryptoAlgorithmRepository cryptoAlgorithmRepository;
 
     @InjectMocks
-    private SecurityDataService securityDataService = new SecurityDataService(server_key, aes, jwe);
+    CryptoProviderFactory cryptoProviderFactory = new CryptoProviderFactory(aes, jwe, cryptoAlgorithmRepository);
+
+    @InjectMocks
+    private SecurityDataService securityDataService = new SecurityDataService(server_key, cryptoProviderFactory);
 
     @Before
     public void setUp() {
+        CryptoAlgorithm ca = new CryptoAlgorithm();
+        ca.setAlgorithm("AES/GCM/NoPadding");
+        ca.setVersion("2");
+        ca.setExternalId("bS6p6XvTWI");
+       /* when(cryptoProviderFactory.getActualConsentDataCryptoProvider()).thenReturn(jwe);
+        when(cryptoProviderFactory.getActualIdentifierCryptoProvider()).thenReturn(aes);
+        ;*/when(cryptoAlgorithmRepository.findByExternalId("v1")).thenReturn(Optional.of(ca));
+
     }
 
     @Test

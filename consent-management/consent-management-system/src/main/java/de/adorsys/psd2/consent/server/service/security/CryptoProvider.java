@@ -32,6 +32,8 @@ public interface CryptoProvider {
 
     Optional<DecryptedData> decryptData(byte[] data, String password);
 
+    CryptoProviderAlgorithmVersion getAlgorithmVersion();
+
     default SecretKey getSecretKey(String password) throws InvalidKeySpecException, NoSuchAlgorithmException {
         byte[] salt = new byte[16];
         SecretKeyFactory factory = SecretKeyFactory.getInstance(SKF_ALGORITHM);

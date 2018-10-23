@@ -31,12 +31,9 @@ import java.util.Optional;
 public class SecurityDataService {
     @Qualifier(value = "serverKey")
     private final String serverKey;
-    @Qualifier(value = "cryptoProviderId")
-    private final CryptoProvider cryptoProviderId;
-    @Qualifier(value = "cryptoProviderConsentData")
-    private final CryptoProvider cryptoProviderConsentData;
-    private static final String SEPARATOR = "_";
-    private static final String VERSION = "v1";
+    private static final String SEPARATOR = "_=_";
+
+    private final CryptoProviderFactory cryptoProviderFactory;
 
     /**
      * Encrypts external consent ID with secret consent key via configuration server key
@@ -48,9 +45,10 @@ public class SecurityDataService {
         String consent_key = getConsentKey();
         String compositeConsentId = concatWithSeparator(consentId, consent_key);
         byte[] bytesCompositeConsentId = compositeConsentId.getBytes();
-        return cryptoProviderId.encryptData(bytesCompositeConsentId, serverKey)
+        return identifierCP()
+                   .encryptData(bytesCompositeConsentId, serverKey)
                    .map(EncryptedData::getData)
-                   .map(this::encode)
+                   .map(this::encode64)
                    .map(this::addVersion);
     }
 
@@ -61,14 +59,23 @@ public class SecurityDataService {
      * @return String external consent ID
      */
     public Optional<String> getConsentId(String encryptedConsentId) {
+        if (!encryptedConsentId.contains(SEPARATOR)){
+            return Optional.empty();
+        }
+
         Optional<String> compositeId = getCompositeId(encryptedConsentId);
         return compositeId.map(this::getConsentIdFromCompositeId);
     }
 
     private Optional<String> getCompositeId(String encryptedConsentId) {
-        String encryptedConsentIdWithoutVersion = minusVersion(encryptedConsentId);
-        byte[] bytesCompositeConsentId = decode(encryptedConsentIdWithoutVersion);
-        return cryptoProviderId.decryptData(bytesCompositeConsentId, serverKey)
+        CompositeIdentifier compositeIdentifier = new CompositeIdentifier(encryptedConsentId, SEPARATOR);
+
+        byte[] bytesCompositeId = decode64(compositeIdentifier.getCompositeId());
+
+        Optional<CryptoProvider> provider = cryptoProviderFactory.getCryptoProviderByAlgorithmVersion(compositeIdentifier.getVersion());
+
+        return provider
+                   .flatMap(prd -> prd.decryptData(bytesCompositeId, serverKey))
                    .map(ed -> new String(ed.getData()));
     }
 
@@ -78,12 +85,12 @@ public class SecurityDataService {
 
     public Optional<EncryptedData> getEncryptedAspspConsentData(String encryptedConsentId, byte[] aspspConsentData) {
         return getConsentKeyFromEncryptedConsentId(encryptedConsentId)
-                   .flatMap(consentKey -> cryptoProviderConsentData.encryptData(aspspConsentData, consentKey));
+                   .flatMap(consentKey -> consentDataCP().encryptData(aspspConsentData, consentKey));
     }
 
     public Optional<DecryptedData> getAspspConsentData(String encryptedConsentId, byte[] aspspConsentData) {
         return getConsentKeyFromEncryptedConsentId(encryptedConsentId)
-                   .flatMap(consentKey -> cryptoProviderConsentData.decryptData(aspspConsentData, consentKey));
+                   .flatMap(consentKey -> consentDataCP().decryptData(aspspConsentData, consentKey));
     }
 
     private Optional<String> getConsentKeyFromEncryptedConsentId(String encryptedConsentId) {
@@ -99,20 +106,25 @@ public class SecurityDataService {
         return RandomStringUtils.random(16, true, true);
     }
 
-    private String encode(byte[] raw) {
+    private String encode64(byte[] raw) {
         return Base64.getUrlEncoder().encodeToString(raw);
     }
 
-    private byte[] decode(String raw) {
+    private byte[] decode64(String raw) {
         return Base64.getUrlDecoder().decode(raw);
     }
 
     private String addVersion(String id) {
-        return concatWithSeparator(id, VERSION);
+        String algorithmVersion = identifierCP().getAlgorithmVersion().getVersion();
+        return concatWithSeparator(id, algorithmVersion);
     }
 
-    private String minusVersion(String id) {
-        return id.substring(0, id.length() - VERSION.length() - 1);
+    private CryptoProvider consentDataCP() {
+        return cryptoProviderFactory.getActualConsentDataCryptoProvider();
+    }
+
+    private CryptoProvider identifierCP() {
+        return cryptoProviderFactory.getActualIdentifierCryptoProvider();
     }
 
     private String concatWithSeparator(String leftPart, String rightPart) {

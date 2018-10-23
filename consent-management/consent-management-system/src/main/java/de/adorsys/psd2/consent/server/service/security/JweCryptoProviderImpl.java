@@ -77,4 +77,9 @@ public class JweCryptoProviderImpl implements CryptoProvider {
 
         return Optional.empty();
     }
+
+    @Override
+    public CryptoProviderAlgorithmVersion getAlgorithmVersion() {
+        return new CryptoProviderAlgorithmVersion("gQ8wkMeo93", "JWE/GCM/256", "3");
+    }
 }

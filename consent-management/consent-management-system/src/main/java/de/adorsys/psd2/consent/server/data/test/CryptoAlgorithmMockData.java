@@ -41,9 +41,9 @@ public class CryptoAlgorithmMockData {
         if (cryptoAlgorithmRepository.count() == 0) {
             cryptoAlgorithmRepository.save(getCryptoAlgorithm("AES/GCM/NoPadding", "1", "nML0IXWdMa"));
             cryptoAlgorithmRepository.save(getCryptoAlgorithm("AES/ECB/PKCS5Padding ", "2", "bS6p6XvTWI"));
+            cryptoAlgorithmRepository.save(getCryptoAlgorithm("JWE/GCM/256", "3", "gQ8wkMeo93"));
         }
     }
-
 
     private CryptoAlgorithm getCryptoAlgorithm(String algorithm, String version, String externalId) {
         CryptoAlgorithm cryptoAlgorithm = new CryptoAlgorithm();
