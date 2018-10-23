@@ -23,10 +23,6 @@ import de.adorsys.psd2.xs2a.spi.domain.payment.SpiPeriodicPayment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.util.Optional;
-
 @Component
 @RequiredArgsConstructor
 public class Xs2aToSpiPeriodicPaymentMapper {
@@ -50,14 +46,8 @@ public class Xs2aToSpiPeriodicPaymentMapper {
         periodic.setExecutionRule(payment.getExecutionRule());
         periodic.setFrequency(SpiFrequencyCode.valueOf(payment.getFrequency().name()));
         periodic.setDayOfExecution(payment.getDayOfExecution());
-        periodic.setRequestedExecutionTime(getRequestedExecutionTime(payment));
+        periodic.setRequestedExecutionTime(payment.getRequestedExecutionTime());
         periodic.setRequestedExecutionDate(payment.getRequestedExecutionDate());
         return periodic;
-    }
-
-    private LocalDateTime getRequestedExecutionTime(PeriodicPayment payment) {
-        return Optional.ofNullable(payment.getRequestedExecutionTime())
-                   .map(OffsetDateTime::toLocalDateTime)
-                   .orElse(null);
     }
 }
