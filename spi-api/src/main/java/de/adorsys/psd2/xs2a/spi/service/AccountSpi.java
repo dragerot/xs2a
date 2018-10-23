@@ -18,6 +18,7 @@ package de.adorsys.psd2.xs2a.spi.service;
 
 import de.adorsys.psd2.xs2a.spi.domain.account.*;
 import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
+import de.adorsys.psd2.xs2a.spi.domain.psu.SpiPsuData;
 import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,32 +26,44 @@ import org.jetbrains.annotations.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Provides calls to ASPSP backend via connector to fulfill the requests of TPP for AIS Interface.
+ * Implementation details may differ between ASPSPs.
+ * In simplest case one can use the data provided by request parameters to construct a response
+ * without calling any ASPSP system. This decision is left to interface implementor.
+ * One can use <code>SpiResponse.<...>builder().aspspConsentData(aspspConsentData.replyWith(...))...</code> in order to
+ * store some information in consent between requests.
+ * For unsupported features please return <code>SpiResponse.<...>builder().fail(SpiResponseStatus.NOT_SUPPORTED);</code>
+ */
 public interface AccountSpi {
 
     /**
      * Requests a list of account details
      *
+     * @param psuData          ASPSP identifier(s) of the psu coming with actual request.
      * @param withBalance      boolean representing if the responded AccountDetails should contain balance
      * @param accountConsent   SpiAccountConsent
      * @param aspspConsentData Encrypted data that may be stored in the consent management system in the consent linked to a request
      * @return List of account details
      */
-    SpiResponse<List<SpiAccountDetails>> requestAccountDetails(boolean withBalance, @NotNull SpiAccountConsent accountConsent, @NotNull AspspConsentData aspspConsentData);
+    SpiResponse<List<SpiAccountDetails>> requestAccountDetails(@NotNull SpiPsuData psuData, boolean withBalance, @NotNull SpiAccountConsent accountConsent, @NotNull AspspConsentData aspspConsentData);
 
     /**
      * Requests an account detail for account
      *
+     * @param psuData          ASPSP identifier(s) of the psu coming with actual request.
      * @param accountId        String representation of ASPSP account primary identifier
      * @param withBalance      Boolean representing if the responded AccountDetails should contain balance
      * @param accountConsent   SpiAccountConsent
      * @param aspspConsentData Encrypted data that may be stored in the consent management system in the consent linked to a request
      * @return Account detail
      */
-    SpiResponse<SpiAccountDetails> requestAccountDetailForAccount(@NotNull String accountId, boolean withBalance, @NotNull SpiAccountConsent accountConsent, @NotNull AspspConsentData aspspConsentData);
+    SpiResponse<SpiAccountDetails> requestAccountDetailForAccount(@NotNull SpiPsuData psuData, @NotNull String accountId, boolean withBalance, @NotNull SpiAccountConsent accountConsent, @NotNull AspspConsentData aspspConsentData);
 
     /**
      * Requests a list of transactions
      *
+     * @param psuData          ASPSP identifier(s) of the psu coming with actual request.
      * @param accountId        String representation of ASPSP account primary identifier
      * @param withBalance      boolean representing if the responded AccountDetails should contain balance
      * @param dateFrom         Date representing the beginning of the search period.<br>
@@ -61,26 +74,28 @@ public interface AccountSpi {
      * @param aspspConsentData Encrypted data that may be stored in the consent management system in the consent linked to a request
      * @return List of transactions
      */
-    SpiResponse<SpiTransactionReport> requestTransactionsForAccount(@NotNull String accountId, boolean withBalance, @Nullable LocalDate dateFrom, @Nullable LocalDate dateTo, @NotNull SpiAccountConsent accountConsent, @NotNull AspspConsentData aspspConsentData);
+    SpiResponse<SpiTransactionReport> requestTransactionsForAccount(@NotNull SpiPsuData psuData, @NotNull String accountId, boolean withBalance, @Nullable LocalDate dateFrom, @Nullable LocalDate dateTo, @NotNull SpiAccountConsent accountConsent, @NotNull AspspConsentData aspspConsentData);
 
     /**
      * Requests an transaction by transactionId
      *
+     * @param psuData          ASPSP identifier(s) of the psu coming with actual request.
      * @param transactionId    String representation of ASPSP transaction primary identifier
      * @param accountId        String representation of ASPSP account primary identifier
      * @param accountConsent   SpiAccountConsent
      * @param aspspConsentData Encrypted data that may be stored in the consent management system in the consent linked to a request
      * @return Transaction
      */
-    SpiResponse<SpiTransaction> requestTransactionForAccountByTransactionId(@NotNull String transactionId, @NotNull String accountId, @NotNull SpiAccountConsent accountConsent, @NotNull AspspConsentData aspspConsentData);
+    SpiResponse<SpiTransaction> requestTransactionForAccountByTransactionId(@NotNull SpiPsuData psuData, @NotNull String transactionId, @NotNull String accountId, @NotNull SpiAccountConsent accountConsent, @NotNull AspspConsentData aspspConsentData);
 
     /**
      * Requests a list of account balances
      *
+     * @param psuData          ASPSP identifier(s) of the psu coming with actual request.
      * @param accountId        String representation of ASPSP account primary identifier
      * @param accountConsent   SpiAccountConsent
      * @param aspspConsentData Encrypted data that may be stored in the consent management system in the consent linked to a request
      * @return List of account balances
      */
-    SpiResponse<SpiBalanceReport> requestBalancesForAccount(@NotNull String accountId, @NotNull SpiAccountConsent accountConsent, @NotNull AspspConsentData aspspConsentData);
+    SpiResponse<SpiBalanceReport> requestBalancesForAccount(@NotNull SpiPsuData psuData, @NotNull String accountId, @NotNull SpiAccountConsent accountConsent, @NotNull AspspConsentData aspspConsentData);
 }

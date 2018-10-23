@@ -26,6 +26,14 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Spi interface to be used for AIS consent initiating and revoking, and authorising process through AuthorisationSpi interface.
+ *
+ * Provides calls to ASPSP backend via connector to fulfill the requests of TPP for AIS Interface.
+ * Implementation details may differ between ASPSPs.
+ * In simplest case one can use the data provided by request parameters to construct a response
+ * without calling any ASPSP system. This decision is left to interface implementor.
+ * One can use <code>SpiResponse.<...>builder().aspspConsentData(aspspConsentData.replyWith(...))...</code> in order to
+ * store some information in consent between requests.
+ * For unsupported features please return <code>SpiResponse.<...>builder().fail(SpiResponseStatus.NOT_SUPPORTED);</code>
  */
 public interface AisConsentSpi extends AuthorisationSpi<SpiAccountConsent> {
 

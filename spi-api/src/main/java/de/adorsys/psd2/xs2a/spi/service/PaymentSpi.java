@@ -41,7 +41,7 @@ public interface PaymentSpi<T extends SpiPayment, R> {
     /**
      * Sends authorisation confirmation information (secure code or such) to ASPSP and if case of successful validation executes payment at ASPSP. Used only with embedded SCA Approach.
      *
-     * @param psuData            ASPSP identifier(s) of the psu
+     * @param psuData            ASPSP identifier(s) of the psu coming with actual request.
      * @param spiScaConfirmation payment confirmation information
      * @param payment            payment object
      * @param aspspConsentData   Encrypted data that may stored in the consent management system in the consent linked to a request.
