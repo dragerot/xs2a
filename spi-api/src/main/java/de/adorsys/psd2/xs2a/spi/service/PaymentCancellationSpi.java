@@ -22,7 +22,7 @@ import de.adorsys.psd2.xs2a.spi.domain.psu.SpiPsuData;
 import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
 import org.jetbrains.annotations.NotNull;
 
-public interface PaymentCancellationSpi extends AuthorisationSpi<SpiPayment> {
+public interface PaymentCancellationSpi extends PaymentAuthorisationSpi {
     /**
      * Initiates payment cancellation process
      *
@@ -32,4 +32,16 @@ public interface PaymentCancellationSpi extends AuthorisationSpi<SpiPayment> {
      * @return Payment cancellation response with information about transaction status and whether authorisation of the request is required
      */
     SpiResponse<SpiPaymentCancellationResponse> initiatePaymentCancellation(@NotNull SpiPsuData psuData, @NotNull SpiPayment payment, @NotNull AspspConsentData aspspConsentData);
+
+    /**
+     * Cancels payment without strong customer authentication
+     *
+     * @param psuData          ASPSP identifier(s) of the psu
+     * @param payment          Payment to be cancelled
+     * @param aspspConsentData Encrypted data that may stored in the consent management system in the consent linked to a request.
+     *                         May be null if consent does not contain such data, or request isn't done from a workflow with a consent
+     * @return Return a positive or negative response as part of SpiResponse
+     */
+    @NotNull
+    SpiResponse<SpiResponse.VoidResponse> cancelPaymentWithoutSca(@NotNull SpiPsuData psuData, @NotNull SpiPayment payment, @NotNull AspspConsentData aspspConsentData);
 }
