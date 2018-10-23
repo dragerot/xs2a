@@ -22,6 +22,10 @@ import de.adorsys.psd2.xs2a.spi.domain.payment.SpiSinglePayment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class Xs2aToSpiSinglePaymentMapper {
@@ -40,8 +44,14 @@ public class Xs2aToSpiSinglePaymentMapper {
         single.setCreditorName(payment.getCreditorName());
         single.setCreditorAddress(xs2aToSpiAddressMapper.mapToSpiAddress(payment.getCreditorAddress()));
         single.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
-        single.setRequestedExecutionTime(payment.getRequestedExecutionTime());
+        single.setRequestedExecutionTime(getRequestedExecutionTime(payment));
         single.setRequestedExecutionDate(payment.getRequestedExecutionDate());
         return single;
+    }
+
+    private LocalDateTime getRequestedExecutionTime(SinglePayment payment) {
+        return Optional.ofNullable(payment.getRequestedExecutionTime())
+                   .map(OffsetDateTime::toLocalDateTime)
+                   .orElse(null);
     }
 }
