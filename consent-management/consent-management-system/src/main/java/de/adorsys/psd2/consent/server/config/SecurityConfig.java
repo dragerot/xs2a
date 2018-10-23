@@ -18,14 +18,20 @@ package de.adorsys.psd2.consent.server.config;
 
 import de.adorsys.psd2.consent.server.service.security.AesCbsCryptoProviderImpl;
 import de.adorsys.psd2.consent.server.service.security.CryptoProvider;
+import de.adorsys.psd2.consent.server.service.security.JweCryptoProviderImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SecurityConfig {
 
-    @Bean
-    public CryptoProvider cryptoProvider() {
-        return new AesCbsCryptoProviderImpl();
+    @Bean(value = "cryptoProviderId")
+    public CryptoProvider cryptoProviderId() {
+        return new AesEcbCryptoProviderImpl();
+    }
+
+    @Bean(value = "cryptoProviderConsentData")
+    public CryptoProvider cryptoProviderConsentData() {
+        return new JweCryptoProviderImpl();
     }
 }

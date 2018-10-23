@@ -22,7 +22,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
 
@@ -30,7 +29,10 @@ import java.util.Optional;
 @Service
 @Data
 public class SecurityDataService {
-    private final CryptoProvider cryptoProvider;
+    @Qualifier(value = "cryptoProviderId")
+    private final CryptoProvider cryptoProviderId;
+    @Qualifier(value = "cryptoProviderConsentData")
+    private final CryptoProvider cryptoProviderConsentData;
     private final String SERVER_KEY;
     private static final String SEPARATOR = "_";
 
@@ -45,13 +47,12 @@ public class SecurityDataService {
     }
 
     /**
-     * Encrypt consent ID
+     * Encrypts external consent ID with secret consent key via configuration server key
      *
      * @param consentId
      * @return String encrypted external consent ID
      */
     public Optional<String> getEncryptedId(String consentId) {
-        //Get consent key
         String consent_key = getConsentKey();
         //Concatenate consent key with consent id
         String consentIdWithKey = concatWithSeparator(consentId, consent_key);
@@ -68,7 +69,7 @@ public class SecurityDataService {
     }
 
     /**
-     * Decrypt consent ID
+     * Decrypts encrypted external consent ID
      *
      * @param encryptedConsentId
      * @return String external consent ID

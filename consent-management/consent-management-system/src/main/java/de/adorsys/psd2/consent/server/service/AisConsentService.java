@@ -45,6 +45,7 @@ import static de.adorsys.psd2.consent.api.TypeAccess.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AisConsentService {
     private final AisConsentRepository aisConsentRepository;
     private final AisConsentActionRepository aisConsentActionRepository;
@@ -166,25 +167,30 @@ public class AisConsentService {
     /**
      * Create consent authorization
      *
-     * @param consentId id of consent
-     * @param request   needed parameters for creating consent authorization
+     * @param encryptedConsentId id of consent
+     * @param request            needed parameters for creating consent authorization
      * @return String authorization id
      */
     @Transactional
-    public Optional<String> createAuthorization(String consentId, AisConsentAuthorizationRequest request) {
-        return aisConsentRepository.findByExternalIdAndConsentStatusIn(consentId, EnumSet.of(RECEIVED, VALID))
+    public Optional<String> createAuthorization(String encryptedConsentId, AisConsentAuthorizationRequest request) {
+        return securityDataService.getConsentId(encryptedConsentId)
+                   .flatMap(consentId -> aisConsentRepository.findByExternalIdAndConsentStatusIn(consentId, EnumSet.of(RECEIVED, VALID)))
                    .map(aisConsent -> saveNewAuthorization(aisConsent, request));
     }
 
     /**
      * Get consent authorization
      *
-     * @param consentId       id of consent
-     * @param authorizationId id of authorisation session
+     * @param encryptedConsentId id of consent
+     * @param authorizationId    id of authorisation session
      * @return AisConsentAuthorizationResponse
      */
-    public Optional<AisConsentAuthorizationResponse> getAccountConsentAuthorizationById(String authorizationId, String consentId) {
-        return aisConsentRepository.findByExternalIdAndConsentStatusIn(consentId, EnumSet.of(RECEIVED, VALID)).isPresent()
+    public Optional<AisConsentAuthorizationResponse> getAccountConsentAuthorizationById(String authorizationId, String encryptedConsentId) {
+        Optional<String> consentId = securityDataService.getConsentId(encryptedConsentId);
+        if (!consentId.isPresent()) {
+            return Optional.empty();
+        }
+        return aisConsentRepository.findByExternalIdAndConsentStatusIn(consentId.get(), EnumSet.of(RECEIVED, VALID)).isPresent()
                    ? aisConsentAuthorizationRepository.findByExternalId(authorizationId)
                          .map(consentMapper::mapToAisConsentAuthorizationResponse)
                    : Optional.empty();

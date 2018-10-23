@@ -17,6 +17,7 @@
 package de.adorsys.psd2.consent.server.service;
 
 import de.adorsys.psd2.consent.server.service.security.CryptoProvider;
+import de.adorsys.psd2.consent.server.service.security.JweCryptoProviderImpl;
 import de.adorsys.psd2.consent.server.service.security.SecurityDataService;
 import org.junit.Before;
 import org.mockito.InjectMocks;
