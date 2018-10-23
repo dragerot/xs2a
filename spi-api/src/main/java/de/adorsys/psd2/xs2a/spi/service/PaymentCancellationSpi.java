@@ -31,10 +31,15 @@ public interface PaymentCancellationSpi extends PaymentAuthorisationSpi {
      * @param aspspConsentData Encrypted data that may stored in the consent management system in the consent linked to a request.
      * @return Payment cancellation response with information about transaction status and whether authorisation of the request is required
      */
+    @NotNull
     SpiResponse<SpiPaymentCancellationResponse> initiatePaymentCancellation(@NotNull SpiPsuData psuData, @NotNull SpiPayment payment, @NotNull AspspConsentData aspspConsentData);
 
+    // TODO add javadoc https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/438
+    @NotNull
+    SpiResponse<SpiResponse.VoidResponse> executePaymentCancellationWithoutSca(@NotNull SpiPsuData psuData, @NotNull SpiPayment payment, @NotNull AspspConsentData aspspConsentData);
+
     /**
-     * Cancels payment without strong customer authentication
+     * Cancels payment without performing strong customer authentication
      *
      * @param psuData          ASPSP identifier(s) of the psu
      * @param payment          Payment to be cancelled
