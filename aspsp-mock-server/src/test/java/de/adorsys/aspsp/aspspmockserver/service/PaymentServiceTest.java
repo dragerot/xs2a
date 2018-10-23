@@ -49,7 +49,8 @@ public class PaymentServiceTest {
     private static final String IBAN = "DE123456789";
     private static final String WRONG_IBAN = "wrong_iban";
     private static final long BALANCE_AMOUNT = 100;
-    private static final long AMOUNT_TO_TRANSFER = BALANCE_AMOUNT / 2;
+    private static final long AMOUNT_TO_TRANSFER = 50;
+    private static final long EXCEEDING_AMOUNT_TO_TRANSFER = BALANCE_AMOUNT + 1;
     private static final Currency CURRENCY = Currency.getInstance("EUR");
 
     @InjectMocks
@@ -109,7 +110,7 @@ public class PaymentServiceTest {
     @Test
     public void addPayment_Failure() {
         //Given
-        SpiSinglePayment expectedPayment = getSpiSinglePayment(BALANCE_AMOUNT + 1);
+        SpiSinglePayment expectedPayment = getSpiSinglePayment(EXCEEDING_AMOUNT_TO_TRANSFER);
 
         //When
         Optional<SpiSinglePayment> actualPayment = paymentService.addPayment(expectedPayment);
@@ -150,12 +151,12 @@ public class PaymentServiceTest {
     @Test
     public void addBulkPayments_Failure_InsufficientFunds() {
         when(paymentMapper.mapToAspspPaymentList(any()))
-            .thenReturn(Arrays.asList(getAspspPayment(AMOUNT_TO_TRANSFER), getAspspPayment(AMOUNT_TO_TRANSFER + 1)));
+            .thenReturn(Arrays.asList(getAspspPayment(AMOUNT_TO_TRANSFER), getAspspPayment(EXCEEDING_AMOUNT_TO_TRANSFER)));
 
         //Given
         SpiBulkPayment spiBulkPayment = new SpiBulkPayment();
         List<SpiSinglePayment> payments = Arrays.asList(getSpiSinglePayment(AMOUNT_TO_TRANSFER),
-                                                        getSpiSinglePayment(AMOUNT_TO_TRANSFER + 1));
+                                                        getSpiSinglePayment(EXCEEDING_AMOUNT_TO_TRANSFER));
         spiBulkPayment.setPayments(payments);
 
         //When
