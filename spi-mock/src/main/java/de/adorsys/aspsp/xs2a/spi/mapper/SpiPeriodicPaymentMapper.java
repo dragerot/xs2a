@@ -44,6 +44,8 @@ public class SpiPeriodicPaymentMapper {
         periodic.setExecutionRule(payment.getExecutionRule());
         periodic.setFrequency(payment.getFrequency().name());
         periodic.setDayOfExecution(payment.getDayOfExecution());
+        periodic.setRequestedExecutionTime(payment.getRequestedExecutionTime());
+        periodic.setRequestedExecutionDate(payment.getRequestedExecutionDate());
         return periodic;
     }
 
@@ -64,6 +66,8 @@ public class SpiPeriodicPaymentMapper {
         periodic.setExecutionRule(payment.getExecutionRule());
         periodic.setFrequency(SpiFrequencyCode.valueOf(payment.getFrequency()));
         periodic.setDayOfExecution(payment.getDayOfExecution());
+        periodic.setRequestedExecutionTime(payment.getRequestedExecutionTime());
+        periodic.setRequestedExecutionDate(payment.getRequestedExecutionDate());
         return periodic;
     }
 

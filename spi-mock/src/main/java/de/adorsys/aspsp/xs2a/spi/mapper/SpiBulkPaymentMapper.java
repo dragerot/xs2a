@@ -41,6 +41,7 @@ public class SpiBulkPaymentMapper {
         bulk.setRequestedExecutionDate(payment.getRequestedExecutionDate());
         bulk.setPayments(mapToListAspspSpiSinglePayment(payment, transactionStatus));
         bulk.setPaymentStatus(transactionStatus);
+        bulk.setRequestedExecutionDate(payment.getRequestedExecutionDate());
         return bulk;
     }
 

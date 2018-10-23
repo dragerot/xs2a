@@ -38,6 +38,8 @@ public class SpiSinglePaymentMapper {
         single.setCreditorAddress(payment.getCreditorAddress());
         single.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
         single.setPaymentStatus(transactionStatus);
+        single.setRequestedExecutionTime(payment.getRequestedExecutionTime());
+        single.setRequestedExecutionDate(payment.getRequestedExecutionDate());
         return single;
     }
 
@@ -53,6 +55,8 @@ public class SpiSinglePaymentMapper {
         single.setCreditorAddress(payment.getCreditorAddress());
         single.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
         single.setPaymentStatus(payment.getPaymentStatus());
+        single.setRequestedExecutionTime(payment.getRequestedExecutionTime());
+        single.setRequestedExecutionDate(payment.getRequestedExecutionDate());
         return single;
     }
 
