@@ -63,7 +63,7 @@ public class PaymentService {
      * @return Optional of saved single payment
      */
     public Optional<AspspSinglePayment> addPayment(@NotNull AspspSinglePayment payment) {
-        if (areFundsSufficient(payment.getDebtorAccount(), payment.getInstructedAmount().getAmount())) {
+        if (payment.getInstructedAmount() != null && areFundsSufficient(payment.getDebtorAccount(), payment.getInstructedAmount().getAmount())) {
             AspspPayment saved = paymentRepository.save(paymentMapper.mapToAspspPayment(payment, SINGLE));
             return Optional.ofNullable(paymentMapper.mapToAspspSinglePayment(saved));
         }

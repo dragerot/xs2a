@@ -32,44 +32,23 @@ import org.springframework.stereotype.Component;
 public class SpiPeriodicPaymentMapper {
     private final SpiPaymentMapper spiPaymentMapper;
 
-    public AspspPeriodicPayment mapToAspspPeriodicPayment(@NotNull SpiPeriodicPayment spiPeriodicPayment) {
-        AspspPeriodicPayment aspspPayment = new AspspPeriodicPayment();
-        aspspPayment.setPaymentId(spiPeriodicPayment.getPaymentId());
-        aspspPayment.setEndToEndIdentification(spiPeriodicPayment.getEndToEndIdentification());
-        aspspPayment.setDebtorAccount(spiPaymentMapper.mapToAspspAccountReference(spiPeriodicPayment.getDebtorAccount()));
-        aspspPayment.setInstructedAmount(spiPaymentMapper.mapToAspspAmount(spiPeriodicPayment.getInstructedAmount()));
-        aspspPayment.setCreditorAccount(spiPaymentMapper.mapToAspspAccountReference(spiPeriodicPayment.getCreditorAccount()));
-        aspspPayment.setCreditorAgent(spiPeriodicPayment.getCreditorAgent());
-        aspspPayment.setCreditorName(spiPeriodicPayment.getCreditorName());
-        aspspPayment.setCreditorAddress(spiPaymentMapper.mapToAspspAddress(spiPeriodicPayment.getCreditorAddress()));
-        aspspPayment.setRemittanceInformationUnstructured(spiPeriodicPayment.getRemittanceInformationUnstructured());
-        aspspPayment.setPaymentStatus(AspspTransactionStatus.RCVD);
-        aspspPayment.setStartDate(spiPeriodicPayment.getStartDate());
-        aspspPayment.setEndDate(spiPeriodicPayment.getEndDate());
-        aspspPayment.setExecutionRule(spiPeriodicPayment.getExecutionRule());
-        aspspPayment.setFrequency(spiPeriodicPayment.getFrequency().name());
-        aspspPayment.setDayOfExecution(spiPeriodicPayment.getDayOfExecution());
-        return aspspPayment;
-    }
-
-    public AspspPeriodicPayment mapToAspspPeriodicPayment(@NotNull de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPeriodicPayment spiPeriodicPayment) {
+    public AspspPeriodicPayment mapToAspspSpiPeriodicPayment(@NotNull SpiPeriodicPayment payment, SpiTransactionStatus transactionStatus) {
         AspspPeriodicPayment periodic = new AspspPeriodicPayment();
-        periodic.setPaymentId(spiPeriodicPayment.getPaymentId());
-        periodic.setEndToEndIdentification(spiPeriodicPayment.getEndToEndIdentification());
-        periodic.setDebtorAccount(spiPaymentMapper.mapToAspspAccountReference(spiPeriodicPayment.getDebtorAccount()));
-        periodic.setInstructedAmount(spiPaymentMapper.mapToAspspAmount(spiPeriodicPayment.getInstructedAmount()));
-        periodic.setCreditorAccount(spiPaymentMapper.mapToAspspAccountReference(spiPeriodicPayment.getCreditorAccount()));
-        periodic.setCreditorAgent(spiPeriodicPayment.getCreditorAgent());
-        periodic.setCreditorName(spiPeriodicPayment.getCreditorName());
-        periodic.setCreditorAddress(spiPaymentMapper.mapToAspspAddress(spiPeriodicPayment.getCreditorAddress()));
-        periodic.setRemittanceInformationUnstructured(spiPeriodicPayment.getRemittanceInformationUnstructured());
-        periodic.setRemittanceInformationStructured(spiPaymentMapper.mapToAspspRemittance(spiPeriodicPayment.getRemittanceInformationStructured()));
-        periodic.setPaymentStatus(AspspTransactionStatus.RCVD);
-        periodic.setStartDate(spiPeriodicPayment.getStartDate());
-        periodic.setEndDate(spiPeriodicPayment.getEndDate());
-        periodic.setExecutionRule(spiPeriodicPayment.getExecutionRule());
-        periodic.setFrequency(spiPeriodicPayment.getFrequency());
-        periodic.setDayOfExecution(spiPeriodicPayment.getDayOfExecution());
+        periodic.setPaymentId(payment.getPaymentId());
+        periodic.setEndToEndIdentification(payment.getEndToEndIdentification());
+        periodic.setDebtorAccount(payment.getDebtorAccount());
+        periodic.setInstructedAmount(payment.getInstructedAmount());
+        periodic.setCreditorAccount(payment.getCreditorAccount());
+        periodic.setCreditorAgent(payment.getCreditorAgent());
+        periodic.setCreditorName(payment.getCreditorName());
+        periodic.setCreditorAddress(payment.getCreditorAddress());
+        periodic.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
+        periodic.setPaymentStatus(transactionStatus);
+        periodic.setStartDate(payment.getStartDate());
+        periodic.setEndDate(payment.getEndDate());
+        periodic.setExecutionRule(payment.getExecutionRule());
+        periodic.setFrequency(payment.getFrequency().name());
+        periodic.setDayOfExecution(payment.getDayOfExecution());
         return periodic;
     }
 
@@ -84,7 +63,7 @@ public class SpiPeriodicPaymentMapper {
         periodic.setCreditorName(payment.getCreditorName());
         periodic.setCreditorAddress(spiPaymentMapper.mapToSpiAddress(payment.getCreditorAddress()));
         periodic.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
-        periodic.setPaymentStatus(SpiTransactionStatus.RCVD);
+        periodic.setPaymentStatus(payment.getPaymentStatus());
         periodic.setStartDate(payment.getStartDate());
         periodic.setEndDate(payment.getEndDate());
         periodic.setExecutionRule(payment.getExecutionRule());

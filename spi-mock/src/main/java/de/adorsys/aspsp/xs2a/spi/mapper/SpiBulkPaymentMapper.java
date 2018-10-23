@@ -38,13 +38,13 @@ public class SpiBulkPaymentMapper {
     private final SpiSinglePaymentMapper spiSinglePaymentMapper;
     private final SpiPaymentMapper spiPaymentMapper;
 
-    public AspspBulkPayment mapToAspspBulkPayment(@NotNull SpiBulkPayment payment) {
+    public AspspBulkPayment mapToAspspBulkPayment(@NotNull SpiBulkPayment payment, SpiTransactionStatus transactionStatus) {
         AspspBulkPayment bulk = new AspspBulkPayment();
         bulk.setDebtorAccount(spiPaymentMapper.mapToAspspAccountReference(payment.getDebtorAccount()));
         bulk.setBatchBookingPreferred(payment.getBatchBookingPreferred());
         bulk.setRequestedExecutionDate(payment.getRequestedExecutionDate());
-        bulk.setPayments(mapToListAspspSinglePayment(payment));
-        bulk.setPaymentStatus(AspspTransactionStatus.RCVD);
+        bulk.setPayments(mapToListAspspSinglePayment(payment, transactionStatus));
+        bulk.setPaymentStatus(transactionStatus);
         return bulk;
     }
 
@@ -75,12 +75,13 @@ public class SpiBulkPaymentMapper {
     public SpiBulkPayment mapToSpiBulkPayment(@NotNull List<AspspSinglePayment> payments, PaymentProduct paymentProduct) {
         SpiBulkPayment bulk = new SpiBulkPayment();
         bulk.setPayments(mapToListSpiSinglePayments(payments, paymentProduct));
+        bulk.setPaymentStatus(payments.get(0).getPaymentStatus());
         return bulk;
     }
 
-    private List<AspspSinglePayment> mapToListAspspSinglePayment(@NotNull SpiBulkPayment payment) {
+    private List<AspspSinglePayment> mapToListAspspSinglePayment(@NotNull SpiBulkPayment payment, SpiTransactionStatus transactionStatus) {
         return payment.getPayments().stream()
-                   .map(spiSinglePaymentMapper::mapToAspspSinglePayment)
+                   .map(p -> spiSinglePaymentMapper.mapToAspspSinglePayment(p, transactionStatus))
                    .collect(Collectors.toList());
     }
 

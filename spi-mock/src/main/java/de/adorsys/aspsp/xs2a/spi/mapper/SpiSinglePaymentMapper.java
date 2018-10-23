@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
 public class SpiSinglePaymentMapper {
     private final SpiPaymentMapper spiPaymentMapper;
 
-    public de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment mapToAspspSpiSinglePayment(@NotNull SpiSinglePayment payment) {
+    public de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment mapToAspspSpiSinglePayment(@NotNull SpiSinglePayment payment, SpiTransactionStatus transactionStatus) {
         de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment single = new de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment();
         single.setPaymentId(payment.getPaymentId());
         single.setEndToEndIdentification(payment.getEndToEndIdentification());
@@ -41,7 +41,7 @@ public class SpiSinglePaymentMapper {
         single.setCreditorName(payment.getCreditorName());
         single.setCreditorAddress(payment.getCreditorAddress());
         single.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
-        single.setPaymentStatus(SpiTransactionStatus.RCVD);
+        single.setPaymentStatus(transactionStatus);
         return single;
     }
 
@@ -56,7 +56,7 @@ public class SpiSinglePaymentMapper {
         single.setCreditorName(payment.getCreditorName());
         single.setCreditorAddress(spiPaymentMapper.mapToSpiAddress(payment.getCreditorAddress()));
         single.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
-        single.setPaymentStatus(SpiTransactionStatus.RCVD);
+        single.setPaymentStatus(payment.getPaymentStatus());
         return single;
     }
 
