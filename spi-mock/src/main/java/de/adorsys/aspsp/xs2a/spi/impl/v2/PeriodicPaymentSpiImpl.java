@@ -20,6 +20,7 @@ import de.adorsys.aspsp.xs2a.exception.RestException;
 import de.adorsys.aspsp.xs2a.spi.config.rest.AspspRemoteUrls;
 import de.adorsys.aspsp.xs2a.spi.mapper.SpiPeriodicPaymentMapper;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspPeriodicPayment;
+import de.adorsys.psd2.aspsp.mock.api.payment.AspspPeriodicPayment;
 import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaConfirmation;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
 import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
@@ -33,6 +34,8 @@ import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,14 +51,14 @@ public class PeriodicPaymentSpiImpl implements PeriodicPaymentSpi {
 
     @Qualifier("aspspRestTemplate")
     private final RestTemplate aspspRestTemplate;
-    private final SpiPeriodicPaymentMapper spiPeriodicPaymentMapper;
     private final AspspRemoteUrls aspspRemoteUrls;
+    private final SpiPeriodicPaymentMapper spiPeriodicPaymentMapper;
 
     @Override
     @NotNull
-    public SpiResponse<SpiPeriodicPaymentInitiationResponse> initiatePayment(@NotNull SpiPsuData psuData, @NotNull SpiPeriodicPayment spiPeriodicPayment, @NotNull AspspConsentData initialAspspConsentData) {
+    public SpiResponse<SpiPeriodicPaymentInitiationResponse> initiatePayment(@NotNull SpiPsuData psuData, @NotNull SpiPeriodicPayment payment, @NotNull AspspConsentData initialAspspConsentData) {
         try {
-            AspspPeriodicPayment request = spiPeriodicPaymentMapper.mapToAspspPeriodicPayment(spiPeriodicPayment);
+            AspspPeriodicPayment request = spiPeriodicPaymentMapper.mapToAspspPeriodicPayment(payment);
 
             ResponseEntity<AspspPeriodicPayment> aspspResponse =
                 aspspRestTemplate.postForEntity(aspspRemoteUrls.createPeriodicPayment(), request, AspspPeriodicPayment.class);
@@ -83,26 +86,23 @@ public class PeriodicPaymentSpiImpl implements PeriodicPaymentSpi {
         try {
             ResponseEntity<List<AspspPeriodicPayment>> aspspResponse =
                 aspspRestTemplate.exchange(aspspRemoteUrls.getPaymentById(), HttpMethod.GET, null, new ParameterizedTypeReference<List<AspspPeriodicPayment>>() {
-                }, payment.getPaymentType(), payment.getPaymentProduct(), payment.getPaymentId());
+                }, payment.getPaymentType().getValue(), payment.getPaymentProduct().getValue(), payment.getPaymentId());
             AspspPeriodicPayment periodic = aspspResponse.getBody().get(0);
             SpiPeriodicPayment spiPeriodicPayment = spiPeriodicPaymentMapper.mapToSpiPeriodicPayment(periodic, payment.getPaymentProduct());
 
             return SpiResponse.<SpiPeriodicPayment>builder()
-                       .aspspConsentData(aspspConsentData)
+                       .aspspConsentData(aspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))
                        .payload(spiPeriodicPayment)
                        .success();
 
         } catch (RestException e) {
-
             if (e.getHttpStatus() == HttpStatus.INTERNAL_SERVER_ERROR) {
-
                 return SpiResponse.<SpiPeriodicPayment>builder()
-                           .aspspConsentData(aspspConsentData)
+                           .aspspConsentData(aspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))
                            .fail(SpiResponseStatus.TECHNICAL_FAILURE);
             }
-
             return SpiResponse.<SpiPeriodicPayment>builder()
-                       .aspspConsentData(aspspConsentData)
+                       .aspspConsentData(aspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))
                        .fail(SpiResponseStatus.LOGICAL_FAILURE);
         }
     }
@@ -115,53 +115,67 @@ public class PeriodicPaymentSpiImpl implements PeriodicPaymentSpi {
             SpiTransactionStatus status = aspspResponse.getBody();
 
             return SpiResponse.<SpiTransactionStatus>builder()
-                       .aspspConsentData(aspspConsentData)
+                       .aspspConsentData(aspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))
                        .payload(status)
                        .success();
 
         } catch (RestException e) {
-
             if (e.getHttpStatus() == HttpStatus.INTERNAL_SERVER_ERROR) {
-
                 return SpiResponse.<SpiTransactionStatus>builder()
-                           .aspspConsentData(aspspConsentData)
+                           .aspspConsentData(aspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))
                            .fail(SpiResponseStatus.TECHNICAL_FAILURE);
             }
-
             return SpiResponse.<SpiTransactionStatus>builder()
-                       .aspspConsentData(aspspConsentData)
+                       .aspspConsentData(aspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))
                        .fail(SpiResponseStatus.LOGICAL_FAILURE);
         }
     }
 
     @Override
-    public @NotNull SpiResponse<SpiResponse.VoidResponse> executePaymentWithoutSca(@NotNull SpiPsuData psuData, @NotNull SpiPeriodicPayment payment, @NotNull AspspConsentData aspspConsentData) {
+    @NotNull
+    public SpiResponse<SpiResponse.VoidResponse> executePaymentWithoutSca(@NotNull SpiPsuData psuData, @NotNull SpiPeriodicPayment payment, @NotNull AspspConsentData aspspConsentData) {
         AspspPeriodicPayment request = spiPeriodicPaymentMapper.mapToAspspPeriodicPayment(payment);
 
         try {
             aspspRestTemplate.postForEntity(aspspRemoteUrls.createPeriodicPayment(), request, AspspPeriodicPayment.class);
 
             return SpiResponse.<SpiResponse.VoidResponse>builder()
-                       .aspspConsentData(aspspConsentData)
+                       .aspspConsentData(aspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))
                        .success();
 
         } catch (RestException e) {
-
             if (e.getHttpStatus() == HttpStatus.INTERNAL_SERVER_ERROR) {
-
                 return SpiResponse.<SpiResponse.VoidResponse>builder()
-                           .aspspConsentData(aspspConsentData)
+                           .aspspConsentData(aspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))
                            .fail(SpiResponseStatus.TECHNICAL_FAILURE);
             }
-
             return SpiResponse.<SpiResponse.VoidResponse>builder()
-                       .aspspConsentData(aspspConsentData)
+                       .aspspConsentData(aspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))
                        .fail(SpiResponseStatus.LOGICAL_FAILURE);
         }
     }
 
     @Override
-    public @NotNull SpiResponse<SpiResponse.VoidResponse> verifyScaAuthorisationAndExecutePayment(@NotNull SpiPsuData psuData, @NotNull SpiScaConfirmation spiScaConfirmation, @NotNull SpiPeriodicPayment payment, @NotNull AspspConsentData aspspConsentData) {
-        return SpiResponse.<SpiResponse.VoidResponse>builder().fail(SpiResponseStatus.NOT_SUPPORTED);
+    @NotNull
+    public SpiResponse<SpiResponse.VoidResponse> verifyScaAuthorisationAndExecutePayment(@NotNull SpiPsuData psuData, @NotNull SpiScaConfirmation spiScaConfirmation, @NotNull SpiPeriodicPayment payment, @NotNull AspspConsentData aspspConsentData) {
+        try {
+            aspspRestTemplate.exchange(aspspRemoteUrls.applyStrongUserAuthorisation(), HttpMethod.PUT, new HttpEntity<>(spiScaConfirmation), ResponseEntity.class);
+            AspspPeriodicPayment request = spiPeriodicPaymentMapper.mapToAspspPeriodicPayment(payment);
+            aspspRestTemplate.postForEntity(aspspRemoteUrls.createPeriodicPayment(), request, AspspPeriodicPayment.class);
+
+            return SpiResponse.<SpiResponse.VoidResponse>builder()
+                       .aspspConsentData(aspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))
+                       .success();
+
+        } catch (RestException e) {
+            if (e.getHttpStatus() == HttpStatus.INTERNAL_SERVER_ERROR) {
+                return SpiResponse.<SpiResponse.VoidResponse>builder()
+                           .aspspConsentData(aspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))
+                           .fail(SpiResponseStatus.TECHNICAL_FAILURE);
+            }
+            return SpiResponse.<SpiResponse.VoidResponse>builder()
+                       .aspspConsentData(aspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))
+                       .fail(SpiResponseStatus.LOGICAL_FAILURE);
+        }
     }
 }

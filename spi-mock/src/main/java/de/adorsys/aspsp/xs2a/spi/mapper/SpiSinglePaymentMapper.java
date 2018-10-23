@@ -30,15 +30,19 @@ import org.springframework.stereotype.Service;
 public class SpiSinglePaymentMapper {
     private final SpiPaymentMapper spiPaymentMapper;
 
-    public SpiSinglePaymentInitiationResponse mapToSpiSinglePaymentResponse(@NotNull AspspSinglePayment payment) {
-        SpiSinglePaymentInitiationResponse spi = new SpiSinglePaymentInitiationResponse();
-        spi.setPaymentId(payment.getPaymentId());
-        if (payment.getPaymentId() == null) {
-            spi.setTransactionStatus(SpiTransactionStatus.RJCT);
-        } else {
-            spi.setTransactionStatus(SpiTransactionStatus.RCVD);
-        }
-        return spi;
+    public de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment mapToAspspSpiSinglePayment(@NotNull SpiSinglePayment payment) {
+        de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment single = new de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment();
+        single.setPaymentId(payment.getPaymentId());
+        single.setEndToEndIdentification(payment.getEndToEndIdentification());
+        single.setDebtorAccount(payment.getDebtorAccount());
+        single.setInstructedAmount(payment.getInstructedAmount());
+        single.setCreditorAccount(payment.getCreditorAccount());
+        single.setCreditorAgent(payment.getCreditorAgent());
+        single.setCreditorName(payment.getCreditorName());
+        single.setCreditorAddress(payment.getCreditorAddress());
+        single.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
+        single.setPaymentStatus(SpiTransactionStatus.RCVD);
+        return single;
     }
 
     public SpiSinglePayment mapToSpiSinglePayment(@NotNull de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment payment, PaymentProduct paymentProduct) {
@@ -54,6 +58,17 @@ public class SpiSinglePaymentMapper {
         single.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
         single.setPaymentStatus(SpiTransactionStatus.RCVD);
         return single;
+    }
+
+    public SpiSinglePaymentInitiationResponse mapToSpiSinglePaymentResponse(@NotNull AspspSinglePayment payment) {
+        SpiSinglePaymentInitiationResponse spi = new SpiSinglePaymentInitiationResponse();
+        spi.setPaymentId(payment.getPaymentId());
+        if (payment.getPaymentId() == null) {
+            spi.setTransactionStatus(SpiTransactionStatus.RJCT);
+        } else {
+            spi.setTransactionStatus(SpiTransactionStatus.RCVD);
+        }
+        return spi;
     }
 
     public AspspSinglePayment mapToAspspSinglePayment(@NotNull SpiSinglePayment spiSinglePayment) {

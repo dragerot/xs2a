@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
-package de.adorsys.aspsp.xs2a.service.payment;
+package de.adorsys.psd2.xs2a.spi.domain.account;
 
-import de.adorsys.aspsp.xs2a.service.consent.PisConsentDataService;
-import de.adorsys.psd2.xs2a.core.profile.PaymentProduct;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.Value;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public abstract class ReadPayment<T> {
-    @Autowired
-    protected PisConsentDataService pisConsentDataService;
+import java.util.List;
 
-    public abstract T getPayment(String paymentId, PaymentProduct paymentProduct);
+/**
+ * Transaction report of Spi layer to be used as a container for account reference, transactions and balances
+ */
+@Value
+public class SpiTransactionReport {
+    @NotNull
+    private SpiAccountReference accountReference;
+    @NotNull
+    private List<SpiTransaction> transactions;
+    @Nullable
+    private List<SpiAccountBalance> balances;
 }

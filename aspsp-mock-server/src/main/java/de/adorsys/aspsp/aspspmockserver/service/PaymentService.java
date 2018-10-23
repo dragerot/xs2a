@@ -38,7 +38,6 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
 import java.util.Optional;
@@ -101,8 +100,10 @@ public class PaymentService {
      * @return AspspPaymentStatus status of payment
      */
     public Optional<AspspTransactionStatus> getPaymentStatusById(String paymentId) {
-        return Optional.ofNullable(paymentRepository.findOne(paymentId))
-                   .map(AspspPayment::getPaymentStatus);
+        List<AspspPayment> payments = paymentRepository.findByPaymentIdOrBulkId(paymentId, paymentId);
+        return payments.isEmpty()
+                   ? Optional.empty()
+                   : Optional.of(payments.get(0).getPaymentStatus());
     }
 
     /**
@@ -112,7 +113,7 @@ public class PaymentService {
      * @return list of single payments forming bulk payment
      */
     public Optional<AspspBulkPayment> addBulkPayments(AspspBulkPayment payments) {
-        List<AspspPayment> aspspPayments = new ArrayList<>(paymentMapper.mapToAspspPaymentList(payments.getPayments()));
+        List<AspspPayment> aspspPayments = paymentMapper.mapToAspspPaymentList(payments.getPayments());
         Optional<AspspPayment> firstInvalid = aspspPayments.stream()
                                                   .filter(this::isNonExistingAccount)
                                                   .findFirst();
@@ -124,7 +125,7 @@ public class PaymentService {
         List<AspspPayment> savedPayments = paymentRepository.save(aspspPayments);
         AspspBulkPayment result = new AspspBulkPayment();
         result.setPayments(paymentMapper.mapToAspspSinglePaymentList(savedPayments));
-        result.setPaymentId(savedPayments.get(0).getPaymentId());
+        result.setPaymentId(savedPayments.get(0).getBulkId());
 
         return Optional.of(result);
     }
