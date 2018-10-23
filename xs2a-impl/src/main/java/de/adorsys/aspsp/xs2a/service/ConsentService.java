@@ -125,12 +125,19 @@ public class ConsentService { //TODO change format of consentRequest to mandator
      * Returns status of requested consent
      */
     public ResponseObject<ConsentStatusResponse> getAccountConsentsStatusById(String consentId) {
-        return Optional.ofNullable(getValidatedSpiAccountConsent(consentId))
-                   .map(consent -> aisConsentMapper.mapToConsentStatus(consent.getConsentStatus()))
-                   .map(status -> ResponseObject.<ConsentStatusResponse>builder().body(new ConsentStatusResponse(status.get())).build())
-                   .orElseGet(ResponseObject.<ConsentStatusResponse>builder()
-                                  .fail(new MessageError(new TppMessageInformation(MessageCategory.ERROR, MessageErrorCode.CONSENT_UNKNOWN_400)))
-                                  ::build);
+        SpiAccountConsent validatedSpiAccountConsent = getValidatedSpiAccountConsent(consentId);
+        Optional<ConsentStatus> consentStatus =
+            Optional.ofNullable(validatedSpiAccountConsent)
+                      .flatMap(consent -> aisConsentMapper.mapToConsentStatus(consent.getConsentStatus()));
+
+        ResponseObject.ResponseBuilder<ConsentStatusResponse> responseBuilder = ResponseObject.builder();
+        if (consentStatus.isPresent()) {
+            responseBuilder = responseBuilder.body(new ConsentStatusResponse(consentStatus.get()));
+        }
+        else {
+            responseBuilder = responseBuilder.fail(new MessageError(new TppMessageInformation(MessageCategory.ERROR, MessageErrorCode.CONSENT_UNKNOWN_400)));
+        }
+        return responseBuilder.build();
     }
 
     /**
@@ -304,8 +311,6 @@ public class ConsentService { //TODO change format of consentRequest to mandator
 
     private void proceedEmbeddedImplicitCaseForCreateConsent(CreateConsentResponse response, String psuId, String consentId) {
         aisAuthorizationService.createConsentAuthorization(psuId, consentId)
-            .ifPresent(a -> {
-                response.setAuthorizationId(a.getAuthorizationId());
-            });
+            .ifPresent(a -> response.setAuthorizationId(a.getAuthorizationId()));
     }
 }

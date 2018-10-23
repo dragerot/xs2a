@@ -50,7 +50,6 @@ public class AisConsentService {
     private final AisConsentActionRepository aisConsentActionRepository;
     private final AisConsentAuthorizationRepository aisConsentAuthorizationRepository;
     private final AisConsentMapper consentMapper;
-    private final FrequencyPerDateCalculationService frequencyPerDateCalculationService;
 
     /**
      * Create AIS consent
@@ -252,12 +251,12 @@ public class AisConsentService {
     }
 
     private AisConsent createConsentFromRequest(CreateAisConsentRequest request) {
-        int minFrequencyPerDay = frequencyPerDateCalculationService.getMinFrequencyPerDay(request.getFrequencyPerDay());
+
         AisConsent consent = new AisConsent();
         consent.setConsentStatus(RECEIVED);
-        consent.setExpectedFrequencyPerDay(minFrequencyPerDay);
-        consent.setTppFrequencyPerDay(request.getFrequencyPerDay());
-        consent.setUsageCounter(minFrequencyPerDay);
+        consent.setAllowedFrequencyPerDay(request.getAllowedFrequencyPerDay());
+        consent.setTppFrequencyPerDay(request.getRequestedFrequencyPerDay());
+        consent.setUsageCounter(request.getAllowedFrequencyPerDay()); // Initially we set maximum and then decrement it by usage
         consent.setRequestDateTime(LocalDateTime.now());
         consent.setExpireDate(request.getValidUntil());
         consent.setPsuId(request.getPsuId());

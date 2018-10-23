@@ -42,7 +42,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -50,17 +49,15 @@ public class AisConsentServiceTest {
     @InjectMocks
     private AisConsentService aisConsentService;
     @Mock
-    private FrequencyPerDateCalculationService frequencyPerDateCalculationService;
-    @Mock
     private AisConsentMapper consentMapper;
     @Mock
     private AisConsentRepository aisConsentRepository;
 
-
     private AisConsent aisConsent;
-    private final long CONSENT_ID = 1;
-    private final String EXTERNAL_CONSENT_ID = "4b112130-6a96-4941-a220-2da8a4af2c65";
-    private final String EXTERNAL_CONSENT_ID_NOT_EXIST = "4b112130-6a96-4941-a220-2da8a4af2c63";
+
+    private static final long CONSENT_ID = 1;
+    private static final String EXTERNAL_CONSENT_ID = "4b112130-6a96-4941-a220-2da8a4af2c65";
+    private static final String EXTERNAL_CONSENT_ID_NOT_EXIST = "4b112130-6a96-4941-a220-2da8a4af2c63";
 
     @Before
     public void setUp() {
@@ -85,7 +82,6 @@ public class AisConsentServiceTest {
     public void shouldReturnExternalId_WhenCreateConsentIsCalled() {
         // When
         when(aisConsentRepository.save(any(AisConsent.class))).thenReturn(aisConsent);
-        when(frequencyPerDateCalculationService.getMinFrequencyPerDay(anyInt())).thenReturn(anyInt());
 
         // Then
         Optional<String> externalId = aisConsentService.createConsent(buildCorrectCreateAisConsentRequest());
@@ -161,7 +157,8 @@ public class AisConsentServiceTest {
         CreateAisConsentRequest request = new CreateAisConsentRequest();
         request.setAccess(buildAccess());
         request.setCombinedServiceIndicator(true);
-        request.setFrequencyPerDay(5);
+        request.setAllowedFrequencyPerDay(2);
+        request.setRequestedFrequencyPerDay(5);
         request.setPsuId("psu-id-1");
         request.setRecurringIndicator(true);
         request.setTppId("tpp-id-1");

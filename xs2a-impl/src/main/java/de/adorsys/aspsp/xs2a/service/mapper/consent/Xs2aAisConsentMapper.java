@@ -46,13 +46,14 @@ public class Xs2aAisConsentMapper {
     // TODO remove this dependency. Should not be dependencies between spi-api and consent-api https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/437
     private final SpiXs2aAccountMapper spiXs2aAccountMapper;
 
-    public CreateAisConsentRequest mapToCreateAisConsentRequest(CreateConsentReq req, String psuId, String tppId) {
+    public CreateAisConsentRequest mapToCreateAisConsentRequest(CreateConsentReq req, String psuId, String tppId, int allowedFrequencyPerDay) {
         return Optional.ofNullable(req)
                    .map(r -> {
                        CreateAisConsentRequest aisRequest = new CreateAisConsentRequest();
                        aisRequest.setPsuId(psuId);
                        aisRequest.setTppId(tppId);
-                       aisRequest.setFrequencyPerDay(r.getFrequencyPerDay());
+                       aisRequest.setRequestedFrequencyPerDay(r.getFrequencyPerDay());
+                       aisRequest.setAllowedFrequencyPerDay(allowedFrequencyPerDay);
                        aisRequest.setAccess(mapToAisAccountAccessInfo(req.getAccess()));
                        aisRequest.setValidUntil(r.getValidUntil());
                        aisRequest.setRecurringIndicator(r.isRecurringIndicator());

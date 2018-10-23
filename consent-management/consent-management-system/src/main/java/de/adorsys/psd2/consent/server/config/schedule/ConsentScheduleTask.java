@@ -19,11 +19,11 @@ package de.adorsys.psd2.consent.server.config.schedule;
 import de.adorsys.psd2.consent.api.CmsConsentStatus;
 import de.adorsys.psd2.consent.server.domain.account.AisConsent;
 import de.adorsys.psd2.consent.server.repository.AisConsentRepository;
-import de.adorsys.psd2.consent.server.service.FrequencyPerDateCalculationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -39,9 +39,9 @@ import static de.adorsys.psd2.consent.api.CmsConsentStatus.VALID;
 @RequiredArgsConstructor
 public class ConsentScheduleTask {
     private final AisConsentRepository aisConsentRepository;
-    private final FrequencyPerDateCalculationService frequencyPerDateCalculationService;
 
     @Scheduled(cron = "${consent.cron.expression}")
+    @Transactional
     public void checkConsentStatus() {
         log.info("Consent schedule task is run!");
 
@@ -57,9 +57,7 @@ public class ConsentScheduleTask {
     }
 
     private AisConsent updateConsentParameters(AisConsent consent) {
-        int minFrequencyPerDay = frequencyPerDateCalculationService.getMinFrequencyPerDay(consent.getTppFrequencyPerDay());
-        consent.setExpectedFrequencyPerDay(minFrequencyPerDay);
-        consent.setUsageCounter(minFrequencyPerDay);
+        consent.setUsageCounter(consent.getAllowedFrequencyPerDay());
         consent.setConsentStatus(updateConsentStatus(consent));
         return consent;
     }
