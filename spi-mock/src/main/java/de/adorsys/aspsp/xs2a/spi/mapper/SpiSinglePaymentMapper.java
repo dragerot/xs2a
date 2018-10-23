@@ -45,16 +45,16 @@ public class SpiSinglePaymentMapper {
         return single;
     }
 
-    public SpiSinglePayment mapToSpiSinglePayment(@NotNull de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment payment, PaymentProduct paymentProduct) {
+    public SpiSinglePayment mapToSpiSinglePayment(@NotNull AspspSinglePayment payment, PaymentProduct paymentProduct) {
         SpiSinglePayment single = new SpiSinglePayment(paymentProduct);
         single.setPaymentId(payment.getPaymentId());
         single.setEndToEndIdentification(payment.getEndToEndIdentification());
-        single.setDebtorAccount(payment.getDebtorAccount());
-        single.setInstructedAmount(payment.getInstructedAmount());
-        single.setCreditorAccount(payment.getCreditorAccount());
+        single.setDebtorAccount(spiPaymentMapper.mapToSpiAccountReference(payment.getDebtorAccount()));
+        single.setInstructedAmount(spiPaymentMapper.mapToSpiAmount(payment.getInstructedAmount()));
+        single.setCreditorAccount(spiPaymentMapper.mapToSpiAccountReference(payment.getCreditorAccount()));
         single.setCreditorAgent(payment.getCreditorAgent());
         single.setCreditorName(payment.getCreditorName());
-        single.setCreditorAddress(payment.getCreditorAddress());
+        single.setCreditorAddress(spiPaymentMapper.mapToSpiAddress(payment.getCreditorAddress()));
         single.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
         single.setPaymentStatus(SpiTransactionStatus.RCVD);
         return single;
