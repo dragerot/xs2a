@@ -44,7 +44,7 @@ public class SpiBulkPaymentMapper {
         bulk.setBatchBookingPreferred(payment.getBatchBookingPreferred());
         bulk.setRequestedExecutionDate(payment.getRequestedExecutionDate());
         bulk.setPayments(mapToListAspspSinglePayment(payment, transactionStatus));
-        bulk.setPaymentStatus(transactionStatus);
+        bulk.setPaymentStatus(spiPaymentMapper.mapToAspspTransactionStatus(transactionStatus));
         return bulk;
     }
 
@@ -53,7 +53,7 @@ public class SpiBulkPaymentMapper {
         bulk.setDebtorAccount(spiPaymentMapper.mapToAspspAccountReference(payment.getDebtorAccount()));
         bulk.setBatchBookingPreferred(payment.getBatchBookingPreferred());
         bulk.setRequestedExecutionDate(payment.getRequestedExecutionDate());
-        bulk.setPayments(mapToListAspspSinglePayment(payment));
+        bulk.setPayments(mapToListAspspSinglePayment(payment, SpiTransactionStatus.RCVD));
         bulk.setPaymentStatus(AspspTransactionStatus.RCVD);
         return bulk;
     }
@@ -75,7 +75,7 @@ public class SpiBulkPaymentMapper {
     public SpiBulkPayment mapToSpiBulkPayment(@NotNull List<AspspSinglePayment> payments, PaymentProduct paymentProduct) {
         SpiBulkPayment bulk = new SpiBulkPayment();
         bulk.setPayments(mapToListSpiSinglePayments(payments, paymentProduct));
-        bulk.setPaymentStatus(payments.get(0).getPaymentStatus());
+        bulk.setPaymentStatus(spiPaymentMapper.mapToSpiTransactionStatus(payments.get(0).getPaymentStatus()));
         return bulk;
     }
 
@@ -85,9 +85,9 @@ public class SpiBulkPaymentMapper {
                    .collect(Collectors.toList());
     }
 
-    private List<AspspSinglePayment> mapToListAspspSinglePayment(@NotNull de.adorsys.aspsp.xs2a.spi.domain.payment.SpiBulkPayment payment) {
+    private List<AspspSinglePayment> mapToListAspspSinglePayment(@NotNull de.adorsys.aspsp.xs2a.spi.domain.payment.SpiBulkPayment payment, SpiTransactionStatus transactionStatus) {
         return payment.getPayments().stream()
-                   .map(spiSinglePaymentMapper::mapToAspspSinglePayment)
+                   .map(p -> spiSinglePaymentMapper.mapToAspspSinglePayment(p, transactionStatus))
                    .collect(Collectors.toList());
     }
 

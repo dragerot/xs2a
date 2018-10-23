@@ -79,7 +79,7 @@ public class PaymentSpiImpl implements PaymentSpi {
      */
     @Override
     public SpiResponse<SpiPaymentInitialisationResponse> createPaymentInitiation(SpiSinglePayment spiSinglePayment, AspspConsentData aspspConsentData) {
-        AspspSinglePayment aspspSinglePayment = spiSinglePaymentMapper.mapToAspspSinglePayment(spiSinglePayment);
+        AspspSinglePayment aspspSinglePayment = spiSinglePaymentMapper.mapToAspspSinglePayment(spiSinglePayment, SpiTransactionStatus.RCVD);
         ResponseEntity<AspspSinglePayment> responseEntity = aspspRestTemplate.postForEntity(aspspRemoteUrls.createPayment(), aspspSinglePayment, AspspSinglePayment.class);
 
         SpiPaymentInitialisationResponse response =
@@ -113,7 +113,7 @@ public class PaymentSpiImpl implements PaymentSpi {
      */
     @Override
     public SpiResponse<SpiPaymentInitialisationResponse> initiatePeriodicPayment(SpiPeriodicPayment periodicPayment, AspspConsentData aspspConsentData) {
-        AspspPeriodicPayment aspspPeriodicPayment = spiPeriodicPaymentMapper.mapToAspspPeriodicPayment(periodicPayment);
+        AspspPeriodicPayment aspspPeriodicPayment = spiPeriodicPaymentMapper.mapToAspspPeriodicPayment(periodicPayment, SpiTransactionStatus.RCVD);
         ResponseEntity<AspspPeriodicPayment> responseEntity = aspspRestTemplate.postForEntity(aspspRemoteUrls.createPeriodicPayment(), periodicPayment, AspspPeriodicPayment.class);
         SpiPaymentInitialisationResponse response =
             responseEntity.getStatusCode() == CREATED

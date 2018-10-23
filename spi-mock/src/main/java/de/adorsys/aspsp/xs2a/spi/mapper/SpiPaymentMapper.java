@@ -60,6 +60,12 @@ public class SpiPaymentMapper {
                    .orElse(null);
     }
 
+    public @Nullable SpiTransactionStatus mapToSpiTransactionStatus(AspspTransactionStatus aspspTransactionStatus) {
+        return Optional.ofNullable(aspspTransactionStatus)
+                   .map(t -> SpiTransactionStatus.valueOf(t.name()))
+                   .orElse(null);
+    }
+
     AspspAmount mapToAspspAmount(@NotNull SpiAmount spiAmount) {
         return new AspspAmount(spiAmount.getCurrency(), spiAmount.getAmount());
     }

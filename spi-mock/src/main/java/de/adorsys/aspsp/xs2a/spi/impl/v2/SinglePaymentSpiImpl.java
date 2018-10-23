@@ -18,7 +18,9 @@ package de.adorsys.aspsp.xs2a.spi.impl.v2;
 
 import de.adorsys.aspsp.xs2a.exception.RestException;
 import de.adorsys.aspsp.xs2a.spi.config.rest.AspspRemoteUrls;
+import de.adorsys.aspsp.xs2a.spi.mapper.SpiPaymentMapper;
 import de.adorsys.aspsp.xs2a.spi.mapper.SpiSinglePaymentMapper;
+import de.adorsys.psd2.aspsp.mock.api.common.AspspTransactionStatus;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspSinglePayment;
 import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaConfirmation;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
@@ -50,6 +52,7 @@ public class SinglePaymentSpiImpl implements SinglePaymentSpi {
     @Qualifier("aspspRestTemplate")
     private final RestTemplate aspspRestTemplate;
     private final AspspRemoteUrls aspspRemoteUrls;
+    private final SpiPaymentMapper spiPaymentMapper;
     private final SpiSinglePaymentMapper spiSinglePaymentMapper;
 
     @Override
@@ -113,8 +116,8 @@ public class SinglePaymentSpiImpl implements SinglePaymentSpi {
     @NotNull
     public SpiResponse<SpiTransactionStatus> getPaymentStatusById(@NotNull SpiPsuData psuData, @NotNull SpiSinglePayment payment, @NotNull AspspConsentData aspspConsentData) {
         try {
-            ResponseEntity<SpiTransactionStatus> aspspResponse = aspspRestTemplate.getForEntity(aspspRemoteUrls.getPaymentStatus(), SpiTransactionStatus.class, payment.getPaymentId());
-            SpiTransactionStatus status = aspspResponse.getBody();
+            ResponseEntity<AspspTransactionStatus> aspspResponse = aspspRestTemplate.getForEntity(aspspRemoteUrls.getPaymentStatus(), AspspTransactionStatus.class, payment.getPaymentId());
+            SpiTransactionStatus status = spiPaymentMapper.mapToSpiTransactionStatus(aspspResponse.getBody());
 
             return SpiResponse.<SpiTransactionStatus>builder()
                        .aspspConsentData(aspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))
@@ -136,7 +139,7 @@ public class SinglePaymentSpiImpl implements SinglePaymentSpi {
     @Override
     @NotNull
     public SpiResponse<SpiResponse.VoidResponse> executePaymentWithoutSca(@NotNull SpiPsuData psuData, @NotNull SpiSinglePayment payment, @NotNull AspspConsentData aspspConsentData) {
-        de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment request = spiSinglePaymentMapper.mapToAspspSpiSinglePayment(payment, SpiTransactionStatus.ACCP);
+        AspspSinglePayment request = spiSinglePaymentMapper.mapToAspspSinglePayment(payment, SpiTransactionStatus.ACCP);
 
         try {
             aspspRestTemplate.postForEntity(aspspRemoteUrls.createPayment(), request, de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment.class);

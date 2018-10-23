@@ -18,7 +18,9 @@ package de.adorsys.aspsp.xs2a.spi.impl.v2;
 
 import de.adorsys.aspsp.xs2a.exception.RestException;
 import de.adorsys.aspsp.xs2a.spi.config.rest.AspspRemoteUrls;
+import de.adorsys.aspsp.xs2a.spi.mapper.SpiPaymentMapper;
 import de.adorsys.aspsp.xs2a.spi.mapper.SpiPeriodicPaymentMapper;
+import de.adorsys.psd2.aspsp.mock.api.common.AspspTransactionStatus;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspPeriodicPayment;
 import de.adorsys.psd2.xs2a.spi.domain.authorisation.SpiScaConfirmation;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
@@ -50,6 +52,7 @@ public class PeriodicPaymentSpiImpl implements PeriodicPaymentSpi {
     @Qualifier("aspspRestTemplate")
     private final RestTemplate aspspRestTemplate;
     private final AspspRemoteUrls aspspRemoteUrls;
+    private final SpiPaymentMapper spiPaymentMapper;
     private final SpiPeriodicPaymentMapper spiPeriodicPaymentMapper;
 
     @Override
@@ -109,8 +112,8 @@ public class PeriodicPaymentSpiImpl implements PeriodicPaymentSpi {
     @NotNull
     public SpiResponse<SpiTransactionStatus> getPaymentStatusById(@NotNull SpiPsuData psuData, @NotNull SpiPeriodicPayment payment, @NotNull AspspConsentData aspspConsentData) {
         try {
-            ResponseEntity<SpiTransactionStatus> aspspResponse = aspspRestTemplate.getForEntity(aspspRemoteUrls.getPaymentStatus(), SpiTransactionStatus.class, payment.getPaymentId());
-            SpiTransactionStatus status = aspspResponse.getBody();
+            ResponseEntity<AspspTransactionStatus> aspspResponse = aspspRestTemplate.getForEntity(aspspRemoteUrls.getPaymentStatus(), AspspTransactionStatus.class, payment.getPaymentId());
+            SpiTransactionStatus status = spiPaymentMapper.mapToSpiTransactionStatus(aspspResponse.getBody());
 
             return SpiResponse.<SpiTransactionStatus>builder()
                        .aspspConsentData(aspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))
