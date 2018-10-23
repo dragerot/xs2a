@@ -16,51 +16,70 @@
 
 package de.adorsys.psd2.consent.server.service;
 
-import de.adorsys.psd2.consent.server.service.security.CryptoProvider;
-import de.adorsys.psd2.consent.server.service.security.SecurityDataService;
+import de.adorsys.psd2.consent.server.service.security.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-//@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 public class SecurityDataServiceTest {
-    @InjectMocks
-    private SecurityDataService securityDataService;
+
     @Mock
-    private CryptoProvider cryptoProvider;
-    private String consentId = "99391c7e-ad88-49ec-a2ad-99ddcb1f7721";
-    private String server_key = "06d205ae-4afe-4f15-9583-2084d2210b2d";
-    private String password = "password";
+    private CryptoProvider aes = new AesEcbCryptoProviderImpl();
+    private CryptoProvider jwe = new JweCryptoProviderImpl();
+    private String consentId = "9d8db308a-ad6e-4b0b-a2e1-cea6043eb080";
+    private String encryptedConsentId = "JnWWElxC8zqRB3RTmCIYFmGMdpEdYEU4C75oWn5jXSwrk9LHx7qHMEqZwzRNkfQg3kqn0nJaPKAcmBKGQxkgUg==_v1";
+    private String server_key = "mvLBiZsiTbGwrfJB";
+    private byte[] aspspConsentData = "VGVzdCBhc3BzcCBkYXRh".getBytes();
 
 
+    @InjectMocks
+    private SecurityDataService securityDataService = new SecurityDataService(server_key, aes, jwe);
 
-   /* @Before
+    @Before
     public void setUp() {
-        System.getenv().put("server_key", server_key);
-        when(cryptoProvider.encryptId(consentId, password)).thenReturn(Optional.of(consentId));
-        when(cryptoProvider.decryptId(consentId, password)).thenReturn(Optional.of(consentId));
-        when(securityDataService.getSERVER_KEY()).thenReturn(server_key);
-
     }
-*/
-    //@Test
-    public void test() {
-        // When
 
+    @Test
+    public void testEncryptDecryptConsentId() {
         // Then
         Optional<String> encryptedExternalConsentId = securityDataService.getEncryptedId(consentId);
-
         // Assert
         assertTrue(encryptedExternalConsentId.isPresent());
-        String decodedEncryptedExternalConsentId = decode(encryptedExternalConsentId.get());
 
-        assert(decodedEncryptedExternalConsentId).contains(consentId);
-        assert(decodedEncryptedExternalConsentId).contains(server_key);
+        // Then
+        String encId = encryptedExternalConsentId.get();
+        Optional<String> decryptedConsentId = securityDataService.getConsentId(encId);
+        // Assert
+        assertTrue(decryptedConsentId.isPresent());
+        String decId = decryptedConsentId.get();
+        assertEquals(consentId, decId);
+    }
+
+    @Test
+    public void testEncryptDecryptConsentAspspConsentData() {
+        // Then
+        Optional<EncryptedData> encryptedData = securityDataService.getEncryptedAspspConsentData(encryptedConsentId, aspspConsentData);
+        // Assert
+        assertTrue(encryptedData.isPresent());
+        // Then
+        byte[] encryptedAspspConsentData = encryptedData.get().getData();
+        Optional<DecryptedData> decryptedData = securityDataService.getAspspConsentData(encryptedConsentId, encryptedAspspConsentData);
+        // Assert
+        assertTrue(decryptedData.isPresent());
+        byte[] decAspspConsentData = decryptedData.get().getData();
+        assertArrayEquals(aspspConsentData, decAspspConsentData);
     }
 
     public String encode(String raw) {

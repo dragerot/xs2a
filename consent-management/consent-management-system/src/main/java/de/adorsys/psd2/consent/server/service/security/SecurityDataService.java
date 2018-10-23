@@ -76,6 +76,25 @@ public class SecurityDataService {
         return compositeId.split(SEPARATOR)[0];
     }
 
+    public Optional<EncryptedData> getEncryptedAspspConsentData(String encryptedConsentId, byte[] aspspConsentData) {
+        return getConsentKeyFromEncryptedConsentId(encryptedConsentId)
+                   .flatMap(consentKey -> cryptoProviderConsentData.encryptData(aspspConsentData, consentKey));
+    }
+
+    public Optional<DecryptedData> getAspspConsentData(String encryptedConsentId, byte[] aspspConsentData) {
+        return getConsentKeyFromEncryptedConsentId(encryptedConsentId)
+                   .flatMap(consentKey -> cryptoProviderConsentData.decryptData(aspspConsentData, consentKey));
+    }
+
+    private Optional<String> getConsentKeyFromEncryptedConsentId(String encryptedConsentId) {
+        return getCompositeId(encryptedConsentId)
+                   .map(this::getConsentKeyFromCompositeId);
+    }
+
+    private String getConsentKeyFromCompositeId(String compositeId) {
+        return compositeId.split(SEPARATOR)[1];
+    }
+
     private String getConsentKey() {
         return RandomStringUtils.random(16, true, true);
     }
