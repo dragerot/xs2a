@@ -24,6 +24,7 @@ import de.adorsys.psd2.consent.api.ais.CreateAisConsentRequest;
 import de.adorsys.psd2.consent.server.domain.account.AisConsent;
 import de.adorsys.psd2.consent.server.repository.AisConsentRepository;
 import de.adorsys.psd2.consent.server.service.mapper.AisConsentMapper;
+import de.adorsys.psd2.consent.server.service.security.EncryptedData;
 import de.adorsys.psd2.consent.server.service.security.SecurityDataService;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,6 +62,7 @@ public class AisConsentServiceTest {
 
 
     private AisConsent aisConsent;
+    private CmsAspspConsentDataBase64 cmsAspspConsentDataBase64;
     private final long CONSENT_ID = 1;
     private final String EXTERNAL_CONSENT_ID = "4b112130-6a96-4941-a220-2da8a4af2c65";
     private final String EXTERNAL_CONSENT_ID_NOT_EXIST = "4b112130-6a96-4941-a220-2da8a4af2c63";
@@ -68,11 +70,13 @@ public class AisConsentServiceTest {
     @Before
     public void setUp() {
         aisConsent = buildConsent();
+        cmsAspspConsentDataBase64 = buildUpdateBlobRequest();
         when(securityDataService.getConsentId(EXTERNAL_CONSENT_ID)).thenReturn(Optional.of(EXTERNAL_CONSENT_ID));
         when(securityDataService.getConsentId(EXTERNAL_CONSENT_ID_NOT_EXIST)).thenReturn(Optional.of(EXTERNAL_CONSENT_ID_NOT_EXIST));
         when(securityDataService.getEncryptedId(EXTERNAL_CONSENT_ID)).thenReturn(Optional.of(EXTERNAL_CONSENT_ID));
         when(securityDataService.getEncryptedId(EXTERNAL_CONSENT_ID_NOT_EXIST)).thenReturn(Optional.of(EXTERNAL_CONSENT_ID_NOT_EXIST));
-
+        when(securityDataService.encryptConsentData(EXTERNAL_CONSENT_ID, cmsAspspConsentDataBase64.getAspspConsentDataBase64()))
+            .thenReturn(Optional.of(new EncryptedData("test data".getBytes())));
     }
 
     @Test
@@ -194,9 +198,9 @@ public class AisConsentServiceTest {
 
     private AisAccountConsent buildSpiAccountConsent() {
         return new AisAccountConsent(aisConsent.getId().toString(),
-            null, false,
-            null, 0,
-            null, null,
-            false, false, null, null, null);
+                                     null, false,
+                                     null, 0,
+                                     null, null,
+                                     false, false, null, null, null);
     }
 }
