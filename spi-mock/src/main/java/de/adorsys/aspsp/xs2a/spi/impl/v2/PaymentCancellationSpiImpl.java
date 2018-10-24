@@ -70,22 +70,12 @@ public class PaymentCancellationSpiImpl implements PaymentCancellationSpi {
     }
 
     @Override
-    public SpiResponse<SpiAuthorisationStatus> authorisePsu(@NotNull SpiPsuData psuData, String password, SpiPayment businessObject, AspspConsentData aspspConsentData) {
-        return SpiResponse.<SpiAuthorisationStatus>builder().fail(SpiResponseStatus.NOT_SUPPORTED);
+    public @NotNull SpiResponse<SpiResponse.VoidResponse> executePaymentCancellationWithoutSca(@NotNull SpiPsuData psuData, @NotNull SpiPayment payment, @NotNull AspspConsentData aspspConsentData) {
+        return SpiResponse.<SpiResponse.VoidResponse>builder().fail(SpiResponseStatus.NOT_SUPPORTED);
     }
 
     @Override
-    public SpiResponse<List<SpiScaMethod>> requestAvailableScaMethods(@NotNull SpiPsuData psuData, SpiPayment businessObject, AspspConsentData aspspConsentData) {
-        return SpiResponse.<List<SpiScaMethod>>builder().fail(SpiResponseStatus.NOT_SUPPORTED);
-    }
-
-    @Override
-    public @NotNull SpiResponse<SpiAuthorizationCodeResult> requestAuthorisationCode(@NotNull SpiPsuData psuData, @NotNull SpiScaMethod scaMethod, @NotNull SpiPayment businessObject, @NotNull AspspConsentData aspspConsentData) {
-        return SpiResponse.<SpiAuthorizationCodeResult>builder().fail(SpiResponseStatus.NOT_SUPPORTED);
-    }
-
-    @Override
-    public @NotNull SpiResponse<SpiResponse.VoidResponse> executeRequestWithoutSca(@NotNull SpiPsuData psuData, @NotNull SpiPayment payment, @NotNull AspspConsentData initialAspspConsentData) {
+    public @NotNull SpiResponse<SpiResponse.VoidResponse> cancelPaymentWithoutSca(@NotNull SpiPsuData psuData, @NotNull SpiPayment payment, @NotNull AspspConsentData initialAspspConsentData) {
         try {
             aspspRestTemplate.exchange(aspspRemoteUrls.cancelPayment(), HttpMethod.DELETE, null, SpiPaymentCancellationResponse.class, payment.getPaymentId());
             return SpiResponse.<SpiResponse.VoidResponse>builder()
@@ -103,5 +93,20 @@ public class PaymentCancellationSpiImpl implements PaymentCancellationSpi {
                        .aspspConsentData(initialAspspConsentData.respondWith(TEST_ASPSP_DATA.getBytes()))
                        .fail(SpiResponseStatus.LOGICAL_FAILURE);
         }
+    }
+
+    @Override
+    public SpiResponse<SpiAuthorisationStatus> authorisePsu(@NotNull SpiPsuData psuData, String password, SpiPayment businessObject, AspspConsentData aspspConsentData) {
+        return SpiResponse.<SpiAuthorisationStatus>builder().fail(SpiResponseStatus.NOT_SUPPORTED);
+    }
+
+    @Override
+    public SpiResponse<List<SpiScaMethod>> requestAvailableScaMethods(@NotNull SpiPsuData psuData, SpiPayment businessObject, AspspConsentData aspspConsentData) {
+        return SpiResponse.<List<SpiScaMethod>>builder().fail(SpiResponseStatus.NOT_SUPPORTED);
+    }
+
+    @Override
+    public @NotNull SpiResponse<SpiAuthorizationCodeResult> requestAuthorisationCode(@NotNull SpiPsuData psuData, @NotNull SpiScaMethod scaMethod, @NotNull SpiPayment businessObject, @NotNull AspspConsentData aspspConsentData) {
+        return SpiResponse.<SpiAuthorizationCodeResult>builder().fail(SpiResponseStatus.NOT_SUPPORTED);
     }
 }

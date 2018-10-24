@@ -16,16 +16,12 @@
 
 package de.adorsys.aspsp.aspspmockserver.web;
 
-import de.adorsys.aspsp.aspspmockserver.domain.spi.account.SpiAccountReference;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiAmount;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiTransactionStatus;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiBulkPayment;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiPaymentCancellationResponse;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiSinglePayment;
 import de.adorsys.aspsp.aspspmockserver.service.PaymentService;
 import de.adorsys.psd2.aspsp.mock.api.account.AspspAccountReference;
 import de.adorsys.psd2.aspsp.mock.api.common.AspspAmount;
+import de.adorsys.psd2.aspsp.mock.api.common.AspspTransactionStatus;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspBulkPayment;
+import de.adorsys.psd2.aspsp.mock.api.payment.AspspPaymentCancellationResponse;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspSinglePayment;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,9 +38,7 @@ import java.util.Collections;
 import java.util.Currency;
 import java.util.Optional;
 
-import static de.adorsys.psd2.aspsp.mock.api.common.AspspTransactionStatus.ACCP;
-import static de.adorsys.psd2.aspsp.mock.api.common.AspspTransactionStatus.RJCT;
-import static de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiTransactionStatus.*;
+import static de.adorsys.psd2.aspsp.mock.api.common.AspspTransactionStatus.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
@@ -78,11 +72,11 @@ public class PaymentControllerTest {
         when(paymentService.getPaymentStatusById(WRONG_PAYMENT_ID))
             .thenReturn(Optional.of(RJCT));
         when(paymentService.cancelPayment(PAYMENT_ID))
-            .thenReturn(Optional.of(getSpiPaymentCancellationResponse(false, CANC)));
+            .thenReturn(Optional.of(getAspspPaymentCancellationResponse(false, CANC)));
         when(paymentService.cancelPayment(WRONG_PAYMENT_ID))
             .thenReturn(Optional.empty());
         when(paymentService.initiatePaymentCancellation(PAYMENT_ID))
-            .thenReturn(Optional.of(getSpiPaymentCancellationResponse(true, ACTC)));
+            .thenReturn(Optional.of(getAspspPaymentCancellationResponse(true, ACTC)));
         when(paymentService.initiatePaymentCancellation(WRONG_PAYMENT_ID))
             .thenReturn(Optional.empty());
     }
@@ -144,7 +138,7 @@ public class PaymentControllerTest {
 
         //Then
         assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-        assertThat(actualResponse.getBody()).isEqualTo(getSpiPaymentCancellationResponse(false, CANC));
+        assertThat(actualResponse.getBody()).isEqualTo(getAspspPaymentCancellationResponse(false, CANC));
     }
 
     @Test
@@ -164,7 +158,7 @@ public class PaymentControllerTest {
 
         //Then
         assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-        assertThat(actualResponse.getBody()).isEqualTo(getSpiPaymentCancellationResponse(true, ACTC));
+        assertThat(actualResponse.getBody()).isEqualTo(getAspspPaymentCancellationResponse(true, ACTC));
     }
 
     @Test
@@ -210,8 +204,8 @@ public class PaymentControllerTest {
                                          Currency.getInstance("EUR"));
     }
 
-    private SpiPaymentCancellationResponse getSpiPaymentCancellationResponse(boolean authorisationMandated, SpiTransactionStatus transactionStatus) {
-        SpiPaymentCancellationResponse response = new SpiPaymentCancellationResponse();
+    private AspspPaymentCancellationResponse getAspspPaymentCancellationResponse(boolean authorisationMandated, AspspTransactionStatus transactionStatus) {
+        AspspPaymentCancellationResponse response = new AspspPaymentCancellationResponse();
         response.setCancellationAuthorisationMandated(authorisationMandated);
         response.setTransactionStatus(transactionStatus);
         return response;

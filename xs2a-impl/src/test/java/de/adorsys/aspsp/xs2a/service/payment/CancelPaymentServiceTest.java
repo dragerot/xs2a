@@ -22,7 +22,7 @@ import de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus;
 import de.adorsys.aspsp.xs2a.domain.pis.CancelPaymentResponse;
 import de.adorsys.aspsp.xs2a.exception.MessageError;
 import de.adorsys.aspsp.xs2a.service.consent.PisConsentDataService;
-import de.adorsys.aspsp.xs2a.service.mapper.PaymentMapper;
+import de.adorsys.aspsp.xs2a.service.mapper.spi_xs2a_mappers.SpiToXs2aCancelPaymentMapper;
 import de.adorsys.psd2.xs2a.core.profile.PaymentProduct;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
 import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
@@ -57,16 +57,16 @@ public class CancelPaymentServiceTest {
     @Mock
     private PaymentCancellationSpi paymentCancellationSpi;
     @Mock
-    private PaymentMapper paymentMapper;
+    private SpiToXs2aCancelPaymentMapper spiToXs2aCancelPaymentMapper;
     @Mock
     private PisConsentDataService pisConsentDataService;
 
     @Before
     public void setUp() {
-        when(paymentCancellationSpi.executeRequestWithoutSca(any(), eq(getSpiPayment(PAYMENT_ID)), any()))
+        when(paymentCancellationSpi.cancelPaymentWithoutSca(any(), eq(getSpiPayment(PAYMENT_ID)), any()))
             .thenReturn(SpiResponse.<SpiResponse.VoidResponse>builder()
                             .success());
-        when(paymentCancellationSpi.executeRequestWithoutSca(any(), eq(getSpiPayment(WRONG_PAYMENT_ID)), any()))
+        when(paymentCancellationSpi.cancelPaymentWithoutSca(any(), eq(getSpiPayment(WRONG_PAYMENT_ID)), any()))
             .thenReturn(SpiResponse.<SpiResponse.VoidResponse>builder()
                             .fail(SpiResponseStatus.LOGICAL_FAILURE));
         when(paymentCancellationSpi.initiatePaymentCancellation(any(), eq(getSpiPayment(PAYMENT_ID)), any()))
@@ -77,9 +77,9 @@ public class CancelPaymentServiceTest {
             .thenReturn(SpiResponse.<SpiPaymentCancellationResponse>builder()
                             .fail(SpiResponseStatus.LOGICAL_FAILURE));
 
-        when(paymentMapper.mapToCancelPaymentResponse(eq(getSpiCancelPaymentResponse(false, SpiTransactionStatus.CANC))))
+        when(spiToXs2aCancelPaymentMapper.mapToCancelPaymentResponse(eq(getSpiCancelPaymentResponse(false, SpiTransactionStatus.CANC))))
             .thenReturn(getCancelPaymentResponse(false, CANC));
-        when(paymentMapper.mapToCancelPaymentResponse(eq(getSpiCancelPaymentResponse(true, SpiTransactionStatus.ACTC))))
+        when(spiToXs2aCancelPaymentMapper.mapToCancelPaymentResponse(eq(getSpiCancelPaymentResponse(true, SpiTransactionStatus.ACTC))))
             .thenReturn(getCancelPaymentResponse(true, ACTC));
     }
 

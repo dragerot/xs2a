@@ -20,7 +20,7 @@ import de.adorsys.aspsp.aspspmockserver.domain.pis.AspspPayment;
 import de.adorsys.aspsp.aspspmockserver.service.PaymentService;
 import de.adorsys.psd2.aspsp.mock.api.common.AspspTransactionStatus;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspBulkPayment;
-import de.adorsys.psd2.aspsp.mock.api.payment.AspspCancelPayment;
+import de.adorsys.psd2.aspsp.mock.api.payment.AspspPaymentCancellationResponse;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspPeriodicPayment;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspSinglePayment;
 import io.swagger.annotations.*;
@@ -109,10 +109,10 @@ public class PaymentController {
 
     @ApiOperation(value = "Cancel payment by it`s ASPSP identifier", authorizations = {@Authorization(value = "oauth2", scopes = {@AuthorizationScope(scope = "read", description = "Access read API")})})
     @ApiResponses(value = {
-        @ApiResponse(code = 202, message = "ACCEPTED", response = SpiCancelPayment.class),
+        @ApiResponse(code = 202, message = "ACCEPTED", response = AspspPaymentCancellationResponse.class),
         @ApiResponse(code = 404, message = "Payment Not Found")})
     @DeleteMapping("/{payment-id}")
-    public ResponseEntity<AspspCancelPayment> cancelPayment(@PathVariable("payment-id") String paymentId) {
+    public ResponseEntity<AspspPaymentCancellationResponse> cancelPayment(@PathVariable("payment-id") String paymentId) {
         return paymentService.cancelPayment(paymentId)
                    .map(p -> new ResponseEntity<>(p, ACCEPTED))
                    .orElseGet(ResponseEntity.notFound()::build);
@@ -120,10 +120,10 @@ public class PaymentController {
 
     @ApiOperation(value = "Initiate cancellation of payment by it`s ASPSP identifier", authorizations = {@Authorization(value = "oauth2", scopes = {@AuthorizationScope(scope = "read", description = "Access read API")})})
     @ApiResponses(value = {
-        @ApiResponse(code = 202, message = "ACCEPTED", response = SpiPaymentCancellationResponse.class),
+        @ApiResponse(code = 202, message = "ACCEPTED", response = AspspPaymentCancellationResponse.class),
         @ApiResponse(code = 404, message = "Payment Not Found")})
     @PostMapping("/{payment-id}/cancel")
-    public ResponseEntity<SpiPaymentCancellationResponse> initiatePaymentCancellation(@PathVariable("payment-id") String paymentId) {
+    public ResponseEntity<AspspPaymentCancellationResponse> initiatePaymentCancellation(@PathVariable("payment-id") String paymentId) {
         return paymentService.initiatePaymentCancellation(paymentId)
                    .map(p -> new ResponseEntity<>(p, ACCEPTED))
                    .orElseGet(ResponseEntity.notFound()::build);

@@ -20,10 +20,7 @@ import de.adorsys.aspsp.xs2a.config.factory.ReadPaymentFactory;
 import de.adorsys.aspsp.xs2a.domain.*;
 import de.adorsys.aspsp.xs2a.domain.account.Xs2aAccountReference;
 import de.adorsys.aspsp.xs2a.domain.consent.Xs2aPisConsent;
-import de.adorsys.aspsp.xs2a.domain.pis.BulkPayment;
-import de.adorsys.aspsp.xs2a.domain.pis.BulkPaymentInitiationResponse;
-import de.adorsys.aspsp.xs2a.domain.pis.PaymentInitiationParameters;
-import de.adorsys.aspsp.xs2a.domain.pis.SinglePayment;
+import de.adorsys.aspsp.xs2a.domain.pis.*;
 import de.adorsys.aspsp.xs2a.service.consent.PisConsentDataService;
 import de.adorsys.aspsp.xs2a.service.consent.PisConsentService;
 import de.adorsys.aspsp.xs2a.service.mapper.consent.Xs2aPisConsentMapper;
@@ -32,9 +29,7 @@ import de.adorsys.aspsp.xs2a.service.payment.CancelPaymentService;
 import de.adorsys.aspsp.xs2a.service.payment.CreateBulkPaymentService;
 import de.adorsys.aspsp.xs2a.service.payment.CreatePeriodicPaymentService;
 import de.adorsys.aspsp.xs2a.service.payment.CreateSinglePaymentService;
-import de.adorsys.aspsp.xs2a.service.payment.ReadSinglePayment;
 import de.adorsys.aspsp.xs2a.service.profile.AspspProfileServiceWrapper;
-import de.adorsys.aspsp.xs2a.spi.service.PaymentSpi;
 import de.adorsys.psd2.xs2a.core.profile.PaymentType;
 import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
 import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
@@ -53,12 +48,7 @@ import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Currency;
 
-import static de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus.RCVD;
-import static de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus.RJCT;
-import static de.adorsys.aspsp.xs2a.domain.MessageErrorCode.RESOURCE_UNKNOWN_400;
-import static de.adorsys.aspsp.xs2a.domain.MessageErrorCode.RESOURCE_UNKNOWN_403;
 import static de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus.*;
-import static de.adorsys.psd2.xs2a.core.profile.PaymentType.SINGLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -81,9 +71,6 @@ public class PaymentServiceTest {
     private PaymentService paymentService;
     @Mock
     private SpiToXs2aTransactionalStatusMapper paymentMapper;
-    private PaymentMapper paymentMapper;
-    @Mock
-    private PaymentSpi paymentSpi;
     @Mock
     private CancelPaymentService cancelPaymentService;
     @Mock

@@ -26,7 +26,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -44,23 +47,23 @@ public class SpiXs2aAccountMapper {
     public Xs2aAccountDetails mapToXs2aAccountDetails(SpiAccountDetails accountDetails) {
         return Optional.ofNullable(accountDetails)
                    .map(ad -> new Xs2aAccountDetails(
-                           ad.getId(),
-                           ad.getIban(),
-                           ad.getBban(),
-                           ad.getPan(),
-                           ad.getMaskedPan(),
-                           ad.getMsisdn(),
-                           ad.getCurrency(),
-                           ad.getName(),
-                           ad.getProduct(),
-                           mapToAccountType(ad.getCashSpiAccountType()),
-                           mapToAccountStatus(ad.getSpiAccountStatus()),
-                           ad.getBic(),
-                           ad.getLinkedAccounts(),
-                           mapToXs2aUsageType(ad.getUsageType()),
-                           ad.getDetails(),
-                           mapToXs2aBalanceList(ad.getBalances())
-                       )
+                            ad.getId(),
+                            ad.getIban(),
+                            ad.getBban(),
+                            ad.getPan(),
+                            ad.getMaskedPan(),
+                            ad.getMsisdn(),
+                            ad.getCurrency(),
+                            ad.getName(),
+                            ad.getProduct(),
+                            mapToAccountType(ad.getCashSpiAccountType()),
+                            mapToAccountStatus(ad.getSpiAccountStatus()),
+                            ad.getBic(),
+                            ad.getLinkedAccounts(),
+                            mapToXs2aUsageType(ad.getUsageType()),
+                            ad.getDetails(),
+                            mapToXs2aBalanceList(ad.getBalances())
+                        )
                    )
                    .orElse(null);
     }
@@ -299,8 +302,8 @@ public class SpiXs2aAccountMapper {
     @Deprecated
     public Xs2aAccountDetails mapToAccountDetailNoBalances(Xs2aAccountDetails detail) {
         return new Xs2aAccountDetails(detail.getId(), detail.getIban(), detail.getBban(), detail.getPan(),
-            detail.getMaskedPan(), detail.getMsisdn(), detail.getCurrency(), detail.getName(),
-            detail.getProduct(), detail.getCashAccountType(), detail.getAccountStatus(), detail.getBic(),
-            detail.getLinkedAccounts(), detail.getUsageType(), detail.getDetails(), null);
+                                      detail.getMaskedPan(), detail.getMsisdn(), detail.getCurrency(), detail.getName(),
+                                      detail.getProduct(), detail.getCashAccountType(), detail.getAccountStatus(), detail.getBic(),
+                                      detail.getLinkedAccounts(), detail.getUsageType(), detail.getDetails(), null);
     }
 }

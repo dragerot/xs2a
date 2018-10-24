@@ -21,7 +21,7 @@ import de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus;
 import de.adorsys.aspsp.xs2a.domain.pis.CancelPaymentResponse;
 import de.adorsys.aspsp.xs2a.exception.MessageError;
 import de.adorsys.aspsp.xs2a.service.consent.PisConsentDataService;
-import de.adorsys.aspsp.xs2a.service.mapper.PaymentMapper;
+import de.adorsys.aspsp.xs2a.service.mapper.spi_xs2a_mappers.SpiToXs2aCancelPaymentMapper;
 import de.adorsys.psd2.xs2a.spi.domain.consent.AspspConsentData;
 import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiPaymentCancellationResponse;
 import de.adorsys.psd2.xs2a.spi.domain.psu.SpiPsuData;
@@ -39,11 +39,11 @@ import static de.adorsys.aspsp.xs2a.domain.MessageErrorCode.RESOURCE_UNKNOWN_403
 @RequiredArgsConstructor
 public class CancelPaymentService {
     private final PaymentCancellationSpi paymentCancellationSpi;
-    private final PaymentMapper paymentMapper;
+    private final SpiToXs2aCancelPaymentMapper spiToXs2aCancelPaymentMapper;
     private final PisConsentDataService pisConsentDataService;
 
     public ResponseObject<CancelPaymentResponse> cancelPaymentWithoutAuthorisation(SpiPsuData psuData, SpiPayment payment, AspspConsentData consentData) {
-        SpiResponse<SpiResponse.VoidResponse> spiResponse = paymentCancellationSpi.executeRequestWithoutSca(psuData, payment, consentData);
+        SpiResponse<SpiResponse.VoidResponse> spiResponse = paymentCancellationSpi.cancelPaymentWithoutSca(psuData, payment, consentData);
         pisConsentDataService.updateAspspConsentData(spiResponse.getAspspConsentData());
 
         if (spiResponse.hasError()) {
@@ -70,7 +70,7 @@ public class CancelPaymentService {
                        .build();
         }
 
-        CancelPaymentResponse cancelPaymentResponse = paymentMapper.mapToCancelPaymentResponse(spiResponse.getPayload());
+        CancelPaymentResponse cancelPaymentResponse = spiToXs2aCancelPaymentMapper.mapToCancelPaymentResponse(spiResponse.getPayload());
 
         return Optional.ofNullable(cancelPaymentResponse)
                    .map(p -> ResponseObject.<CancelPaymentResponse>builder()

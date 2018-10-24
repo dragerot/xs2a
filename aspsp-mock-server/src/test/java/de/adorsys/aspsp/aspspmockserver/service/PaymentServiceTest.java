@@ -17,16 +17,6 @@
 package de.adorsys.aspsp.aspspmockserver.service;
 
 import de.adorsys.aspsp.aspspmockserver.domain.pis.AspspPayment;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.account.SpiAccountBalance;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.account.SpiAccountDetails;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.account.SpiAccountReference;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.account.SpiBalanceType;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiAmount;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.common.SpiTransactionStatus;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.AspspPayment;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiBulkPayment;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiPaymentCancellationResponse;
-import de.adorsys.aspsp.aspspmockserver.domain.spi.payment.SpiSinglePayment;
 import de.adorsys.aspsp.aspspmockserver.repository.PaymentRepository;
 import de.adorsys.aspsp.aspspmockserver.service.mapper.PaymentMapper;
 import de.adorsys.psd2.aspsp.mock.api.account.AspspAccountBalance;
@@ -34,8 +24,9 @@ import de.adorsys.psd2.aspsp.mock.api.account.AspspAccountDetails;
 import de.adorsys.psd2.aspsp.mock.api.account.AspspAccountReference;
 import de.adorsys.psd2.aspsp.mock.api.account.AspspBalanceType;
 import de.adorsys.psd2.aspsp.mock.api.common.AspspAmount;
+import de.adorsys.psd2.aspsp.mock.api.common.AspspTransactionStatus;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspBulkPayment;
-import de.adorsys.psd2.aspsp.mock.api.payment.AspspCancelPayment;
+import de.adorsys.psd2.aspsp.mock.api.payment.AspspPaymentCancellationResponse;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspSinglePayment;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,8 +78,7 @@ public class PaymentServiceTest {
         when(accountService.getAccountsByIban(WRONG_IBAN)).thenReturn(null);
         when(paymentMapper.mapToAspspPayment(any(), any())).thenReturn(new AspspPayment());
         when(paymentMapper.mapToAspspSinglePayment(any(AspspPayment.class))).thenReturn(getAspspSinglePayment(AMOUNT_TO_TRANSFER));
-        when(paymentService.cancelPayment(PAYMENT_ID)).thenReturn(buildAspspCancelPayment());
-        when(paymentRepository.findOne(PAYMENT_ID)).thenReturn(new AspspPayment());
+        when(paymentRepository.findOne(PAYMENT_ID)).thenReturn(getAspspPayment(AMOUNT_TO_TRANSFER));
     }
 
     @Test
@@ -178,23 +168,23 @@ public class PaymentServiceTest {
 
     @Test
     public void cancelPayment_Success() {
-        when(paymentRepository.save(getAspspPayment(SpiTransactionStatus.CANC)))
-            .thenReturn(getAspspPayment(SpiTransactionStatus.CANC));
+        when(paymentRepository.save(getAspspPayment(AspspTransactionStatus.CANC)))
+            .thenReturn(getAspspPayment(AspspTransactionStatus.CANC));
 
         //Given
-        Optional<SpiPaymentCancellationResponse> given = buildSpiCancelPayment(SpiTransactionStatus.CANC, false);
+        Optional<AspspPaymentCancellationResponse> expected = buildAspspPaymentCancellationResponse(AspspTransactionStatus.CANC, false);
 
         //When
-        Optional<SpiPaymentCancellationResponse> actual = paymentService.cancelPayment(PAYMENT_ID);
+        Optional<AspspPaymentCancellationResponse> actual = paymentService.cancelPayment(PAYMENT_ID);
 
         //Then
-        assertThat(given).isEqualTo(actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     public void cancelPayment_Failure_WrongId() {
         //When
-        Optional<SpiPaymentCancellationResponse> actual = paymentService.cancelPayment(WRONG_PAYMENT_ID);
+        Optional<AspspPaymentCancellationResponse> actual = paymentService.cancelPayment(WRONG_PAYMENT_ID);
 
         //Then
         assertThat(actual.isPresent()).isFalse();
@@ -202,37 +192,37 @@ public class PaymentServiceTest {
 
     @Test
     public void initiatePaymentCancellation_Success() {
-        when(paymentRepository.save(getAspspPayment(SpiTransactionStatus.ACTC)))
-            .thenReturn(getAspspPayment(SpiTransactionStatus.ACTC));
+        when(paymentRepository.save(getAspspPayment(AspspTransactionStatus.ACTC)))
+            .thenReturn(getAspspPayment(AspspTransactionStatus.ACTC));
 
         //Given
-        Optional<SpiPaymentCancellationResponse> given = buildSpiCancelPayment(SpiTransactionStatus.ACTC, true);
+        Optional<AspspPaymentCancellationResponse> expected = buildAspspPaymentCancellationResponse(AspspTransactionStatus.ACTC, true);
 
         //When
-        Optional<SpiPaymentCancellationResponse> actual = paymentService.initiatePaymentCancellation(PAYMENT_ID);
+        Optional<AspspPaymentCancellationResponse> actual = paymentService.initiatePaymentCancellation(PAYMENT_ID);
 
         //Then
-        assertThat(given).isEqualTo(actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     public void initiatePaymentCancellation_Failure_WrongId() {
         //When
-        Optional<SpiPaymentCancellationResponse> actual = paymentService.initiatePaymentCancellation(WRONG_PAYMENT_ID);
+        Optional<AspspPaymentCancellationResponse> actual = paymentService.initiatePaymentCancellation(WRONG_PAYMENT_ID);
 
         //Then
         assertThat(actual.isPresent()).isFalse();
     }
 
-    private Optional<SpiPaymentCancellationResponse> buildSpiCancelPayment(SpiTransactionStatus transactionStatus, boolean startAuthorisationRequired) {
-        SpiPaymentCancellationResponse response = new SpiPaymentCancellationResponse();
+    private Optional<AspspPaymentCancellationResponse> buildAspspPaymentCancellationResponse(AspspTransactionStatus transactionStatus, boolean startAuthorisationRequired) {
+        AspspPaymentCancellationResponse response = new AspspPaymentCancellationResponse();
         response.setTransactionStatus(transactionStatus);
         response.setCancellationAuthorisationMandated(startAuthorisationRequired);
         return Optional.of(response);
     }
 
-    private Optional<AspspCancelPayment> buildAspspCancelPayment() {
-        return Optional.of(new AspspCancelPayment());
+    private Optional<AspspPaymentCancellationResponse> buildAspspPaymentCancellationResponse() {
+        return Optional.of(new AspspPaymentCancellationResponse());
     }
 
     private AspspSinglePayment getAspspSinglePayment(long amountToTransfer) {
@@ -249,7 +239,7 @@ public class PaymentServiceTest {
         return payment;
     }
 
-    private AspspPayment getAspspPayment(long amountToTransfer) {
+    private AspspPayment getAspspPayment(AspspTransactionStatus transactionStatus, long amountToTransfer) {
         AspspPayment payment = new AspspPayment();
         AspspAmount amount = new AspspAmount(Currency.getInstance("EUR"), new BigDecimal(amountToTransfer));
         payment.setInstructedAmount(amount);
@@ -263,8 +253,12 @@ public class PaymentServiceTest {
         return payment;
     }
 
-    private AspspPayment getAspspPayment() {
-        return getAspspPayment(null);
+    private AspspPayment getAspspPayment(long amountToTransfer) {
+        return getAspspPayment(null, amountToTransfer);
+    }
+
+    private AspspPayment getAspspPayment(AspspTransactionStatus transactionStatus) {
+        return getAspspPayment(transactionStatus, AMOUNT_TO_TRANSFER);
     }
 
     private List<AspspAccountDetails> getAccountDetails() {
