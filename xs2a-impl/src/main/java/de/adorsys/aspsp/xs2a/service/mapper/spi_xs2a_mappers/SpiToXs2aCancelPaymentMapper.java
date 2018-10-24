@@ -19,9 +19,11 @@ package de.adorsys.aspsp.xs2a.service.mapper.spi_xs2a_mappers;
 import de.adorsys.aspsp.xs2a.domain.pis.CancelPaymentResponse;
 import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiPaymentCancellationResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+@Component
 @RequiredArgsConstructor
 public class SpiToXs2aCancelPaymentMapper {
     private final SpiToXs2aTransactionalStatusMapper spiToXs2aTransactionalStatusMapper;
@@ -35,5 +37,4 @@ public class SpiToXs2aCancelPaymentMapper {
                        return response;
                    }).orElse(null);
     }
-
 }
