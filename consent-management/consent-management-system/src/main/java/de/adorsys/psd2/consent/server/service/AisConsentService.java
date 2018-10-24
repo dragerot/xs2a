@@ -253,7 +253,7 @@ public class AisConsentService {
     private Optional<String> saveAspspConsentDataInAisConsent(CmsAspspConsentDataBase64 request, AisConsent consent, String encryptedConsentId) {
         return securityDataService.encryptConsentData(encryptedConsentId, request.getAspspConsentDataBase64())
                    .map(encr -> updateConsentDataAndSaveConsent(consent, encr.getData()))
-                   .map(AisConsent::getExternalId);
+                   .map(a -> encryptedConsentId);
     }
 
     private AisConsent updateConsentDataAndSaveConsent(AisConsent consent, byte[] consentData) {
