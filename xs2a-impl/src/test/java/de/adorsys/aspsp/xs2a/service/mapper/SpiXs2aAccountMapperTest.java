@@ -96,8 +96,8 @@ public class SpiXs2aAccountMapperTest {
         assertNotNull(donorSpiTransaction);
         Optional<Xs2aAccountReport> aAR = spiXs2aAccountMapper.mapToXs2aAccountReport(donorSpiTransactions);
         Xs2aAccountReport actualAccountReport;
-        actualAccountReport = aAR.orElseGet(() -> new Xs2aAccountReport(new Transactions[]{}, new Transactions[]{}));
-        Transactions actualTransaction = actualAccountReport.getBooked()[0];
+        actualAccountReport = aAR.orElseGet(() -> new Xs2aAccountReport(Collections.emptyList(), Collections.emptyList()));
+        Transactions actualTransaction = actualAccountReport.getBooked().get(0);
         SpiTransaction expectedTransaction = expectedBooked[0];
 
         //Then:

@@ -100,17 +100,17 @@ public class SpiXs2aAccountMapper {
             return Optional.empty();
         }
 
-        Transactions[] booked = spiTransactions
+        List<Transactions> booked = spiTransactions
                                     .stream()
                                     .filter(transaction -> transaction.getBookingDate() != null)
                                     .map(this::mapToXs2aTransaction)
-                                    .toArray(Transactions[]::new);
+                                    .collect(Collectors.toList());
 
-        Transactions[] pending = spiTransactions
+        List<Transactions> pending = spiTransactions
                                      .stream()
                                      .filter(transaction -> transaction.getBookingDate() == null)
                                      .map(this::mapToXs2aTransaction)
-                                     .toArray(Transactions[]::new);
+                                     .collect(Collectors.toList());
 
         return Optional.of(new Xs2aAccountReport(booked, pending));
     }

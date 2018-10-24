@@ -26,6 +26,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 @ApiModel(description = "Account Report", value = "AccountReport")
@@ -36,11 +37,11 @@ public class Xs2aAccountReport {
     // TODO replace by List<Transactions> https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/448
     @ApiModelProperty(value = "Booked TransactionsCreditorResponse", required = true)
     @NotNull
-    private final Transactions[] booked;
+    private final List<Transactions> booked;
 
     // TODO replace by List<Transactions> https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/448
     @ApiModelProperty(value = "Pending TransactionsCreditorResponse")
-    private final Transactions[] pending;
+    private final List<Transactions> pending;
 
     @ApiModelProperty(value = "Links: the following links might be used within this context:" +
                               "account link (mandatory)" +
