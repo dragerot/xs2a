@@ -138,7 +138,6 @@ public class PaymentControllerTest {
 
         //Then
         assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-        assertThat(actualResponse.getBody()).isEqualTo(getAspspPaymentCancellationResponse(false, CANC));
     }
 
     @Test
@@ -148,7 +147,6 @@ public class PaymentControllerTest {
 
         //Then
         assertThat(actualResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(actualResponse.hasBody()).isFalse();
     }
 
     @Test

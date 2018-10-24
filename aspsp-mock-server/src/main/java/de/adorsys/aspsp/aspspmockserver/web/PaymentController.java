@@ -112,10 +112,10 @@ public class PaymentController {
         @ApiResponse(code = 202, message = "ACCEPTED", response = AspspPaymentCancellationResponse.class),
         @ApiResponse(code = 404, message = "Payment Not Found")})
     @DeleteMapping("/{payment-id}")
-    public ResponseEntity<AspspPaymentCancellationResponse> cancelPayment(@PathVariable("payment-id") String paymentId) {
-        return paymentService.cancelPayment(paymentId)
-                   .map(p -> new ResponseEntity<>(p, ACCEPTED))
-                   .orElseGet(ResponseEntity.notFound()::build);
+    public ResponseEntity<Void> cancelPayment(@PathVariable("payment-id") String paymentId) {
+        return paymentService.cancelPayment(paymentId).isPresent()
+                   ? ResponseEntity.accepted().build()
+                   : ResponseEntity.notFound().build();
     }
 
     @ApiOperation(value = "Initiate cancellation of payment by it`s ASPSP identifier", authorizations = {@Authorization(value = "oauth2", scopes = {@AuthorizationScope(scope = "read", description = "Access read API")})})
