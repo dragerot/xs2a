@@ -114,7 +114,7 @@ public class PaymentServiceTest {
         when(pisConsentDataService.getAspspConsentDataByPaymentId(anyString())).thenReturn(ASPSP_CONSENT_DATA);
         when(tppService.getTppInfo()).thenReturn(getTppInfo());
 
-        when(cancelPaymentService.cancelPaymentWithAuthorisation(any(), any(), any()))
+        when(cancelPaymentService.initiatePaymentCancellation(any(), any(), any()))
             .thenReturn(ResponseObject.<CancelPaymentResponse>builder()
                             .body(getCancelPaymentResponse(true, ACTC))
                             .build());

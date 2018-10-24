@@ -42,6 +42,14 @@ public class CancelPaymentService {
     private final SpiToXs2aCancelPaymentMapper spiToXs2aCancelPaymentMapper;
     private final PisConsentDataService pisConsentDataService;
 
+    /**
+     * Cancels payment without performing strong customer authentication
+     *
+     * @param psuData     ASPSP identifier(s) of the psu
+     * @param payment     Payment to be cancelled
+     * @param consentData Encrypted data that may be stored in the consent management system in the consent linked to a request.
+     * @return Response containing information about cancelled payment or corresponding error
+     */
     public ResponseObject<CancelPaymentResponse> cancelPaymentWithoutAuthorisation(SpiPsuData psuData, SpiPayment payment, AspspConsentData consentData) {
         SpiResponse<SpiResponse.VoidResponse> spiResponse = paymentCancellationSpi.cancelPaymentWithoutSca(psuData, payment, consentData);
         pisConsentDataService.updateAspspConsentData(spiResponse.getAspspConsentData());
@@ -60,7 +68,15 @@ public class CancelPaymentService {
                    .build();
     }
 
-    public ResponseObject<CancelPaymentResponse> cancelPaymentWithAuthorisation(SpiPsuData psuData, SpiPayment payment, AspspConsentData consentData) {
+    /**
+     * Cancels payment without performing strong customer authentication
+     *
+     * @param psuData     ASPSP identifier(s) of the psu
+     * @param payment     Payment to be cancelled
+     * @param consentData Encrypted data that may be stored in the consent management system in the consent linked to a request.
+     * @return Response containing information about cancelled payment or corresponding error
+     */
+    public ResponseObject<CancelPaymentResponse> initiatePaymentCancellation(SpiPsuData psuData, SpiPayment payment, AspspConsentData consentData) {
         SpiResponse<SpiPaymentCancellationResponse> spiResponse = paymentCancellationSpi.initiatePaymentCancellation(psuData, payment, consentData);
         pisConsentDataService.updateAspspConsentData(spiResponse.getAspspConsentData());
 

@@ -185,7 +185,7 @@ public class PaymentService {
         AspspConsentData consentData = pisConsentDataService.getAspspConsentDataByPaymentId(paymentId);
         SpiPsuData psuData = new SpiPsuData(null, null, null, null); // TODO get it from XS2A Interface https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/332
         if (profileService.isPaymentCancellationAuthorizationMandated()) {
-            return cancelPaymentService.cancelPaymentWithAuthorisation(psuData, payment, consentData);
+            return cancelPaymentService.initiatePaymentCancellation(psuData, payment, consentData);
         } else {
             return cancelPaymentService.cancelPaymentWithoutAuthorisation(psuData, payment, consentData);
         }
