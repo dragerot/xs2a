@@ -159,9 +159,7 @@ public class PaymentService {
      */
     public ResponseObject<CancelPaymentResponse> cancelPayment(PaymentType paymentType, String paymentId) {
         AspspConsentData consentData = pisConsentDataService.getAspspConsentDataByPaymentId(paymentId);
-
         SpiPsuData psuData = new SpiPsuData(null, null, null, null); // TODO get it from XS2A Interface https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/332
-
         SpiPayment payment;
         switch (paymentType) {
             case SINGLE:
