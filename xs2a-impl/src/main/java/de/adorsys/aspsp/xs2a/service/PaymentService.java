@@ -158,8 +158,6 @@ public class PaymentService {
      * @return Response containing information about cancelled payment or corresponding error
      */
     public ResponseObject<CancelPaymentResponse> cancelPayment(PaymentType paymentType, String paymentId) {
-        AspspConsentData consentData = pisConsentDataService.getAspspConsentDataByPaymentId(paymentId);
-        SpiPsuData psuData = new SpiPsuData(null, null, null, null); // TODO get it from XS2A Interface https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/332
         SpiPayment payment;
         switch (paymentType) {
             case SINGLE:
@@ -184,6 +182,8 @@ public class PaymentService {
                            .build();
         }
 
+        AspspConsentData consentData = pisConsentDataService.getAspspConsentDataByPaymentId(paymentId);
+        SpiPsuData psuData = new SpiPsuData(null, null, null, null); // TODO get it from XS2A Interface https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/332
         if (profileService.isPaymentCancellationAuthorizationMandated()) {
             return cancelPaymentService.cancelPaymentWithAuthorisation(psuData, payment, consentData);
         } else {
