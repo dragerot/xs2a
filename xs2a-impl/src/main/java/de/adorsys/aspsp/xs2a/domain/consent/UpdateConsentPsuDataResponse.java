@@ -37,7 +37,6 @@ public class UpdateConsentPsuDataResponse {
     private ScaStatus scaStatus;
     private List<CmsScaMethod> availableScaMethods;
     private String chosenScaMethod;
-    private String authenticationMethodId;
     private String scaAuthenticationData;
     private Links links;
 
