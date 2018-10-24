@@ -41,6 +41,7 @@ import de.adorsys.psd2.xs2a.spi.domain.response.SpiResponse;
 import de.adorsys.psd2.xs2a.spi.service.BulkPaymentSpi;
 import de.adorsys.psd2.xs2a.spi.service.PeriodicPaymentSpi;
 import de.adorsys.psd2.xs2a.spi.service.SinglePaymentSpi;
+import de.adorsys.psd2.xs2a.spi.service.SpiPayment;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -48,8 +49,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-import static de.adorsys.aspsp.xs2a.domain.MessageErrorCode.CONSENT_UNKNOWN_400;
-import static de.adorsys.aspsp.xs2a.domain.MessageErrorCode.RESOURCE_UNKNOWN_403;
+import static de.adorsys.aspsp.xs2a.domain.MessageErrorCode.*;
 import static de.adorsys.psd2.xs2a.core.profile.PaymentType.PERIODIC;
 import static de.adorsys.psd2.xs2a.core.profile.PaymentType.SINGLE;
 
@@ -158,10 +158,33 @@ public class PaymentService {
      * @return Response containing information about cancelled payment or corresponding error
      */
     public ResponseObject<CancelPaymentResponse> cancelPayment(PaymentType paymentType, String paymentId) {
-        SpiPsuData psuData = new SpiPsuData(null, null, null, null); // TODO get it from XS2A Interface https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/332
-        SpiSinglePayment payment = new SpiSinglePayment(null); // TODO get actual payment from SPI
-        payment.setPaymentId(paymentId);
         AspspConsentData consentData = pisConsentDataService.getAspspConsentDataByPaymentId(paymentId);
+
+        SpiPsuData psuData = new SpiPsuData(null, null, null, null); // TODO get it from XS2A Interface https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/332
+
+        SpiPayment payment;
+        switch (paymentType) {
+            case SINGLE:
+                SpiSinglePayment singlePayment = new SpiSinglePayment(null);
+                singlePayment.setPaymentId(paymentId);
+                payment = singlePayment;
+                break;
+            case PERIODIC:
+                SpiPeriodicPayment periodicPayment = new SpiPeriodicPayment(null);
+                periodicPayment.setPaymentId(paymentId);
+                payment = periodicPayment;
+                break;
+            case BULK:
+                SpiBulkPayment bulkPayment = new SpiBulkPayment();
+                bulkPayment.setPaymentId(paymentId);
+                payment = bulkPayment;
+                break;
+            default:
+                log.error("Unknown payment type: {}", paymentType);
+                return ResponseObject.<CancelPaymentResponse>builder()
+                           .fail(new MessageError(FORMAT_ERROR))
+                           .build();
+        }
 
         if (profileService.isPaymentCancellationAuthorizationMandated()) {
             return cancelPaymentService.cancelPaymentWithAuthorisation(psuData, payment, consentData);
