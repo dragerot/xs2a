@@ -68,6 +68,6 @@ public class AesEcbCryptoProviderImpl implements CryptoProvider {
 
     @Override
     public CryptoProviderAlgorithmVersion getAlgorithmVersion() {
-        return new CryptoProviderAlgorithmVersion("bS6p6XvTWI", "AES/ECB/PKCS5Padding", "2");
+        return new CryptoProviderAlgorithmVersion("bS6p6XvTWI", "AES/ECB/PKCS5Padding");
     }
 }

@@ -121,9 +121,7 @@ public class PisConsentServiceTest {
     }
 
     private CmsAspspConsentDataBase64 buildUpdateBlobRequest() {
-        CmsAspspConsentDataBase64 request = new CmsAspspConsentDataBase64();
-        request.setAspspConsentDataBase64("zdxcvvzzzxcvzzzz");
-        return request;
+        return new CmsAspspConsentDataBase64("encryptedId", Base64.getEncoder().encodeToString("decrypted consent data".getBytes()));
     }
 
     private PisConsentAuthorization buildPisConsentAuthorisation(String externalId) {

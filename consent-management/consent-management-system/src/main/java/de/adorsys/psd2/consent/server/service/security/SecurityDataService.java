@@ -49,7 +49,7 @@ public class SecurityDataService {
                    .encryptData(bytesCompositeConsentId, serverKey)
                    .map(EncryptedData::getData)
                    .map(this::encode64)
-                   .map(this::addVersion);
+                   .map(this::addVersionToEncryptedId);
     }
 
     /**
@@ -83,12 +83,14 @@ public class SecurityDataService {
         return compositeId.split(SEPARATOR)[0];
     }
 
-    public Optional<EncryptedData> getEncryptedAspspConsentData(String encryptedConsentId, byte[] aspspConsentData) {
+    public Optional<EncryptedData> encryptConsentData(String encryptedConsentId, String aspspConsentDataBase64) {
+        byte[] aspspConsentData = decode64(aspspConsentDataBase64);
+
         return getConsentKeyFromEncryptedConsentId(encryptedConsentId)
                    .flatMap(consentKey -> consentDataCP().encryptData(aspspConsentData, consentKey));
     }
 
-    public Optional<DecryptedData> getAspspConsentData(String encryptedConsentId, byte[] aspspConsentData) {
+    public Optional<DecryptedData> decryptConsentData(String encryptedConsentId, byte[] aspspConsentData) {
         return getConsentKeyFromEncryptedConsentId(encryptedConsentId)
                    .flatMap(consentKey -> consentDataCP().decryptData(aspspConsentData, consentKey));
     }
@@ -114,9 +116,10 @@ public class SecurityDataService {
         return Base64.getUrlDecoder().decode(raw);
     }
 
-    private String addVersion(String id) {
-        String algorithmVersion = identifierCP().getAlgorithmVersion().getVersion();
-        return concatWithSeparator(id, algorithmVersion);
+    private String addVersionToEncryptedId(String encryptedConsentId) {
+        // external Id is identifier of crypto method
+        String algorithmVersion = identifierCP().getAlgorithmVersion().getExternalId();
+        return concatWithSeparator(encryptedConsentId, algorithmVersion);
     }
 
     private CryptoProvider consentDataCP() {

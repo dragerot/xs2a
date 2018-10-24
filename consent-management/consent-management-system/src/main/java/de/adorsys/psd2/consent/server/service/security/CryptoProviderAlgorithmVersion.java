@@ -22,5 +22,4 @@ import lombok.Value;
 public class CryptoProviderAlgorithmVersion {
     private String externalId;
     private String algorithmName;
-    private String version;
 }

@@ -42,7 +42,7 @@ public class SecurityDataServiceTest {
     private String consentId = "9d8db308a-ad6e-4b0b-a2e1-cea6043eb080";
     private String encryptedConsentId = "JnWWElxC8zqRB3RTmCIYFmGMdpEdYEU4C75oWn5jXSwrk9LHx7qHMEqZwzRNkfQg3kqn0nJaPKAcmBKGQxkgUg==_=_v1";
     private String server_key = "mvLBiZsiTbGwrfJB";
-    private byte[] aspspConsentData = "VGVzdCBhc3BzcCBkYXRh".getBytes();
+    private String aspspConsentData = "VGVzdCBhc3BzcCBkYXRh";
     @Mock
     private CryptoAlgorithmRepository cryptoAlgorithmRepository;
 
@@ -83,16 +83,16 @@ public class SecurityDataServiceTest {
     @Test
     public void testEncryptDecryptConsentAspspConsentData() {
         // Then
-        Optional<EncryptedData> encryptedData = securityDataService.getEncryptedAspspConsentData(encryptedConsentId, aspspConsentData);
+        Optional<EncryptedData> encryptedData = securityDataService.encryptConsentData(encryptedConsentId, aspspConsentData);
         // Assert
         assertTrue(encryptedData.isPresent());
         // Then
         byte[] encryptedAspspConsentData = encryptedData.get().getData();
-        Optional<DecryptedData> decryptedData = securityDataService.getAspspConsentData(encryptedConsentId, encryptedAspspConsentData);
+        Optional<DecryptedData> decryptedData = securityDataService.decryptConsentData(encryptedConsentId, encryptedAspspConsentData);
         // Assert
         assertTrue(decryptedData.isPresent());
         byte[] decAspspConsentData = decryptedData.get().getData();
-        assertArrayEquals(aspspConsentData, decAspspConsentData);
+        assertArrayEquals(aspspConsentData.getBytes(), decAspspConsentData);
     }
 
     public String encode(String raw) {

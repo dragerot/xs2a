@@ -34,6 +34,8 @@ import de.adorsys.psd2.consent.server.repository.PisConsentAuthorizationReposito
 import de.adorsys.psd2.consent.server.repository.PisConsentRepository;
 import de.adorsys.psd2.consent.server.repository.PisPaymentDataRepository;
 import de.adorsys.psd2.consent.server.service.mapper.PisConsentMapper;
+import de.adorsys.psd2.consent.server.service.security.DecryptedData;
+import de.adorsys.psd2.consent.server.service.security.SecurityDataService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -58,6 +60,7 @@ public class PisConsentService {
     private final PisConsentMapper pisConsentMapper;
     private final PisConsentAuthorizationRepository pisConsentAuthorizationRepository;
     private final PisPaymentDataRepository pisPaymentDataRepository;
+    private final SecurityDataService securityDataService;
 
     /**
      * Creates new pis consent with full information about payment
@@ -117,7 +120,7 @@ public class PisConsentService {
      */
     public Optional<CmsAspspConsentDataBase64> getAspspConsentDataByConsentId(String consentId) {
         return getPisConsentById(consentId)
-                   .map(this::prepareAspspConsentData);
+                   .flatMap(this::prepareAspspConsentData);
     }
 
     /**
@@ -128,19 +131,17 @@ public class PisConsentService {
      */
     public Optional<CmsAspspConsentDataBase64> getAspspConsentDataByPaymentId(String paymentId) {
         return pisPaymentDataRepository.findByPaymentId(paymentId)
-                   .map(l -> l.get(0))
+                   .map(dta -> dta.get(0))
                    .map(PisPaymentData::getConsent)
-                   .map(this::prepareAspspConsentData);
+                   .flatMap(this::prepareAspspConsentData);
     }
 
-    private CmsAspspConsentDataBase64 prepareAspspConsentData(PisConsent consent) {
-        CmsAspspConsentDataBase64 response = new CmsAspspConsentDataBase64();
-        String aspspConsentDataBase64 = Optional.ofNullable(consent.getAspspConsentData())
-                                            .map(bytes -> Base64.getEncoder().encodeToString(bytes))
-                                            .orElse(null);
-        response.setAspspConsentDataBase64(aspspConsentDataBase64);
-        response.setConsentId(consent.getExternalId());
-        return response;
+    private Optional<CmsAspspConsentDataBase64> prepareAspspConsentData(PisConsent consent) {
+        return Optional.ofNullable(consent.getAspspConsentData())
+                   .flatMap(dta -> securityDataService.decryptConsentData(consent.getExternalId(), dta))
+                   .map(DecryptedData::getData)
+                   .map(bytes -> Base64.getEncoder().encodeToString(bytes))
+                   .map(str64 -> new CmsAspspConsentDataBase64(consent.getExternalId(), str64));
     }
 
     /**
