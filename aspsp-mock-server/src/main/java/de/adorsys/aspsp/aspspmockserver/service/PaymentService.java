@@ -27,7 +27,7 @@ import de.adorsys.psd2.aspsp.mock.api.common.AspspAmount;
 import de.adorsys.psd2.aspsp.mock.api.common.AspspTransactionStatus;
 import de.adorsys.psd2.aspsp.mock.api.consent.AspspConsentStatus;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspBulkPayment;
-import de.adorsys.psd2.aspsp.mock.api.payment.AspspCancelPayment;
+import de.adorsys.psd2.aspsp.mock.api.payment.AspspPaymentCancellationResponse;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspPeriodicPayment;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspSinglePayment;
 import lombok.RequiredArgsConstructor;
@@ -122,12 +122,32 @@ public class PaymentService {
             return Optional.empty();
         }
 
+        AspspAccountReference debtorAccount = getDebtorAccountFromPayments(aspspPayments);
+        BigDecimal totalAmount = calculateTotalAmount(aspspPayments);
+        if (!areFundsSufficient(debtorAccount, totalAmount)) {
+            log.warn("Insufficient funds for paying {} on account {}", totalAmount, debtorAccount);
+            return Optional.empty();
+        }
+
         List<AspspPayment> savedPayments = paymentRepository.save(aspspPayments);
         AspspBulkPayment result = new AspspBulkPayment();
         result.setPayments(paymentMapper.mapToAspspSinglePaymentList(savedPayments));
         result.setPaymentId(savedPayments.get(0).getBulkId());
 
         return Optional.of(result);
+    }
+
+    private AspspAccountReference getDebtorAccountFromPayments(List<AspspPayment> aspspPayments) {
+        return aspspPayments.stream()
+                   .findFirst()
+                   .map(AspspPayment::getDebtorAccount)
+                   .orElse(null);
+    }
+
+    private BigDecimal calculateTotalAmount(List<AspspPayment> payments) {
+        return payments.stream()
+                   .map(this::getAmountFromPayment)
+                   .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private boolean isNonExistingAccount(AspspPayment p) {
@@ -159,18 +179,44 @@ public class PaymentService {
     }
 
     /**
-     * Cancel payment
+     * Cancels payment
      *
      * @param paymentId Payment identifier
-     * @return AspspCancelPayment containing information about the requirement of aspsp for start authorisation
+     * @return AspspPaymentCancellationResponse containing information about the requirement of aspsp for start authorisation
      */
-    public Optional<AspspCancelPayment> cancelPayment(String paymentId) {
+    public Optional<AspspPaymentCancellationResponse> cancelPayment(String paymentId) {
         return Optional.ofNullable(paymentRepository.findOne(paymentId))
-                   .map(p -> new AspspCancelPayment());
+                   .map(p -> updateAspsPaymentStatus(p, AspspTransactionStatus.CANC))
+                   .map(p -> getPaymentCancellationResponse(false, p.getPaymentStatus()));
+    }
+
+    /**
+     * Initiates payment cancellation process
+     *
+     * @param paymentId Payment identifier
+     * @return SpiCancelPayment containing information about the requirement of aspsp for start authorisation
+     */
+    public Optional<AspspPaymentCancellationResponse> initiatePaymentCancellation(String paymentId) {
+        return Optional.ofNullable(paymentRepository.findOne(paymentId))
+                   .map(p -> updateAspsPaymentStatus(p, AspspTransactionStatus.ACTC))
+                   .map(p -> getPaymentCancellationResponse(true, p.getPaymentStatus()));
     }
 
     public List<AspspPayment> getAllPayments() {
         return paymentRepository.findAll();
+    }
+
+    private AspspPayment updateAspsPaymentStatus(AspspPayment payment, AspspTransactionStatus transactionStatus) {
+        payment.setPaymentStatus(transactionStatus);
+        return paymentRepository.save(payment);
+    }
+
+    private AspspPaymentCancellationResponse getPaymentCancellationResponse(boolean cancellationAuthorisationMandated,
+                                                                            AspspTransactionStatus transactionStatus) {
+        AspspPaymentCancellationResponse response = new AspspPaymentCancellationResponse();
+        response.setCancellationAuthorisationMandated(cancellationAuthorisationMandated);
+        response.setTransactionStatus(transactionStatus);
+        return response;
     }
 
     private boolean areFundsSufficient(AspspAccountReference reference, BigDecimal amount) {
@@ -202,7 +248,7 @@ public class PaymentService {
 
     private BigDecimal getAmountFromPayment(AspspPayment aspspPayment) {
         return Optional.ofNullable(aspspPayment)
-                   .map(paym -> getContentFromAmount(aspspPayment.getInstructedAmount()))
+                   .map(paym -> getContentFromAmount(paym.getInstructedAmount()))
                    .orElse(BigDecimal.ZERO);
     }
 

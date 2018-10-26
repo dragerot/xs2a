@@ -14,11 +14,20 @@
  * limitations under the License.
  */
 
-package de.adorsys.psd2.xs2a.spi.domain.payment;
+package de.adorsys.aspsp.xs2a.service.mapper.spi_xs2a_mappers;
 
-import lombok.Value;
+import de.adorsys.aspsp.xs2a.domain.Xs2aTransactionStatus;
+import de.adorsys.psd2.xs2a.spi.domain.common.SpiTransactionStatus;
+import org.springframework.stereotype.Service;
 
-@Value
-public class SpiCancelPayment {
-    private boolean startAuthorisationRequired = true;
+import java.util.Optional;
+
+@Service
+public class SpiToXs2aTransactionalStatusMapper {
+
+    public Xs2aTransactionStatus mapToTransactionStatus(SpiTransactionStatus spiTransactionStatus) {
+        return Optional.ofNullable(spiTransactionStatus)
+                   .map(ts -> Xs2aTransactionStatus.valueOf(ts.name()))
+                   .orElse(null);
+    }
 }

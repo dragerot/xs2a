@@ -14,18 +14,26 @@
  * limitations under the License.
  */
 
-package de.adorsys.aspsp.xs2a.spi.domain.payment;
+package de.adorsys.psd2.xs2a.core.psu;
 
-import de.adorsys.psd2.xs2a.spi.domain.payment.response.SpiPaymentInitiationResponse;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Value;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * @deprecated since 1.8. Will be removed in 1.10
- * @see SpiPaymentInitiationResponse
+ * Contains authorisation data about PSU.
+ * Normally it comes with the TPP request header.
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
-public class SpiPaymentInitialisationResponse extends SpiPaymentInitiationResponse {
+@Value
+public class PsuIdData {
+    @Nullable
+    private String psuId;
 
+    @Nullable
+    private String psuIdType;
+
+    @Nullable
+    private String psuCorporateId;
+
+    @Nullable
+    private String psuCorporateIdType;
 }

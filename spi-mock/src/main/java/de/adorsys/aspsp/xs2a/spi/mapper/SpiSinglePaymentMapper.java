@@ -25,6 +25,10 @@ import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Optional;
+
 @Service
 @AllArgsConstructor
 public class SpiSinglePaymentMapper {
@@ -42,6 +46,8 @@ public class SpiSinglePaymentMapper {
         single.setCreditorAddress(spiPaymentMapper.mapToAspspAddress(payment.getCreditorAddress()));
         single.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
         single.setPaymentStatus(spiPaymentMapper.mapToAspspTransactionStatus(transactionStatus));
+        single.setRequestedExecutionTime(Optional.ofNullable(payment.getRequestedExecutionTime()).map(OffsetDateTime::toLocalDateTime).orElse(null));
+        single.setRequestedExecutionDate(payment.getRequestedExecutionDate());
         return single;
     }
 
@@ -57,6 +63,8 @@ public class SpiSinglePaymentMapper {
         single.setCreditorAddress(spiPaymentMapper.mapToSpiAddress(payment.getCreditorAddress()));
         single.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
         single.setPaymentStatus(spiPaymentMapper.mapToSpiTransactionStatus(payment.getPaymentStatus()));
+        single.setRequestedExecutionTime(Optional.ofNullable(payment.getRequestedExecutionTime()).map(t -> t.atOffset(ZoneOffset.UTC)).orElse(null));
+        single.setRequestedExecutionDate(payment.getRequestedExecutionDate());
         return single;
     }
 
@@ -69,26 +77,5 @@ public class SpiSinglePaymentMapper {
             spi.setTransactionStatus(SpiTransactionStatus.RCVD);
         }
         return spi;
-    }
-
-    public AspspSinglePayment mapToAspspSinglePayment(@NotNull de.adorsys.aspsp.xs2a.spi.domain.payment.SpiSinglePayment spiSinglePayment, SpiTransactionStatus transactionStatus) {
-        AspspSinglePayment mockSingle = new AspspSinglePayment();
-        mockSingle.setPaymentId(spiSinglePayment.getPaymentId());
-        mockSingle.setEndToEndIdentification(spiSinglePayment.getEndToEndIdentification());
-        mockSingle.setDebtorAccount(spiPaymentMapper.mapToAspspAccountReference(spiSinglePayment.getDebtorAccount()));
-        mockSingle.setUltimateDebtor(spiSinglePayment.getUltimateDebtor());
-        mockSingle.setInstructedAmount(spiPaymentMapper.mapToAspspAmount(spiSinglePayment.getInstructedAmount()));
-        mockSingle.setCreditorAccount(spiPaymentMapper.mapToAspspAccountReference(spiSinglePayment.getCreditorAccount()));
-        mockSingle.setCreditorAgent(spiSinglePayment.getCreditorAgent());
-        mockSingle.setCreditorName(spiSinglePayment.getCreditorName());
-        mockSingle.setCreditorAddress(spiPaymentMapper.mapToAspspAddress(spiSinglePayment.getCreditorAddress()));
-        mockSingle.setUltimateCreditor(spiSinglePayment.getUltimateCreditor());
-        mockSingle.setPurposeCode(spiSinglePayment.getPurposeCode());
-        mockSingle.setRemittanceInformationUnstructured(spiSinglePayment.getRemittanceInformationUnstructured());
-        mockSingle.setRemittanceInformationStructured(spiPaymentMapper.mapToAspspRemittance(spiSinglePayment.getRemittanceInformationStructured()));
-        mockSingle.setRequestedExecutionDate(spiSinglePayment.getRequestedExecutionDate());
-        mockSingle.setRequestedExecutionTime(spiSinglePayment.getRequestedExecutionTime().toLocalDateTime());
-        mockSingle.setPaymentStatus(spiPaymentMapper.mapToAspspTransactionStatus(transactionStatus));
-        return mockSingle;
     }
 }

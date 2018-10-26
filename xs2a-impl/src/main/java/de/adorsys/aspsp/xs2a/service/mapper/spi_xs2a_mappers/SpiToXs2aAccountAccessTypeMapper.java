@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-package de.adorsys.psd2.xs2a.spi.domain.account;
+package de.adorsys.aspsp.xs2a.service.mapper.spi_xs2a_mappers;
 
-import lombok.Data;
+import de.adorsys.aspsp.xs2a.domain.consent.Xs2aAccountAccessType;
+import de.adorsys.psd2.xs2a.spi.domain.consent.SpiAccountAccessType;
+import org.springframework.stereotype.Component;
 
-@Data
-public class SpiAccountConfirmation {
-    private String consentId;
-    private String tanNumber;
-    private String psuId;
+import java.util.Optional;
+
+@Component
+public class SpiToXs2aAccountAccessTypeMapper {
+
+    public Xs2aAccountAccessType mapToAccountAccessType(SpiAccountAccessType accessType) {
+        return Optional.ofNullable(accessType)
+                   .map(at -> Xs2aAccountAccessType.valueOf(at.name()))
+                   .orElse(null);
+    }
 }

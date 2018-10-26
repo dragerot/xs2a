@@ -26,6 +26,10 @@ import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Optional;
+
 @Component
 @AllArgsConstructor
 public class SpiPeriodicPaymentMapper {
@@ -48,26 +52,8 @@ public class SpiPeriodicPaymentMapper {
         periodic.setExecutionRule(payment.getExecutionRule());
         periodic.setFrequency(payment.getFrequency().name());
         periodic.setDayOfExecution(payment.getDayOfExecution());
-        return periodic;
-    }
-
-    public AspspPeriodicPayment mapToAspspPeriodicPayment(@NotNull de.adorsys.aspsp.xs2a.spi.domain.payment.SpiPeriodicPayment payment, SpiTransactionStatus transactionStatus) {
-        AspspPeriodicPayment periodic = new AspspPeriodicPayment();
-        periodic.setPaymentId(payment.getPaymentId());
-        periodic.setEndToEndIdentification(payment.getEndToEndIdentification());
-        periodic.setDebtorAccount(spiPaymentMapper.mapToAspspAccountReference(payment.getDebtorAccount()));
-        periodic.setInstructedAmount(spiPaymentMapper.mapToAspspAmount(payment.getInstructedAmount()));
-        periodic.setCreditorAccount(spiPaymentMapper.mapToAspspAccountReference(payment.getCreditorAccount()));
-        periodic.setCreditorAgent(payment.getCreditorAgent());
-        periodic.setCreditorName(payment.getCreditorName());
-        periodic.setCreditorAddress(spiPaymentMapper.mapToAspspAddress(payment.getCreditorAddress()));
-        periodic.setRemittanceInformationUnstructured(payment.getRemittanceInformationUnstructured());
-        periodic.setPaymentStatus(spiPaymentMapper.mapToAspspTransactionStatus(transactionStatus));
-        periodic.setStartDate(payment.getStartDate());
-        periodic.setEndDate(payment.getEndDate());
-        periodic.setExecutionRule(payment.getExecutionRule());
-        periodic.setFrequency(payment.getFrequency());
-        periodic.setDayOfExecution(payment.getDayOfExecution());
+        periodic.setRequestedExecutionTime(Optional.ofNullable(payment.getRequestedExecutionTime()).map(OffsetDateTime::toLocalDateTime).orElse(null));
+        periodic.setRequestedExecutionDate(payment.getRequestedExecutionDate());
         return periodic;
     }
 
@@ -88,6 +74,8 @@ public class SpiPeriodicPaymentMapper {
         periodic.setExecutionRule(payment.getExecutionRule());
         periodic.setFrequency(SpiFrequencyCode.valueOf(payment.getFrequency()));
         periodic.setDayOfExecution(payment.getDayOfExecution());
+        periodic.setRequestedExecutionTime(Optional.ofNullable(payment.getRequestedExecutionTime()).map(t -> t.atOffset(ZoneOffset.UTC)).orElse(null));
+        periodic.setRequestedExecutionDate(payment.getRequestedExecutionDate());
         return periodic;
     }
 

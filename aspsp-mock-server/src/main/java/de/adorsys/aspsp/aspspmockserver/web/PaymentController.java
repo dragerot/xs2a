@@ -20,7 +20,7 @@ import de.adorsys.aspsp.aspspmockserver.domain.pis.AspspPayment;
 import de.adorsys.aspsp.aspspmockserver.service.PaymentService;
 import de.adorsys.psd2.aspsp.mock.api.common.AspspTransactionStatus;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspBulkPayment;
-import de.adorsys.psd2.aspsp.mock.api.payment.AspspCancelPayment;
+import de.adorsys.psd2.aspsp.mock.api.payment.AspspPaymentCancellationResponse;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspPeriodicPayment;
 import de.adorsys.psd2.aspsp.mock.api.payment.AspspSinglePayment;
 import io.swagger.annotations.*;
@@ -66,13 +66,13 @@ public class PaymentController {
     @ApiOperation(value = "Creates a bulk payment(list of single payments) based on request body", authorizations = {@Authorization(value = "oauth2", scopes = {@AuthorizationScope(scope = "read", description = "Access read API")})})
     @ApiResponses(value = {
         @ApiResponse(code = 201, message = "Created", response = List.class),
-        @ApiResponse(code = 204, message = "Payment Failed")})
+        @ApiResponse(code = 400, message = "Payment Failed")})
     @PostMapping(path = "/bulk-payments")
     public ResponseEntity<AspspBulkPayment> createBulkPayments(
         @RequestBody AspspBulkPayment bulkPayment) {
         return paymentService.addBulkPayments(bulkPayment)
                    .map(saved -> new ResponseEntity<>(saved, CREATED))
-                   .orElseGet(ResponseEntity.noContent()::build);
+                   .orElseGet(ResponseEntity.badRequest()::build);
     }
 
     @ApiOperation(value = "Returns the status of payment requested by it`s ASPSP identifier", authorizations = {@Authorization(value = "oauth2", scopes = {@AuthorizationScope(scope = "read", description = "Access read API")})})
@@ -109,12 +109,23 @@ public class PaymentController {
 
     @ApiOperation(value = "Cancel payment by it`s ASPSP identifier", authorizations = {@Authorization(value = "oauth2", scopes = {@AuthorizationScope(scope = "read", description = "Access read API")})})
     @ApiResponses(value = {
-        @ApiResponse(code = 202, message = "ACCEPTED", response = AspspCancelPayment.class),
-        @ApiResponse(code = 204, message = "Payment Not Found")})
+        @ApiResponse(code = 202, message = "ACCEPTED", response = AspspPaymentCancellationResponse.class),
+        @ApiResponse(code = 404, message = "Payment Not Found")})
     @DeleteMapping("/{payment-id}")
-    public ResponseEntity<AspspCancelPayment> cancelPayment(@PathVariable("payment-id") String paymentId) {
-        return paymentService.cancelPayment(paymentId)
+    public ResponseEntity<Void> cancelPayment(@PathVariable("payment-id") String paymentId) {
+        return paymentService.cancelPayment(paymentId).isPresent()
+                   ? ResponseEntity.accepted().build()
+                   : ResponseEntity.notFound().build();
+    }
+
+    @ApiOperation(value = "Initiate cancellation of payment by it`s ASPSP identifier", authorizations = {@Authorization(value = "oauth2", scopes = {@AuthorizationScope(scope = "read", description = "Access read API")})})
+    @ApiResponses(value = {
+        @ApiResponse(code = 202, message = "ACCEPTED", response = AspspPaymentCancellationResponse.class),
+        @ApiResponse(code = 404, message = "Payment Not Found")})
+    @PostMapping("/{payment-id}/cancel")
+    public ResponseEntity<AspspPaymentCancellationResponse> initiatePaymentCancellation(@PathVariable("payment-id") String paymentId) {
+        return paymentService.initiatePaymentCancellation(paymentId)
                    .map(p -> new ResponseEntity<>(p, ACCEPTED))
-                   .orElseGet(ResponseEntity.badRequest()::build);
+                   .orElseGet(ResponseEntity.notFound()::build);
     }
 }
