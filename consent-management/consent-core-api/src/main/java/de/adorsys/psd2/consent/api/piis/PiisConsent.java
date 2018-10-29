@@ -16,6 +16,10 @@
 
 package de.adorsys.psd2.consent.api.piis;
 
-public class PiisConsent {
+import lombok.Data;
 
+@Data
+public class PiisConsent {
+    String externalId;
+    byte[] aspspConsentData;
 }

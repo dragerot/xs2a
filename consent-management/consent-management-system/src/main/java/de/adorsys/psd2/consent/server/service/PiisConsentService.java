@@ -58,9 +58,8 @@ public class PiisConsentService {
         byte[] aspspConsentData = Optional.ofNullable(request.getAspspConsentDataBase64())
                                       .map(aspspConsentDataBase64 -> Base64.getDecoder().decode(aspspConsentDataBase64))
                                       .orElse(null);
-        //consent.setAspspConsentData(aspspConsentData);
+        consent.setAspspConsentData(aspspConsentData);
         PiisConsent savedConsent = piisConsentRepository.save(consent);
-        //return savedConsent.getExternalId();
-        return "";
+        return savedConsent.getExternalId();
     }
 }
