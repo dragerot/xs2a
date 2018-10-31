@@ -21,9 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
 
-/**
- * @see Xs2aChallengeData
- */
 @Data
 public class SpiAuthorizationCodeResult {
     private byte [] image;
