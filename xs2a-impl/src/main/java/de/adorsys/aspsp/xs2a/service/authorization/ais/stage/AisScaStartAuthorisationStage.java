@@ -17,7 +17,6 @@
 package de.adorsys.aspsp.xs2a.service.authorization.ais.stage;
 
 import de.adorsys.aspsp.xs2a.domain.MessageErrorCode;
-import de.adorsys.aspsp.xs2a.domain.OtpFormat;
 import de.adorsys.aspsp.xs2a.domain.Xs2aChallengeData;
 import de.adorsys.aspsp.xs2a.domain.consent.UpdateConsentPsuDataReq;
 import de.adorsys.aspsp.xs2a.domain.consent.UpdateConsentPsuDataResponse;
@@ -26,6 +25,7 @@ import de.adorsys.aspsp.xs2a.service.consent.AisConsentService;
 import de.adorsys.aspsp.xs2a.service.mapper.consent.Xs2aAisConsentMapper;
 import de.adorsys.aspsp.xs2a.service.mapper.spi_xs2a_mappers.SpiResponseStatusToXs2aMessageErrorCodeMapper;
 import de.adorsys.aspsp.xs2a.service.mapper.spi_xs2a_mappers.SpiToXs2aAuthenticationObjectMapper;
+import de.adorsys.aspsp.xs2a.service.mapper.spi_xs2a_mappers.SpiToXs2aOtpFormatMapper;
 import de.adorsys.aspsp.xs2a.service.mapper.spi_xs2a_mappers.Xs2aToSpiPsuDataMapper;
 import de.adorsys.psd2.xs2a.core.consent.ConsentStatus;
 import de.adorsys.psd2.xs2a.core.psu.PsuIdData;
@@ -53,8 +53,9 @@ public class AisScaStartAuthorisationStage extends AisScaStage<UpdateConsentPsuD
                                          Xs2aAisConsentMapper aisConsentMapper,
                                          SpiResponseStatusToXs2aMessageErrorCodeMapper messageErrorCodeMapper,
                                          Xs2aToSpiPsuDataMapper psuDataMapper,
-                                         SpiToXs2aAuthenticationObjectMapper spiToXs2aAuthenticationObjectMapper) {
-        super(aisConsentService, aisConsentDataService, aisConsentSpi, aisConsentMapper, messageErrorCodeMapper, psuDataMapper, spiToXs2aAuthenticationObjectMapper);
+                                         SpiToXs2aAuthenticationObjectMapper spiToXs2aAuthenticationObjectMapper,
+                                         SpiToXs2aOtpFormatMapper spiToXs2aOtpFormatMapper) {
+        super(aisConsentService, aisConsentDataService, aisConsentSpi, aisConsentMapper, messageErrorCodeMapper, psuDataMapper, spiToXs2aAuthenticationObjectMapper, spiToXs2aOtpFormatMapper);
     }
 
     /**
@@ -121,7 +122,7 @@ public class AisScaStartAuthorisationStage extends AisScaStage<UpdateConsentPsuD
                 authorizationCodeResult.getData(),
                 authorizationCodeResult.getImageLink(),
                 authorizationCodeResult.getOtpMaxLength(),
-                authorizationCodeResult.getOtpFormatCharacters() ? OtpFormat.CHARACTERS : OtpFormat.INTEGER,
+                spiToXs2aOtpFormatMapper.mapToOtpFormat(authorizationCodeResult.getOtpFormat()),
                 authorizationCodeResult.getAdditionalInformation());
         }
 
