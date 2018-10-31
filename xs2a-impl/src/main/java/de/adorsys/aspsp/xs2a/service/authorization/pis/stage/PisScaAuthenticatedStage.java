@@ -75,8 +75,7 @@ public class PisScaAuthenticatedStage extends PisScaStage<Xs2aUpdatePisConsentPs
         if (spiResponse.hasError()) {
             return new Xs2aUpdatePisConsentPsuDataResponse(spiErrorMapper.mapToErrorHolder(spiResponse));
         }
-
-        // TODO remove second call to request sca methods since sca method is already choosen
+        
         SpiResponse<List<SpiAuthenticationObject>> availableScaMethodsResponse = paymentAuthorisationSpi.requestAvailableScaMethods(psuData, payment, aspspConsentData);
         pisConsentDataService.updateAspspConsentData(availableScaMethodsResponse.getAspspConsentData());
 
