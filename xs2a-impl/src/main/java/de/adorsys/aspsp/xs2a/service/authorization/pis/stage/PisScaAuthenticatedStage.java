@@ -18,6 +18,8 @@ package de.adorsys.aspsp.xs2a.service.authorization.pis.stage;
 
 import de.adorsys.aspsp.xs2a.domain.ErrorHolder;
 import de.adorsys.aspsp.xs2a.domain.MessageErrorCode;
+import de.adorsys.aspsp.xs2a.domain.OtpFormat;
+import de.adorsys.aspsp.xs2a.domain.Xs2aChallengeData;
 import de.adorsys.aspsp.xs2a.domain.consent.pis.Xs2aUpdatePisConsentPsuDataRequest;
 import de.adorsys.aspsp.xs2a.domain.consent.pis.Xs2aUpdatePisConsentPsuDataResponse;
 import de.adorsys.aspsp.xs2a.service.consent.PisConsentDataService;
@@ -53,6 +55,7 @@ public class PisScaAuthenticatedStage extends PisScaStage<Xs2aUpdatePisConsentPs
         PaymentType paymentType = pisConsentAuthorisationResponse.getPaymentType();
         SpiPayment payment = mapToSpiPayment(pisConsentAuthorisationResponse.getPayments(), paymentType);
         String authenticationMethodId = request.getAuthenticationMethodId();
+        Xs2aChallengeData challengeData = null;
 
         SpiPsuData psuData = new SpiPsuData(request.getPsuId(), null, null, null);  // TODO get it from XS2A Interface https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/458
         AspspConsentData aspspConsentData = pisConsentDataService.getAspspConsentDataByPaymentId(request.getPaymentId());
@@ -60,11 +63,21 @@ public class PisScaAuthenticatedStage extends PisScaStage<Xs2aUpdatePisConsentPs
         SpiResponse<SpiAuthorizationCodeResult> spiResponse = paymentAuthorisationSpi.requestAuthorisationCode(psuData, authenticationMethodId, payment, aspspConsentData);
         aspspConsentData = spiResponse.getAspspConsentData();
         pisConsentDataService.updateAspspConsentData(aspspConsentData);
+        SpiAuthorizationCodeResult authorizationCodeResult = spiResponse.getPayload();
+        if(authorizationCodeResult != null && !authorizationCodeResult.isEmpty()) {
+            challengeData = new Xs2aChallengeData(authorizationCodeResult.getImage(),
+                authorizationCodeResult.getData(),
+                authorizationCodeResult.getImageLink(),
+                authorizationCodeResult.getOtpMaxLength(),
+                authorizationCodeResult.getOtpFormatCharacters() ? OtpFormat.CHARACTERS : OtpFormat.INTEGER,
+                authorizationCodeResult.getAdditionalInformation());
+        }
 
         if (spiResponse.hasError()) {
             return new Xs2aUpdatePisConsentPsuDataResponse(spiErrorMapper.mapToErrorHolder(spiResponse));
         }
 
+        // TODO remove second call to request sca methods since sca method is already choosen
         SpiResponse<List<SpiAuthenticationObject>> availableScaMethodsResponse = paymentAuthorisationSpi.requestAvailableScaMethods(psuData, payment, aspspConsentData);
         pisConsentDataService.updateAspspConsentData(availableScaMethodsResponse.getAspspConsentData());
 
@@ -87,6 +100,7 @@ public class PisScaAuthenticatedStage extends PisScaStage<Xs2aUpdatePisConsentPs
         Xs2aUpdatePisConsentPsuDataResponse response = new Xs2aUpdatePisConsentPsuDataResponse(SCAMETHODSELECTED);
         response.setPsuId(psuData.getPsuId());
         response.setChosenScaMethod(spiToXs2aAuthenticationObjectMapper.mapToXs2aAuthenticationObject(chosenScaMethod));
+        response.setChallengeData(challengeData);
         return response;
     }
 }

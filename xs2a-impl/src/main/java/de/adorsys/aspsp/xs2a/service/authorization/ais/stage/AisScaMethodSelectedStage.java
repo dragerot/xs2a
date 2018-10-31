@@ -17,6 +17,8 @@
 package de.adorsys.aspsp.xs2a.service.authorization.ais.stage;
 
 import de.adorsys.aspsp.xs2a.domain.MessageErrorCode;
+import de.adorsys.aspsp.xs2a.domain.OtpFormat;
+import de.adorsys.aspsp.xs2a.domain.Xs2aChallengeData;
 import de.adorsys.aspsp.xs2a.domain.consent.UpdateConsentPsuDataReq;
 import de.adorsys.aspsp.xs2a.domain.consent.UpdateConsentPsuDataResponse;
 import de.adorsys.aspsp.xs2a.service.consent.AisConsentDataService;
@@ -67,6 +69,16 @@ public class AisScaMethodSelectedStage extends AisScaStage<UpdateConsentPsuDataR
 
         SpiResponse<SpiAuthorizationCodeResult> spiResponse = aisConsentSpi.requestAuthorisationCode(psuDataMapper.mapToSpiPsuData(psuData), authenticationMethodId, accountConsent, aisConsentDataService.getAspspConsentDataByConsentId(request.getConsentId()));
         aisConsentDataService.updateAspspConsentData(spiResponse.getAspspConsentData());
+        Xs2aChallengeData challengeData = null;
+        SpiAuthorizationCodeResult authorizationCodeResult = spiResponse.getPayload();
+        if(authorizationCodeResult != null && !authorizationCodeResult.isEmpty()) {
+            challengeData = new Xs2aChallengeData(authorizationCodeResult.getImage(),
+                authorizationCodeResult.getData(),
+                authorizationCodeResult.getImageLink(),
+                authorizationCodeResult.getOtpMaxLength(),
+                authorizationCodeResult.getOtpFormatCharacters() ? OtpFormat.CHARACTERS : OtpFormat.INTEGER,
+                authorizationCodeResult.getAdditionalInformation());
+        }
 
         if (spiResponse.hasError()) {
             return createFailedResponse(messageErrorCodeMapper.mapToMessageErrorCode(spiResponse.getResponseStatus()));
@@ -93,6 +105,7 @@ public class AisScaMethodSelectedStage extends AisScaStage<UpdateConsentPsuDataR
         response.setChosenScaMethod(spiToXs2aAuthenticationObjectMapper.mapToXs2aAuthenticationObject(chosenScaMethod));
         response.setScaStatus(ScaStatus.SCAMETHODSELECTED);
         response.setResponseLinkType(START_AUTHORISATION_WITH_TRANSACTION_AUTHORISATION);
+        response.setChallengeData(challengeData);
         return response;
     }
 }

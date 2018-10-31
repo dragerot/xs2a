@@ -17,6 +17,8 @@
 package de.adorsys.aspsp.xs2a.service.authorization.pis.stage;
 
 
+import de.adorsys.aspsp.xs2a.domain.OtpFormat;
+import de.adorsys.aspsp.xs2a.domain.Xs2aChallengeData;
 import de.adorsys.aspsp.xs2a.domain.consent.pis.Xs2aUpdatePisConsentPsuDataRequest;
 import de.adorsys.aspsp.xs2a.domain.consent.pis.Xs2aUpdatePisConsentPsuDataResponse;
 import de.adorsys.aspsp.xs2a.service.consent.PisConsentDataService;
@@ -93,6 +95,17 @@ public class PisScaStartAuthorisationStage extends PisScaStage<Xs2aUpdatePisCons
             SpiAuthenticationObject chosenMethod = spiScaMethods.get(0);
             SpiResponse<SpiAuthorizationCodeResult> authCodeResponse = paymentAuthorisationSpi.requestAuthorisationCode(psuData, chosenMethod.getAuthenticationMethodId(), payment, aspspConsentData);
             pisConsentDataService.updateAspspConsentData(authCodeResponse.getAspspConsentData());
+            Xs2aChallengeData challengeData = null;
+            SpiAuthorizationCodeResult authorizationCodeResult = authCodeResponse.getPayload();
+            if(authorizationCodeResult != null && !authorizationCodeResult.isEmpty()) {
+                challengeData = new Xs2aChallengeData(authorizationCodeResult.getImage(),
+                    authorizationCodeResult.getData(),
+                    authorizationCodeResult.getImageLink(),
+                    authorizationCodeResult.getOtpMaxLength(),
+                    authorizationCodeResult.isOtpFormatCharacters() ? OtpFormat.CHARACTERS : OtpFormat.INTEGER,
+                    authorizationCodeResult.getAdditionalInformation());
+            }
+
 
             if (authCodeResponse.hasError()) {
                 return new Xs2aUpdatePisConsentPsuDataResponse(spiErrorMapper.mapToErrorHolder(authCodeResponse));
@@ -101,6 +114,7 @@ public class PisScaStartAuthorisationStage extends PisScaStage<Xs2aUpdatePisCons
             Xs2aUpdatePisConsentPsuDataResponse response = new Xs2aUpdatePisConsentPsuDataResponse(SCAMETHODSELECTED);
             response.setPsuId(psuData.getPsuId());
             response.setChosenScaMethod(spiToXs2aAuthenticationObjectMapper.mapToXs2aAuthenticationObject(chosenMethod));
+            response.setChallengeData(challengeData);
             return response;
 
         } else if (isMultipleScaMethods(spiScaMethods)) {

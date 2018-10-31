@@ -17,8 +17,32 @@
 package de.adorsys.psd2.xs2a.spi.domain.authorisation;
 
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.Optional;
+
+/**
+ * @see Xs2aChallengeData
+ */
 @Data
 public class SpiAuthorizationCodeResult {
-    // TODO clarify body of this object https://git.adorsys.de/adorsys/xs2a/aspsp-xs2a/issues/410
+    private byte [] image;
+    private String data;
+    private String imageLink;
+    private Integer otpMaxLength;
+    private Boolean otpFormatCharacters;
+    private String additionalInformation;
+
+    public boolean isOtpFormatCharacters() {
+        return Optional.ofNullable(otpFormatCharacters).orElse(false);
+    }
+
+    public boolean isEmpty() {
+        return image == null
+            && StringUtils.isEmpty(data)
+            && StringUtils.isEmpty(imageLink)
+            && otpMaxLength == null
+            && otpFormatCharacters == null
+            && StringUtils.isEmpty(additionalInformation);
+    }
 }
