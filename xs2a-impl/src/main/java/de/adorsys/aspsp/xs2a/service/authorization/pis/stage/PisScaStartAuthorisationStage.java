@@ -95,17 +95,6 @@ public class PisScaStartAuthorisationStage extends PisScaStage<Xs2aUpdatePisCons
             SpiAuthenticationObject chosenMethod = spiScaMethods.get(0);
             SpiResponse<SpiAuthorizationCodeResult> authCodeResponse = paymentAuthorisationSpi.requestAuthorisationCode(psuData, chosenMethod.getAuthenticationMethodId(), payment, aspspConsentData);
             pisConsentDataService.updateAspspConsentData(authCodeResponse.getAspspConsentData());
-            Xs2aChallengeData challengeData = null;
-            SpiAuthorizationCodeResult authorizationCodeResult = authCodeResponse.getPayload();
-            if(authorizationCodeResult != null && !authorizationCodeResult.isEmpty()) {
-                challengeData = new Xs2aChallengeData(authorizationCodeResult.getImage(),
-                    authorizationCodeResult.getData(),
-                    authorizationCodeResult.getImageLink(),
-                    authorizationCodeResult.getOtpMaxLength(),
-                    authorizationCodeResult.isOtpFormatCharacters() ? OtpFormat.CHARACTERS : OtpFormat.INTEGER,
-                    authorizationCodeResult.getAdditionalInformation());
-            }
-
 
             if (authCodeResponse.hasError()) {
                 return new Xs2aUpdatePisConsentPsuDataResponse(spiErrorMapper.mapToErrorHolder(authCodeResponse));
@@ -114,7 +103,7 @@ public class PisScaStartAuthorisationStage extends PisScaStage<Xs2aUpdatePisCons
             Xs2aUpdatePisConsentPsuDataResponse response = new Xs2aUpdatePisConsentPsuDataResponse(SCAMETHODSELECTED);
             response.setPsuId(psuData.getPsuId());
             response.setChosenScaMethod(spiToXs2aAuthenticationObjectMapper.mapToXs2aAuthenticationObject(chosenMethod));
-            response.setChallengeData(challengeData);
+            response.setChallengeData(getChallengeData(authCodeResponse.getPayload()));
             return response;
 
         } else if (isMultipleScaMethods(spiScaMethods)) {
@@ -124,6 +113,18 @@ public class PisScaStartAuthorisationStage extends PisScaStage<Xs2aUpdatePisCons
             return response;
         }
         return new Xs2aUpdatePisConsentPsuDataResponse(FAILED);
+    }
+
+    private Xs2aChallengeData getChallengeData(SpiAuthorizationCodeResult authorizationCodeResult) {
+        if(authorizationCodeResult != null && !authorizationCodeResult.isEmpty()) {
+            return new Xs2aChallengeData(authorizationCodeResult.getImage(),
+                authorizationCodeResult.getData(),
+                authorizationCodeResult.getImageLink(),
+                authorizationCodeResult.getOtpMaxLength(),
+                authorizationCodeResult.isOtpFormatCharacters() ? OtpFormat.CHARACTERS : OtpFormat.INTEGER,
+                authorizationCodeResult.getAdditionalInformation());
+        }
+        return null;
     }
 
     private boolean isSingleScaMethod(List<SpiAuthenticationObject> spiScaMethods) {
